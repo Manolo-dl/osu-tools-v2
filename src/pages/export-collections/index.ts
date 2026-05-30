@@ -1,0 +1,1 @@
+export { ExportCollectionsComponent } from './export-collections.component';
