@@ -28,29 +28,30 @@ export class BeatmapDownloadService {
   }
 
   private async downloadOne(item: DownloadItem) {
-    this.beatmapStore.updateStatus(item.beatmapSetId, 'downloading', 0);
+  this.beatmapStore.updateStatus(item.beatmapSetId, 'downloading', 0);
 
-    const token = this.userStore.user()?.token;
-    const songFolder = this.osuPath.path();
+  const token = this.userStore.user()?.token;
+  const osuPath = this.osuPath.path();
 
-    if (!token || !songFolder) {
-      this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
-      return;
-    }
-
-    try {
-      await invoke('download_beatmap', {
-        beatmapSetId: item.beatmapSetId,
-        token,
-        songFolder,
-      });
-
-      this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
-    } catch (error) {
-      console.error('Download failed for beatmapSetId', item.beatmapSetId, error);
-      await this.downloadFromBeatConnect(item, songFolder);
-    }
+  if (!token || !osuPath) {
+    this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
+    return;
   }
+
+  const songsFolder = `${osuPath}/Songs`;
+
+  try {
+    await invoke('download_beatmap', {
+      beatmapSetId: item.beatmapSetId,
+      token,
+      songsFolder,
+    });
+    this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
+  } catch (error) {
+    console.error(`Failed to download ${item.beatmapSetId}:`, error);
+    await this.downloadFromBeatConnect(item, songsFolder);
+  }
+}
 
   private async downloadFromBeatConnect(item: DownloadItem, songFolder: string) {
     try {
