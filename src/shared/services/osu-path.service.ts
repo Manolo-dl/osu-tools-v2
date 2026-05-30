@@ -14,9 +14,12 @@ export class OsuPathService {
     this.isLoading.set(true);
     try {
       const path = await invoke<string>('get_osu_path');
+      console.log('Detected osu! path:', path);
       this.path.set(path);
       this.error.set(null);
+      await invoke('save_osu_path', { path });
     } catch (error) {
+      console.error('Error detecting osu! path:', error);
       this.error.set(error as string);
     } finally {
       this.isLoading.set(false);
@@ -33,7 +36,11 @@ export class OsuPathService {
     if (selected) {
       this.path.set(selected as string);
       this.error.set(null);
-      await invoke('save_osu_path', { path: selected });
+      try {
+        await invoke('save_osu_path', { path: selected });
+      } catch (e) {
+        console.error('Failed to save osu! path:', e);
+      }
     }
   }
 }
