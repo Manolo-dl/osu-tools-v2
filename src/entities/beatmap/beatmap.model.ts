@@ -15,4 +15,4 @@ export interface DownloadItem {
     progress: number;
 }
 
-export type DownloadStatus = 'pending' | 'dowloading' | 'done' | 'failed';
+export type DownloadStatus = 'pending' | 'downloading' | 'done' | 'failed';

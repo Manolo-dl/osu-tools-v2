@@ -28,7 +28,7 @@ export class BeatmapDownloadService {
   }
 
   private async downloadOne(item: DownloadItem) {
-    this.beatmapStore.updateStatus(item.beatmapSetId, 'dowloading', 0);
+    this.beatmapStore.updateStatus(item.beatmapSetId, 'downloading', 0);
 
     const token = this.userStore.user()?.token;
     const songFolder = this.osuPath.path();
