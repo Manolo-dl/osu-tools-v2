@@ -1,0 +1,13 @@
+<div class="osu-path">
+    @if (osuPath.isLoading()) {
+        <span class="label">Loading osu! path...</span>
+    } @else if (osuPath.path()) {
+        <span class="label">osu! folder</span>
+        <span class="path">{{ osuPath.path() }}</span>
+        <button (click)="selectManually()">Change</button>
+    } @else if (osuPath.error()) {
+        <span class="label">osu! folder not found</span>
+        <button (click)="osuPath.detect()">Detect</button>
+        <button (click)="selectManually()">Select manually</button>
+    }
+</div>
