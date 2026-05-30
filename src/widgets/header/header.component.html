@@ -1,18 +1,16 @@
 <header>
-    <div class="header-left">
-        <span class="app-name">osu-tools</span>
-    </div>
-    <div class="header-right">
-        @if (userStore.isLoggedIn()) {
-            <div class="user-badge">
-                <img [src]="userStore.user()?.avatarUrl" alt="avatar" />
-                <span>{{ userStore.user()?.username }}</span>
-            </div>
-        } @else {
-            <button>
-                <ng-icon name="phosphorSignIn" size="18" aria-hidden="true" />
-                <span>Login with osu!</span>
-            </button>
-        }
-    </div>
+  <div class="header-left">
+    <span class="app-name">osu-tools</span>
+  </div>
+  <div class="header-right">
+    @if (userStore.isLoggedIn()) {
+      <div class="user-badge">
+        <img [src]="userStore.user()?.avatarUrl" alt="avatar" />
+        <span>{{ userStore.user()?.username }}</span>
+        <button (click)="logout()">Logout</button>
+      </div>
+    } @else {
+      <button (click)="login()">Login with osu!</button>
+    }
+  </div>
 </header>
