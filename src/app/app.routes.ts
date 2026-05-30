@@ -12,5 +12,13 @@ export const routes: Routes = [
     {
         path: 'export-collections',
         loadComponent: () => import('@pages/export-collections').then(m => m.ExportCollectionsComponent)
+    },
+    {
+        path: 'export-song-folder',
+        loadComponent: () => import('@pages/export-song-folder').then(m => m.ExportSongFolderComponent)
+    },
+    {
+        path: '**',
+        redirectTo: '',
     }
 ];
