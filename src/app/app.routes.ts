@@ -8,5 +8,9 @@ export const routes: Routes = [
     {
         path: 'downloader',
         loadComponent: () => import('@pages/downloader').then(m => m.DownloaderComponent)
+    },
+    {
+        path: 'export-collections',
+        loadComponent: () => import('@pages/export-collections').then(m => m.ExportCollectionsComponent)
     }
 ];
