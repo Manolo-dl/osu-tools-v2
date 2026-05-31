@@ -28,38 +28,39 @@ export class BeatmapDownloadService {
   }
 
   private async downloadOne(item: DownloadItem) {
-  this.beatmapStore.updateStatus(item.beatmapSetId, 'downloading', 0);
+    this.beatmapStore.updateStatus(item.beatmapSetId, 'downloading', 0);
 
-  const osuPath = this.osuPath.path();
+    const osuPath = this.osuPath.path();
+    if (!osuPath) {
+      this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
+      return;
+    }
 
-  if (!osuPath) {
-    this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
-    return;
-  }
+    const songsFolder = `${osuPath}/Songs`;
+    const user = this.userStore.user();
 
-  const songsFolder = `${osuPath}/Songs`;
+    // Try official osu! first when logged in
+    if (user?.token) {
+      try {
+        await invoke('download_beatmap', {
+          beatmapsetId: item.beatmapSetId,
+          token: user.token,
+          osuSession: user.osuSession ?? null,
+          songsFolder,
+        });
+        this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
+        return;
+      } catch (error) {
+        console.warn(`osu! download failed for ${item.beatmapSetId}, falling back to BeatConnect:`, error);
+      }
+    }
 
-  try {
-    await invoke('download_beatmap_beatconnect', {
-      beatmapsetId: item.beatmapSetId,
-      songsFolder,
-    });
-    this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
-  } catch (error) {
-    console.error(`Failed to download ${item.beatmapSetId}:`, error);
-    this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
-  }
-}
-
-  private async downloadFromBeatConnect(item: DownloadItem, songsFolder: string) {
+    // Fall back to BeatConnect
     try {
-      await invoke('download_beatmap_beatconnect', {
-        beatmapsetId: item.beatmapSetId,
-        songsFolder,
-      });
+      await invoke('download_beatmap_beatconnect', { beatmapsetId: item.beatmapSetId, songsFolder });
       this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
     } catch (error) {
-      console.error('BeatConnect download failed for beatmapSetId', item.beatmapSetId, error);
+      console.error(`BeatConnect download failed for ${item.beatmapSetId}:`, error);
       this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
     }
   }

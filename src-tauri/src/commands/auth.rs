@@ -1,9 +1,7 @@
-use tauri_plugin_opener::OpenerExt;
+use std::sync::{Arc, Mutex};
 
 #[tauri::command]
 pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
-    use tiny_http::{Response, Server};
-
     let client_id = env!("OSU_CLIENT_ID");
     let client_secret = env!("OSU_CLIENT_SECRET");
     let redirect_uri = "http://localhost:7878/callback";
@@ -14,43 +12,101 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         urlencoding::encode(redirect_uri)
     );
 
-    log::info!("Opening OAuth URL: {}", auth_url);
-    app.opener()
-        .open_url(&auth_url, None::<&str>)
-        .map_err(|e| e.to_string())?;
+    log::info!("Opening OAuth in Tauri window: {}", auth_url);
 
-    let server = Server::http("127.0.0.1:7878").map_err(|e| e.to_string())?;
-    log::info!("Waiting for OAuth callback on port 7878...");
+    // Channel: navigation interceptor → async code
+    let (code_tx, code_rx) = tokio::sync::oneshot::channel::<String>();
+    let code_tx = Arc::new(Mutex::new(Some(code_tx)));
+    let code_tx_nav = code_tx.clone();
 
-    let code = tokio::task::spawn_blocking(move || {
-        for request in server.incoming_requests() {
-            let url = request.url().to_string();
-            log::info!("Received callback: {}", url);
+    let window = tauri::WebviewWindowBuilder::new(
+        &app,
+        "oauth",
+        tauri::WebviewUrl::External(
+            auth_url.parse().map_err(|e: url::ParseError| e.to_string())?,
+        ),
+    )
+    .title("Login with osu!")
+    .inner_size(480.0, 720.0)
+    .on_navigation(move |url| {
+        if url.as_str().starts_with("http://localhost:7878/callback") {
+            let code = url
+                .query_pairs()
+                .find(|(k, _)| k == "code")
+                .map(|(_, v)| v.into_owned());
 
-            let response = Response::from_string(
-                "<html><body><h2>Login successful! You can close this tab.</h2></body></html>",
-            )
-            .with_header(
-                "Content-Type: text/html"
-                    .parse::<tiny_http::Header>()
-                    .unwrap(),
-            );
-            let _ = request.respond(response);
-
-            if let Some(query) = url.split('?').nth(1) {
-                for param in query.split('&') {
-                    if let Some(code) = param.strip_prefix("code=") {
-                        return Ok(code.to_string());
+            if let Some(code) = code {
+                if let Ok(mut guard) = code_tx_nav.lock() {
+                    if let Some(tx) = guard.take() {
+                        let _ = tx.send(code);
                     }
                 }
             }
+            false // block navigation so the WebView stays on osu.ppy.sh
+        } else {
+            true
         }
-        Err("No callback received".to_string())
+    })
+    .build()
+    .map_err(|e| e.to_string())?;
+
+    // Wait for the user to finish the OAuth flow
+    let code = code_rx
+        .await
+        .map_err(|_| "OAuth window closed before completing login".to_string())?;
+
+    log::info!("Got OAuth code, extracting osu_session cookie...");
+
+    // Extract the osu_session cookie from the WebView's cookie store.
+    // The user just logged in here so the cookie is present.
+    let (cookie_tx, cookie_rx) = std::sync::mpsc::channel::<Option<String>>();
+    let cookie_tx_clone = cookie_tx.clone();
+
+    let _ = window.with_webview(move |webview| {
+        #[cfg(target_os = "linux")]
+        {
+            use webkit2gtk::{WebViewExt, WebContextExt, CookieManagerExt};
+
+            let wkv = webview.inner();
+            match wkv.web_context().and_then(|ctx| ctx.cookie_manager()) {
+                Some(cm) => {
+                    cm.cookies("https://osu.ppy.sh", None::<&webkit2gtk::gio::Cancellable>, move |result| {
+                        let session = result.ok().and_then(|mut cookies| {
+                            for c in cookies.iter_mut() {
+                                if c.name().as_deref() == Some("osu_session") {
+                                    return c.value().map(|v| v.to_string());
+                                }
+                            }
+                            None
+                        });
+                        log::info!("osu_session found: {}", session.is_some());
+                        let _ = cookie_tx_clone.send(session);
+                    });
+                }
+                None => {
+                    let _ = cookie_tx_clone.send(None);
+                }
+            }
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            log::warn!("Cookie extraction not implemented for this platform");
+            let _ = cookie_tx_clone.send(None);
+        }
+    });
+
+    let osu_session = tokio::task::spawn_blocking(move || {
+        cookie_rx
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .ok()
+            .flatten()
     })
     .await
-    .map_err(|e| e.to_string())??;
+    .unwrap_or(None);
 
-    log::info!("Got OAuth code, exchanging for token...");
+    let _ = window.close();
+
+    log::info!("Exchanging code for token...");
 
     let client = reqwest::Client::new();
     let token_response = client
@@ -71,12 +127,12 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
 
     let access_token = token_response["access_token"]
         .as_str()
-        .ok_or("No access token")?
+        .ok_or("No access token in response")?
         .to_string();
 
     let refresh_token = token_response["refresh_token"]
         .as_str()
-        .ok_or("No refresh token")?
+        .ok_or("No refresh token in response")?
         .to_string();
 
     let expires_in = token_response["expires_in"].as_u64().unwrap_or(86400);
@@ -97,7 +153,7 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         .map_err(|e| e.to_string())?;
 
     log::info!(
-        "Got user profile: {}",
+        "Logged in as: {}",
         user["username"].as_str().unwrap_or("unknown")
     );
 
@@ -105,6 +161,7 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         "access_token": access_token,
         "refresh_token": refresh_token,
         "expires_at": expires_at,
+        "osu_session": osu_session,
         "user": {
             "id": user["id"],
             "username": user["username"],

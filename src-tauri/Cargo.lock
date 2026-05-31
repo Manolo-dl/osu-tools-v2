@@ -2712,7 +2712,9 @@ dependencies = [
  "tauri-plugin-store",
  "tiny_http",
  "tokio",
+ "url",
  "urlencoding",
+ "webkit2gtk",
 ]
 
 [[package]]

@@ -14,6 +14,7 @@ export class AuthService {
         access_token: string;
         refresh_token: string;
         expires_at: number;
+        osu_session: string | null;
         user: {
           id: number;
           username: string;
@@ -28,6 +29,7 @@ export class AuthService {
         token: result.access_token,
         refreshToken: result.refresh_token,
         expiresAt: result.expires_at,
+        osuSession: result.osu_session ?? undefined,
       };
 
 

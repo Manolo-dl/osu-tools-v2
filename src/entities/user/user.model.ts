@@ -5,4 +5,5 @@ export interface User {
     token: string;
     refreshToken: string;
     expiresAt: number;
+    osuSession?: string;
 }
