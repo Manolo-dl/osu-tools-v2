@@ -16,6 +16,7 @@
     "dialog:allow-save",
     "store:allow-get",
     "store:allow-set",
+    "store:allow-delete",
     "store:allow-save",
     "store:allow-load",
     "log:allow-log"

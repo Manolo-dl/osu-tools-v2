@@ -12,6 +12,7 @@
     "dialog:allow-open",
     "store:allow-get",
     "store:allow-set",
+    "store:allow-delete",
     "log:allow-log",
     "core:window:allow-start-dragging",
     "core:app:allow-version"
