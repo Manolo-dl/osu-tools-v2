@@ -1,0 +1,35 @@
+@if (beatmapStore.queue().length > 0) {
+  <div class="queue">
+    <div class="queue-stats">
+      <span>{{ beatmapStore.queue().length }} total</span>
+      <span>{{ done }} done</span>
+      <span>{{ pending }} pending</span>
+      <span>{{ failed }} failed</span>
+    </div>
+
+    <div class="queue-list">
+      @for (item of beatmapStore.queue(); track item.beatmapSetId) {
+        <div class="queue-item">
+          <div class="queue-info">
+            <span class="id">#{{ item.beatmapSetId }}</span>
+            @if (item.status === 'downloading') {
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="item.progress"></div>
+              </div>
+            }
+          </div>
+          <span class="status {{ item.status }}">{{ item.status }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="controls">
+      <button (click)="clearQueue()">Clear queue</button>
+      @if (beatmapStore.isDownloading()) {
+        <button (click)="pause()">Pause</button>
+      } @else {
+        <button (click)="startDownload()">Start download</button>
+      }
+    </div>
+  </div>
+}

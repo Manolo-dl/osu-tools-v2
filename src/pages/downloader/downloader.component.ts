@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { BeatmapImportComponent, BeatmapQueueComponent } from "@features/beatmap-search";
 
 @Component({
   selector: 'app-downloader',
-  imports: [],
+  imports: [BeatmapImportComponent, BeatmapQueueComponent],
   templateUrl: './downloader.component.html',
   styleUrl: './downloader.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
