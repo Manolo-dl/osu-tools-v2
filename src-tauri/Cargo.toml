@@ -30,6 +30,6 @@ log = "0.4.30"
 tauri-plugin-log = "2.8.0"
 tokio = { version = "1", features = ["full", "time"] }
 tiny_http = "0.12.0"
-reqwest = { version = "0.13.4", features = ["json"] }
+reqwest = { version = "0.13.4", features = ["cookies", "json"] }
 urlencoding = "2.1.3"
 
