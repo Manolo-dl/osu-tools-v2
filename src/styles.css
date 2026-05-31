@@ -17,6 +17,7 @@
   --accent-dim:     #ff66ab26;
   --border:         #ffffff14;
   --danger:         #ff6b6b;
+  --warning:        #f59e0b;
   --success:        #69db7c;
   --radius:         8px;
   --font-sans:      'Inter', system-ui, -apple-system, sans-serif;
@@ -35,6 +36,7 @@
   --accent-dim:     #d4407a1a;
   --border:         #00000014;
   --danger:         #e03131;
+  --warning:        #d97706;
   --success:        #2f9e44;
 }
 
@@ -52,6 +54,7 @@
     --accent-dim:     #d4407a1a;
     --border:         #00000014;
     --danger:         #e03131;
+    --warning:        #d97706;
     --success:        #2f9e44;
   }
 }

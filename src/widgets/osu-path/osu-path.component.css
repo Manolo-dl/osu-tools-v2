@@ -32,6 +32,24 @@
   font-family: monospace;
 }
 
+.error-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--warning);
+}
+
+.error-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 button {
   padding: 5px 12px;
   border-radius: var(--radius);
