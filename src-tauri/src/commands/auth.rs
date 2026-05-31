@@ -5,11 +5,43 @@ use sha2::{Sha256, Digest};
 fn generate_pkce() -> (String, String) {
     let bytes: [u8; 32] = rand::random();
     let code_verifier = URL_SAFE_NO_PAD.encode(bytes);
-
     let hash = Sha256::digest(code_verifier.as_bytes());
     let code_challenge = URL_SAFE_NO_PAD.encode(hash);
-
     (code_verifier, code_challenge)
+}
+
+// Windows-only COM handler for WebView2 GetCookies callback
+#[cfg(target_os = "windows")]
+mod win_cookies {
+    use std::sync::mpsc::Sender;
+    use webview2_com::Microsoft::Web::WebView2::Win32::*;
+    use windows::core::{implement, HRESULT};
+
+    #[implement(ICoreWebView2GetCookiesCompletedHandler)]
+    pub struct CookiesHandler(pub Sender<Option<String>>);
+
+    impl ICoreWebView2GetCookiesCompletedHandler_Impl for CookiesHandler_Impl {
+        fn Invoke(
+            &self,
+            _error: HRESULT,
+            list: Option<&ICoreWebView2CookieList>,
+        ) -> windows::core::Result<()> {
+            let session = list.and_then(|list| unsafe {
+                let count = list.Count().unwrap_or(0);
+                (0..count).find_map(|i| {
+                    let cookie = list.GetValueAtIndex(i).ok()?;
+                    let name = cookie.Name().ok()?;
+                    if name == "osu_session" {
+                        cookie.Value().ok().map(|v| v.to_string())
+                    } else {
+                        None
+                    }
+                })
+            });
+            let _ = self.0.send(session);
+            Ok(())
+        }
+    }
 }
 
 #[tauri::command]
@@ -71,36 +103,64 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
     log::info!("Got OAuth code, extracting osu_session cookie...");
 
     let (cookie_tx, cookie_rx) = std::sync::mpsc::channel::<Option<String>>();
-    let cookie_tx_clone = cookie_tx.clone();
 
-    let _ = window.with_webview(move |webview| {
-        #[cfg(target_os = "linux")]
-        {
-            use webkit2gtk::{WebViewExt, WebContextExt, CookieManagerExt};
-
-            let wkv = webview.inner();
-            match wkv.web_context().and_then(|ctx| ctx.cookie_manager()) {
-                Some(cm) => {
-                    cm.cookies("https://osu.ppy.sh", None::<&webkit2gtk::gio::Cancellable>, move |result| {
-                        let session = result.ok().and_then(|mut cookies| {
-                            for c in cookies.iter_mut() {
-                                if c.name().as_deref() == Some("osu_session") {
-                                    return c.value().map(|v| v.to_string());
+    let _ = window.with_webview({
+        let cookie_tx = cookie_tx.clone();
+        move |webview| {
+            #[cfg(target_os = "linux")]
+            {
+                use webkit2gtk::{WebViewExt, WebContextExt, CookieManagerExt};
+                let wkv = webview.inner();
+                match wkv.web_context().and_then(|ctx| ctx.cookie_manager()) {
+                    Some(cm) => {
+                        cm.cookies("https://osu.ppy.sh", None::<&webkit2gtk::gio::Cancellable>, move |result| {
+                            let session = result.ok().and_then(|mut cookies| {
+                                for c in cookies.iter_mut() {
+                                    if c.name().as_deref() == Some("osu_session") {
+                                        return c.value().map(|v| v.to_string());
+                                    }
                                 }
-                            }
-                            None
+                                None
+                            });
+                            log::info!("osu_session found: {}", session.is_some());
+                            let _ = cookie_tx.send(session);
                         });
-                        log::info!("osu_session found: {}", session.is_some());
-                        let _ = cookie_tx_clone.send(session);
-                    });
+                    }
+                    None => { let _ = cookie_tx.send(None); }
                 }
-                None => { let _ = cookie_tx_clone.send(None); }
             }
-        }
-        #[cfg(not(target_os = "linux"))]
-        {
-            log::warn!("Cookie extraction not implemented for this platform");
-            let _ = cookie_tx_clone.send(None);
+            #[cfg(target_os = "windows")]
+            {
+                use windows::core::Interface;
+                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_2;
+
+                unsafe {
+                    let wv = match webview.controller().CoreWebView2() {
+                        Ok(v) => v,
+                        Err(_) => { let _ = cookie_tx.send(None); return; }
+                    };
+                    let wv2 = match wv.cast::<ICoreWebView2_2>() {
+                        Ok(v) => v,
+                        Err(_) => { let _ = cookie_tx.send(None); return; }
+                    };
+                    let cm = match wv2.CookieManager() {
+                        Ok(v) => v,
+                        Err(_) => { let _ = cookie_tx.send(None); return; }
+                    };
+
+                    let handler: webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2GetCookiesCompletedHandler =
+                        win_cookies::CookiesHandler(cookie_tx).into();
+
+                    if cm.GetCookies(windows::core::w!("https://osu.ppy.sh"), &handler).is_err() {
+                        log::warn!("GetCookies call failed");
+                    }
+                }
+            }
+            #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+            {
+                log::warn!("Cookie extraction not implemented for this platform");
+                let _ = cookie_tx.send(None);
+            }
         }
     });
 

@@ -1,7 +1,7 @@
 use tauri_plugin_shell::ShellExt;
 
 #[tauri::command]
-pub async fn get_osu_path(app: tauri::AppHandle) -> Result<String, String> {
+pub async fn get_osu_path(#[allow(unused_variables)] app: tauri::AppHandle) -> Result<String, String> {
     log::info!("Getting osu! path");
 
     if let Some(home) = dirs::home_dir() {
@@ -61,41 +61,44 @@ pub async fn get_osu_path(app: tauri::AppHandle) -> Result<String, String> {
         }
     }
 
-    log::info!("checking osumem");
-    let sidecar = app.shell()
-        .sidecar("osumem")
-        .map_err(|e| { log::error!("sidecar error: {}", e); e.to_string() })?;
+    #[cfg(not(target_os = "windows"))]
+    {
+        log::info!("checking osumem");
+        let sidecar = app.shell()
+            .sidecar("osumem")
+            .map_err(|e| { log::error!("sidecar error: {}", e); e.to_string() })?;
 
-    let (mut rx, child) = sidecar.spawn()
-        .map_err(|e| { log::error!("osumem spawn error: {}", e); e.to_string() })?;
+        let (mut rx, child) = sidecar.spawn()
+            .map_err(|e| { log::error!("osumem spawn error: {}", e); e.to_string() })?;
 
-    let found = tokio::time::timeout(std::time::Duration::from_secs(10), async {
-        while let Some(event) = rx.recv().await {
-            let bytes = match event {
-                tauri_plugin_shell::process::CommandEvent::Stdout(b) => b,
-                tauri_plugin_shell::process::CommandEvent::Stderr(b) => b,
-                _ => continue,
-            };
-            let text = String::from_utf8_lossy(&bytes);
-            for line in text.lines() {
-                log::info!("osumem: {}", line);
-                if let Some(songs_path) = line.strip_prefix("Found Song folder: ") {
-                    let osu_dir = std::path::Path::new(songs_path.trim())
-                        .parent()
-                        .map(|p| p.to_string_lossy().to_string());
-                    return osu_dir;
+        let found = tokio::time::timeout(std::time::Duration::from_secs(10), async {
+            while let Some(event) = rx.recv().await {
+                let bytes = match event {
+                    tauri_plugin_shell::process::CommandEvent::Stdout(b) => b,
+                    tauri_plugin_shell::process::CommandEvent::Stderr(b) => b,
+                    _ => continue,
+                };
+                let text = String::from_utf8_lossy(&bytes);
+                for line in text.lines() {
+                    log::info!("osumem: {}", line);
+                    if let Some(songs_path) = line.strip_prefix("Found Song folder: ") {
+                        let osu_dir = std::path::Path::new(songs_path.trim())
+                            .parent()
+                            .map(|p| p.to_string_lossy().to_string());
+                        return osu_dir;
+                    }
                 }
             }
+            None
+        }).await;
+
+        let _ = child.kill();
+
+        match found {
+            Ok(Some(path)) if !path.is_empty() => return Ok(path),
+            Ok(_) => log::warn!("osumem did not output a song folder path"),
+            Err(_) => log::warn!("osumem timed out after 10s"),
         }
-        None
-    }).await;
-
-    let _ = child.kill();
-
-    match found {
-        Ok(Some(path)) if !path.is_empty() => return Ok(path),
-        Ok(_) => log::warn!("osumem did not output a song folder path"),
-        Err(_) => log::warn!("osumem timed out after 10s"),
     }
 
     log::error!("osu! folder not found");
