@@ -1,4 +1,16 @@
 use std::sync::{Arc, Mutex};
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+use sha2::{Sha256, Digest};
+
+fn generate_pkce() -> (String, String) {
+    let bytes: [u8; 32] = rand::random();
+    let code_verifier = URL_SAFE_NO_PAD.encode(bytes);
+
+    let hash = Sha256::digest(code_verifier.as_bytes());
+    let code_challenge = URL_SAFE_NO_PAD.encode(hash);
+
+    (code_verifier, code_challenge)
+}
 
 #[tauri::command]
 pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
@@ -6,15 +18,17 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
     let client_secret = env!("OSU_CLIENT_SECRET");
     let redirect_uri = "http://localhost:7878/callback";
 
+    let (code_verifier, code_challenge) = generate_pkce();
+
     let auth_url = format!(
-        "https://osu.ppy.sh/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=public+identify",
+        "https://osu.ppy.sh/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=public+identify&code_challenge={}&code_challenge_method=S256",
         client_id,
-        urlencoding::encode(redirect_uri)
+        urlencoding::encode(redirect_uri),
+        code_challenge,
     );
 
-    log::info!("Opening OAuth in Tauri window: {}", auth_url);
+    log::info!("Opening OAuth in Tauri window");
 
-    // Channel: navigation interceptor → async code
     let (code_tx, code_rx) = tokio::sync::oneshot::channel::<String>();
     let code_tx = Arc::new(Mutex::new(Some(code_tx)));
     let code_tx_nav = code_tx.clone();
@@ -42,7 +56,7 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
                     }
                 }
             }
-            false // block navigation so the WebView stays on osu.ppy.sh
+            false
         } else {
             true
         }
@@ -50,15 +64,12 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
     .build()
     .map_err(|e| e.to_string())?;
 
-    // Wait for the user to finish the OAuth flow
     let code = code_rx
         .await
         .map_err(|_| "OAuth window closed before completing login".to_string())?;
 
     log::info!("Got OAuth code, extracting osu_session cookie...");
 
-    // Extract the osu_session cookie from the WebView's cookie store.
-    // The user just logged in here so the cookie is present.
     let (cookie_tx, cookie_rx) = std::sync::mpsc::channel::<Option<String>>();
     let cookie_tx_clone = cookie_tx.clone();
 
@@ -83,9 +94,7 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
                         let _ = cookie_tx_clone.send(session);
                     });
                 }
-                None => {
-                    let _ = cookie_tx_clone.send(None);
-                }
+                None => { let _ = cookie_tx_clone.send(None); }
             }
         }
         #[cfg(not(target_os = "linux"))]
@@ -96,10 +105,7 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
     });
 
     let osu_session = tokio::task::spawn_blocking(move || {
-        cookie_rx
-            .recv_timeout(std::time::Duration::from_secs(3))
-            .ok()
-            .flatten()
+        cookie_rx.recv_timeout(std::time::Duration::from_secs(3)).ok().flatten()
     })
     .await
     .unwrap_or(None);
@@ -115,6 +121,7 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
             "client_id": client_id,
             "client_secret": client_secret,
             "code": code,
+            "code_verifier": code_verifier,
             "grant_type": "authorization_code",
             "redirect_uri": redirect_uri,
         }))
@@ -152,10 +159,7 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         .await
         .map_err(|e| e.to_string())?;
 
-    log::info!(
-        "Logged in as: {}",
-        user["username"].as_str().unwrap_or("unknown")
-    );
+    log::info!("Logged in as: {}", user["username"].as_str().unwrap_or("unknown"));
 
     Ok(serde_json::json!({
         "access_token": access_token,
