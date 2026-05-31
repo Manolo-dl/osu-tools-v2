@@ -43,7 +43,11 @@ export class AuthService {
 
   async logout() {
     this.userStore.logout();
-    await invoke('save_osu_path', { path: '' });
+
+    const { Store } = await import('@tauri-apps/plugin-store');
+    const store = await Store.load('auth.json');
+    await store.delete('user');
+    await store.save();
   }
 
   private async persist(user: User) {
