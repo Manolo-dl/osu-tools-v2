@@ -6,8 +6,13 @@
         <span class="path">{{ osuPath.path() }}</span>
         <button (click)="selectManually()">Change</button>
     } @else if (osuPath.error()) {
-        <span class="label">osu! folder not found</span>
-        <button (click)="osuPath.detect()">Detect</button>
-        <button (click)="selectManually()">Select manually</button>
+        <div class="error-block">
+            <span class="label">osu! folder not found</span>
+            <span class="hint">Make sure osu! is running for auto-detection to work.</span>
+        </div>
+        <div class="error-actions">
+            <button (click)="osuPath.detect()">Detect</button>
+            <button (click)="selectManually()">Select manually</button>
+        </div>
     }
 </div>

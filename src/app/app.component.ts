@@ -3,7 +3,7 @@ import { RouterOutlet } from "@angular/router";
 import { HeaderComponent } from "@widgets/header"; 
 import { SidebarComponent } from "@widgets/sidebar";
 import { OsuPathComponent } from "@widgets/osu-path"; 
-import { AuthService } from "@shared/services";
+import { AuthService, ThemeService } from "@shared/services";
 
 @Component({
   selector: "app-root",
@@ -13,6 +13,8 @@ import { AuthService } from "@shared/services";
 })
 export class AppComponent implements OnInit {
   authService = inject(AuthService);
+  // inject early so the effect applies data-theme before first render
+  themeService = inject(ThemeService);
 
   ngOnInit() {
     this.authService.loadPersistedUser();

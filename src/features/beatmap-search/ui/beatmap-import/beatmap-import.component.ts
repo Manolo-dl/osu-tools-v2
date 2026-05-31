@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { BeatmapStore } from '@entities/beatmap';
 import { TxtParserService } from '@features/beatmap-search/txt-parser.service';
 
@@ -13,14 +13,22 @@ export class BeatmapImportComponent {
   private beatmapStore = inject(BeatmapStore);
   private parser = inject(TxtParserService);
 
+  isDragOver = signal(false);
+
   onFileDrop(event: DragEvent) {
     event.preventDefault();
+    this.isDragOver.set(false);
     const file = event.dataTransfer?.files[0];
     if (file) this.readFile(file);
   }
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
+    this.isDragOver.set(true);
+  }
+
+  onDragLeave() {
+    this.isDragOver.set(false);
   }
 
   onFileSelect(event: Event) {
