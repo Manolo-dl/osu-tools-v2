@@ -3,6 +3,8 @@
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background: var(--bg-base);
+  color: var(--text-primary);
 }
 
 .app-body {
