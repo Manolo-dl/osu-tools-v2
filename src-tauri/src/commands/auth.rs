@@ -10,36 +10,51 @@ fn generate_pkce() -> (String, String) {
     (code_verifier, code_challenge)
 }
 
-// Windows-only COM handler for WebView2 GetCookies callback
 #[cfg(target_os = "windows")]
 mod win_cookies {
     use std::sync::mpsc::Sender;
     use webview2_com::Microsoft::Web::WebView2::Win32::*;
-    use windows::core::{implement, HRESULT};
+    use webview2_com::GetCookiesCompletedHandler;
 
-    #[implement(ICoreWebView2GetCookiesCompletedHandler)]
-    pub struct CookiesHandler(pub Sender<Option<String>>);
+    pub unsafe fn extract_session_cookie(
+        wv: &ICoreWebView2,
+        cookie_tx: Sender<Option<String>>,
+    ) {
+        let wv2 = match wv.cast::<ICoreWebView2_2>() {
+            Ok(v) => v,
+            Err(_) => { let _ = cookie_tx.send(None); return; }
+        };
+        let cm = match wv2.CookieManager() {
+            Ok(v) => v,
+            Err(_) => { let _ = cookie_tx.send(None); return; }
+        };
 
-    impl ICoreWebView2GetCookiesCompletedHandler_Impl for CookiesHandler_Impl {
-        fn Invoke(
-            &self,
-            _error: HRESULT,
-            list: Option<&ICoreWebView2CookieList>,
-        ) -> windows::core::Result<()> {
-            let session = list.and_then(|list| unsafe {
-                let count = list.Count().unwrap_or(0);
-                (0..count).find_map(|i| {
-                    let cookie = list.GetValueAtIndex(i).ok()?;
-                    let name = cookie.Name().ok()?;
-                    if name == "osu_session" {
-                        cookie.Value().ok().map(|v| v.to_string())
-                    } else {
-                        None
-                    }
-                })
-            });
-            let _ = self.0.send(session);
-            Ok(())
+        let handler = GetCookiesCompletedHandler::create(Box::new(
+            move |_error, list: Option<ICoreWebView2CookieList>| {
+                let session = list.and_then(|list| unsafe {
+                    let mut count = 0u32;
+                    list.Count(&mut count).ok()?;
+                    (0..count).find_map(|i| {
+                        let cookie = list.GetValueAtIndex(i).ok()?;
+                        let mut name = windows_core::PWSTR::null();
+                        cookie.Name(&mut name).ok()?;
+                        let name_str = name.to_string().ok()?;
+                        if name_str == "osu_session" {
+                            let mut value = windows_core::PWSTR::null();
+                            cookie.Value(&mut value).ok()?;
+                            value.to_string().ok()
+                        } else {
+                            None
+                        }
+                    })
+                });
+                let _ = cookie_tx.send(session);
+                Ok(())
+            },
+        ));
+
+        if cm.GetCookies(windows_core::w!("https://osu.ppy.sh"), &handler).is_err() {
+            log::warn!("GetCookies call failed");
         }
     }
 }
@@ -131,29 +146,18 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
             }
             #[cfg(target_os = "windows")]
             {
-                use windows::core::Interface;
-                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_2;
-
+                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2;
+                use windows_core::Interface;
                 unsafe {
                     let wv = match webview.controller().CoreWebView2() {
                         Ok(v) => v,
                         Err(_) => { let _ = cookie_tx.send(None); return; }
                     };
-                    let wv2 = match wv.cast::<ICoreWebView2_2>() {
+                    let wv: ICoreWebView2 = match wv.cast() {
                         Ok(v) => v,
                         Err(_) => { let _ = cookie_tx.send(None); return; }
                     };
-                    let cm = match wv2.CookieManager() {
-                        Ok(v) => v,
-                        Err(_) => { let _ = cookie_tx.send(None); return; }
-                    };
-
-                    let handler: webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2GetCookiesCompletedHandler =
-                        win_cookies::CookiesHandler(cookie_tx).into();
-
-                    if cm.GetCookies(windows::core::w!("https://osu.ppy.sh"), &handler).is_err() {
-                        log::warn!("GetCookies call failed");
-                    }
+                    win_cookies::extract_session_cookie(&wv, cookie_tx);
                 }
             }
             #[cfg(not(any(target_os = "linux", target_os = "windows")))]
