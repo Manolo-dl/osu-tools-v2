@@ -33,7 +33,10 @@ pub async fn download_beatmap(
         .get(&url)
         .header("Authorization", format!("Bearer {}", token))
         .header("User-Agent", "osu-tools/1.0")
-        .header("Referer", format!("https://osu.ppy.sh/beatmapsets/{}", beatmapset_id));
+        .header(
+            "Referer",
+            format!("https://osu.ppy.sh/beatmapsets/{}", beatmapset_id),
+        );
 
     if !cookie_header.is_empty() {
         req = req.header("Cookie", cookie_header);
@@ -87,7 +90,11 @@ pub async fn download_beatmap(
     }
 
     if bytes.len() < 4 || bytes[0] != 0x50 || bytes[1] != 0x4B {
-        log::error!("Not a valid OSZ: {} bytes, first bytes: {:?}", bytes.len(), &bytes[..bytes.len().min(16)]);
+        log::error!(
+            "Not a valid OSZ: {} bytes, first bytes: {:?}",
+            bytes.len(),
+            &bytes[..bytes.len().min(16)]
+        );
         return Err("osu! response is not a valid OSZ archive".to_string());
     }
 
@@ -126,7 +133,10 @@ pub async fn download_beatmap_beatconnect(
     log::info!("Beatconnect status: {}", response.status());
 
     if !response.status().is_success() {
-        return Err(format!("beatconnect returned status: {}", response.status()));
+        return Err(format!(
+            "beatconnect returned status: {}",
+            response.status()
+        ));
     }
 
     let content_type = response
@@ -172,7 +182,11 @@ pub async fn download_beatmap_beatconnect(
 
     // OSZ files are ZIP archives — magic bytes must be PK (0x50 0x4B)
     if bytes.len() < 4 || bytes[0] != 0x50 || bytes[1] != 0x4B {
-        log::error!("Response is not a valid ZIP/OSZ (got {} bytes, first bytes: {:?})", bytes.len(), &bytes[..bytes.len().min(16)]);
+        log::error!(
+            "Response is not a valid ZIP/OSZ (got {} bytes, first bytes: {:?})",
+            bytes.len(),
+            &bytes[..bytes.len().min(16)]
+        );
         return Err("Downloaded file is not a valid OSZ archive".to_string());
     }
 
