@@ -14,6 +14,7 @@ export class AuthService {
         access_token: string;
         refresh_token: string;
         expires_at: number;
+        osu_session: string | null;
         user: {
           id: number;
           username: string;
@@ -28,6 +29,7 @@ export class AuthService {
         token: result.access_token,
         refreshToken: result.refresh_token,
         expiresAt: result.expires_at,
+        osuSession: result.osu_session ?? undefined,
       };
 
 
@@ -41,7 +43,11 @@ export class AuthService {
 
   async logout() {
     this.userStore.logout();
-    await invoke('save_osu_path', { path: '' });
+
+    const { Store } = await import('@tauri-apps/plugin-store');
+    const store = await Store.load('auth.json');
+    await store.delete('user');
+    await store.save();
   }
 
   private async persist(user: User) {

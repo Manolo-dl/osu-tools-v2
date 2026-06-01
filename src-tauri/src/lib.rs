@@ -9,6 +9,7 @@ pub fn run() {
             tauri_plugin_log::Builder::new()
                 .targets([
                     Target::new(TargetKind::Stdout),
+                    #[cfg(debug_assertions)]
                     Target::new(TargetKind::Webview),
                 ])
                 .build(),
