@@ -7,6 +7,11 @@ pub async fn download_beatmap(
     osu_session: Option<String>,
     songs_folder: String,
 ) -> Result<(), String> {
+    // Validate songs_folder is an existing directory before writing anything
+    let songs_path = std::path::Path::new(&songs_folder);
+    if !songs_path.is_dir() {
+        return Err(format!("songs folder does not exist: {}", songs_folder));
+    }
     log::info!("Downloading beatmapset {} from osu!", beatmapset_id);
 
     let client = reqwest::Client::builder()
@@ -76,6 +81,11 @@ pub async fn download_beatmap(
 
     let bytes = response.bytes().await.map_err(|e| e.to_string())?;
 
+    const MAX_SIZE: usize = 200 * 1024 * 1024; // 200 MB
+    if bytes.len() > MAX_SIZE {
+        return Err(format!("response too large: {} bytes", bytes.len()));
+    }
+
     if bytes.len() < 4 || bytes[0] != 0x50 || bytes[1] != 0x4B {
         log::error!("Not a valid OSZ: {} bytes, first bytes: {:?}", bytes.len(), &bytes[..bytes.len().min(16)]);
         return Err("osu! response is not a valid OSZ archive".to_string());
@@ -93,6 +103,10 @@ pub async fn download_beatmap_beatconnect(
     beatmapset_id: u64,
     songs_folder: String,
 ) -> Result<(), String> {
+    let songs_path = std::path::Path::new(&songs_folder);
+    if !songs_path.is_dir() {
+        return Err(format!("songs folder does not exist: {}", songs_folder));
+    }
     log::info!("Downloading beatmapset {} from beatconnect", beatmapset_id);
 
     let client = reqwest::Client::builder()
@@ -150,6 +164,11 @@ pub async fn download_beatmap_beatconnect(
     log::info!("Saving as: {}", filename);
 
     let bytes = response.bytes().await.map_err(|e| e.to_string())?;
+
+    const MAX_SIZE: usize = 200 * 1024 * 1024; // 200 MB
+    if bytes.len() > MAX_SIZE {
+        return Err(format!("response too large: {} bytes", bytes.len()));
+    }
 
     // OSZ files are ZIP archives — magic bytes must be PK (0x50 0x4B)
     if bytes.len() < 4 || bytes[0] != 0x50 || bytes[1] != 0x4B {
