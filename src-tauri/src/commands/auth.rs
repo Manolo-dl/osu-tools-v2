@@ -17,6 +17,8 @@ mod win_cookies {
     use webview2_com::GetCookiesCompletedHandler;
     use windows::core::Interface;
     use windows::core::PWSTR;
+    use std::ffi::c_void;
+    use windows::Win32::System::Com::CoTaskMemFree;
 
     pub unsafe fn extract_session_cookie(
         wv: &ICoreWebView2,
@@ -35,16 +37,31 @@ mod win_cookies {
             move |_error, list: Option<ICoreWebView2CookieList>| {
                 let session = list.and_then(|list| unsafe {
                     let mut count = 0u32;
-                    list.Count(&mut count).ok()?;
+                    // FIX: Pasamos el puntero explícito
+                    list.Count(&mut count as *mut _).ok()?;
+                    
                     (0..count).find_map(|i| {
                         let cookie = list.GetValueAtIndex(i).ok()?;
+                        
                         let mut name = PWSTR::null();
-                        cookie.Name(&mut name).ok()?;
-                        let name_str = name.to_string().ok()?;
-                        if name_str == "osu_session" {
+                        // FIX: Pasamos el puntero explícito
+                        cookie.Name(&mut name as *mut _).ok()?;
+                        let name_str = name.to_string().ok();
+                        
+                        if !name.is_null() {
+                            CoTaskMemFree(Some(name.as_ptr() as *const c_void));
+                        }
+
+                        if name_str.as_deref() == Some("osu_session") {
                             let mut value = PWSTR::null();
-                            cookie.Value(&mut value).ok()?;
-                            value.to_string().ok()
+                            // FIX: Pasamos el puntero explícito
+                            cookie.Value(&mut value as *mut _).ok()?;
+                            let value_str = value.to_string().ok();
+                            
+                            if !value.is_null() {
+                                CoTaskMemFree(Some(value.as_ptr() as *const c_void));
+                            }
+                            value_str
                         } else {
                             None
                         }

@@ -1905,7 +1905,7 @@ dependencies = [
  "js-sys",
  "log",
  "wasm-bindgen",
- "windows-core 0.62.2",
+ "windows-core 0.61.2",
 ]
 
 [[package]]
@@ -2784,7 +2784,7 @@ dependencies = [
  "urlencoding",
  "webkit2gtk",
  "webview2-com 0.39.1",
- "windows 0.61.3",
+ "windows 0.62.2",
 ]
 
 [[package]]
