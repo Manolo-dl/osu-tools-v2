@@ -1,22 +1,22 @@
-import { Component } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
-import { invoke } from "@tauri-apps/api/core";
+import { HeaderComponent } from "@widgets/header"; 
+import { SidebarComponent } from "@widgets/sidebar";
+import { OsuPathComponent } from "@widgets/osu-path"; 
+import { AuthService, ThemeService } from "@shared/services";
 
 @Component({
   selector: "app-root",
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent],
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
 })
-export class AppComponent {
-  greetingMessage = "";
+export class AppComponent implements OnInit {
+  authService = inject(AuthService);
+  // inject early so the effect applies data-theme before first render
+  themeService = inject(ThemeService);
 
-  greet(event: SubmitEvent, name: string): void {
-    event.preventDefault();
-
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    invoke<string>("greet", { name }).then((text) => {
-      this.greetingMessage = text;
-    });
+  ngOnInit() {
+    this.authService.loadPersistedUser();
   }
 }

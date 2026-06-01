@@ -1,0 +1,22 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "dev",
+  "description": "Dev capabilities",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["http://localhost:1420"]
+  },
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "shell:allow-open",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-delete",
+    "store:allow-save",
+    "store:allow-load",
+    "log:allow-log"
+  ]
+}
