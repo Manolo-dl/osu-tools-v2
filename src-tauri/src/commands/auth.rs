@@ -20,7 +20,7 @@ mod win_cookies {
         wv: &ICoreWebView2,
         cookie_tx: Sender<Option<String>>,
     ) {
-        let wv2 = match wv.cast::<ICoreWebView2_2>() {
+        let wv2 = match webview2_com::sys::Microsoft::Web::WebView2::Win32::ICoreWebView2_2::cast(wv) {
             Ok(v) => v,
             Err(_) => { let _ = cookie_tx.send(None); return; }
         };
@@ -36,11 +36,11 @@ mod win_cookies {
                     list.Count(&mut count).ok()?;
                     (0..count).find_map(|i| {
                         let cookie = list.GetValueAtIndex(i).ok()?;
-                        let mut name = windows_core::PWSTR::null();
+                        let mut name = webview2_com::sys::core::PWSTR::null();
                         cookie.Name(&mut name).ok()?;
                         let name_str = name.to_string().ok()?;
                         if name_str == "osu_session" {
-                            let mut value = windows_core::PWSTR::null();
+                            let mut value = webview2_com::sys::core::PWSTR::null();
                             cookie.Value(&mut value).ok()?;
                             value.to_string().ok()
                         } else {
@@ -53,7 +53,7 @@ mod win_cookies {
             },
         ));
 
-        if cm.GetCookies(windows_core::w!("https://osu.ppy.sh"), &handler).is_err() {
+        if cm.GetCookies(webview2_com::sys::core::w!("https://osu.ppy.sh"), &handler).is_err() {
             log::warn!("GetCookies call failed");
         }
     }
@@ -147,13 +147,12 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
             #[cfg(target_os = "windows")]
             {
                 use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2;
-                use windows_core::Interface;
                 unsafe {
                     let wv = match webview.controller().CoreWebView2() {
                         Ok(v) => v,
                         Err(_) => { let _ = cookie_tx.send(None); return; }
                     };
-                    let wv: ICoreWebView2 = match wv.cast() {
+                    let wv: ICoreWebView2 = match webview2_com::sys::Microsoft::Web::WebView2::Win32::ICoreWebView2::cast(&wv) {
                         Ok(v) => v,
                         Err(_) => { let _ = cookie_tx.send(None); return; }
                     };
