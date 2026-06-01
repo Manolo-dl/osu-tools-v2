@@ -1,5 +1,3 @@
-use tauri_plugin_shell::ShellExt;
-
 #[tauri::command]
 pub async fn get_osu_path(#[allow(unused_variables)] app: tauri::AppHandle) -> Result<String, String> {
     log::info!("Getting osu! path");
@@ -63,6 +61,8 @@ pub async fn get_osu_path(#[allow(unused_variables)] app: tauri::AppHandle) -> R
 
     #[cfg(not(target_os = "windows"))]
     {
+        use tauri_plugin_shell::ShellExt;
+
         log::info!("checking osumem");
         let sidecar = app.shell()
             .sidecar("osumem")
