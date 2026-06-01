@@ -10,74 +10,6 @@ fn generate_pkce() -> (String, String) {
     (code_verifier, code_challenge)
 }
 
-#[cfg(target_os = "windows")]
-mod win_cookies {
-    use std::sync::mpsc::Sender;
-    use webview2_com::Microsoft::Web::WebView2::Win32::*;
-    use webview2_com::GetCookiesCompletedHandler;
-    use windows::core::Interface;
-    use windows::core::PWSTR;
-    use std::ffi::c_void;
-    use windows::Win32::System::Com::CoTaskMemFree;
-
-    pub unsafe fn extract_session_cookie(
-        wv: &ICoreWebView2,
-        cookie_tx: Sender<Option<String>>,
-    ) {
-        let wv2 = match wv.cast::<ICoreWebView2_2>() {
-            Ok(v) => v,
-            Err(_) => { let _ = cookie_tx.send(None); return; }
-        };
-        let cm = match wv2.CookieManager() {
-            Ok(v) => v,
-            Err(_) => { let _ = cookie_tx.send(None); return; }
-        };
-
-        let handler = GetCookiesCompletedHandler::create(Box::new(
-            move |_error, list: Option<ICoreWebView2CookieList>| {
-                let session = list.and_then(|list| unsafe {
-                    let mut count = 0u32;
-                    // FIX: Pasamos el puntero explícito
-                    list.Count(&mut count as *mut _).ok()?;
-                    
-                    (0..count).find_map(|i| {
-                        let cookie = list.GetValueAtIndex(i).ok()?;
-                        
-                        let mut name = PWSTR::null();
-                        // FIX: Pasamos el puntero explícito
-                        cookie.Name(&mut name as *mut _).ok()?;
-                        let name_str = name.to_string().ok();
-                        
-                        if !name.is_null() {
-                            CoTaskMemFree(Some(name.as_ptr() as *const c_void));
-                        }
-
-                        if name_str.as_deref() == Some("osu_session") {
-                            let mut value = PWSTR::null();
-                            // FIX: Pasamos el puntero explícito
-                            cookie.Value(&mut value as *mut _).ok()?;
-                            let value_str = value.to_string().ok();
-                            
-                            if !value.is_null() {
-                                CoTaskMemFree(Some(value.as_ptr() as *const c_void));
-                            }
-                            value_str
-                        } else {
-                            None
-                        }
-                    })
-                });
-                let _ = cookie_tx.send(session);
-                Ok(())
-            },
-        ));
-
-        if cm.GetCookies(windows::core::w!("https://osu.ppy.sh"), &handler).is_err() {
-            log::warn!("GetCookies call failed");
-        }
-    }
-}
-
 #[tauri::command]
 pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
     let client_id = env!("OSU_CLIENT_ID");
@@ -163,25 +95,9 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
                     None => { let _ = cookie_tx.send(None); }
                 }
             }
-            #[cfg(target_os = "windows")]
+            #[cfg(not(target_os = "linux"))]
             {
-                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2;
-                use windows::core::Interface;
-                unsafe {
-                    let wv = match webview.controller().CoreWebView2() {
-                        Ok(v) => v,
-                        Err(_) => { let _ = cookie_tx.send(None); return; }
-                    };
-                    let wv: ICoreWebView2 = match wv.cast() {
-                        Ok(v) => v,
-                        Err(_) => { let _ = cookie_tx.send(None); return; }
-                    };
-                    win_cookies::extract_session_cookie(&wv, cookie_tx);
-                }
-            }
-            #[cfg(not(any(target_os = "linux", target_os = "windows")))]
-            {
-                log::warn!("Cookie extraction not implemented for this platform");
+                log::info!("Cookie extraction not available on this platform, falling back to BeatConnect");
                 let _ = cookie_tx.send(None);
             }
         }
