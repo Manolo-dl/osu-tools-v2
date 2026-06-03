@@ -1,1 +1,6 @@
-<p>osu-cookie-input works!</p>,
+<form [formRoot]="osuCookieForm">
+    <app-stateful-input
+    [label]="'Osu Cookie'"
+    [id]="'osuCookie'"
+    [formField]="osuCookieForm.cookie" />
+</form>

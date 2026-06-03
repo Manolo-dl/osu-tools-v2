@@ -19,4 +19,7 @@ export class StatefulInputComponent {
   hidden = input<boolean>(false);
   invalid = input<boolean>(false);
   errors = input<readonly WithOptionalFieldTree<ValidationError>[]>([]);
+
+  label = input<string>('');
+  id = input<string>('');
 }
