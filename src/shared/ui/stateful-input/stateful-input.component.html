@@ -8,12 +8,12 @@
             (input)="value.set($event.target.value)"
             [disabled]="disabled()"
             [readonly]="readonly()"
-            [class.invalid]="invalid()"
-            [attr.aria-invalid]="invalid()"
+            [class.invalid]="invalid() && touched()"
+            [attr.aria-invalid]="invalid() && touched()"
             (blur)="touched.set(true)"
         />
 
-        @if (invalid()) {
+        @if (invalid() && touched()) {
             <div class="error-messages" role="alert">
                 @for (error of errors(); track error) {
                     <span class="error">{{ error.message }}</span>

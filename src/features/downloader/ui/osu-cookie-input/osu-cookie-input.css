@@ -1,3 +1,28 @@
 :host {
   display: block;
 }
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+button[type="submit"] {
+  align-self: flex-start;
+  padding: 9px 20px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  transition: background 0.15s, transform 0.1s;
+}
+
+button[type="submit"]:hover {
+  background: var(--accent-hover);
+}
+
+button[type="submit"]:active {
+  transform: scale(0.97);
+}
