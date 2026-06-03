@@ -1,6 +1,6 @@
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+use sha2::{Digest, Sha256};
 use std::sync::{Arc, Mutex};
-use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-use sha2::{Sha256, Digest};
 
 fn generate_pkce() -> (String, String) {
     let bytes: [u8; 32] = rand::random();
@@ -35,7 +35,9 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         &app,
         "oauth",
         tauri::WebviewUrl::External(
-            auth_url.parse().map_err(|e: url::ParseError| e.to_string())?,
+            auth_url
+                .parse()
+                .map_err(|e: url::ParseError| e.to_string())?,
         ),
     )
     .title("Login with osu!")
@@ -75,36 +77,47 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         move |webview| {
             #[cfg(target_os = "linux")]
             {
-                use webkit2gtk::{WebViewExt, WebContextExt, CookieManagerExt};
+                use webkit2gtk::{CookieManagerExt, WebContextExt, WebViewExt};
                 let wkv = webview.inner();
                 match wkv.web_context().and_then(|ctx| ctx.cookie_manager()) {
                     Some(cm) => {
-                        cm.cookies("https://osu.ppy.sh", None::<&webkit2gtk::gio::Cancellable>, move |result| {
-                            let session = result.ok().and_then(|mut cookies| {
-                                for c in cookies.iter_mut() {
-                                    if c.name().as_deref() == Some("osu_session") {
-                                        return c.value().map(|v| v.to_string());
+                        cm.cookies(
+                            "https://osu.ppy.sh",
+                            None::<&webkit2gtk::gio::Cancellable>,
+                            move |result| {
+                                let session = result.ok().and_then(|mut cookies| {
+                                    for c in cookies.iter_mut() {
+                                        if c.name().as_deref() == Some("osu_session") {
+                                            return c.value().map(|v| v.to_string());
+                                        }
                                     }
-                                }
-                                None
-                            });
-                            log::info!("osu_session found: {}", session.is_some());
-                            let _ = cookie_tx.send(session);
-                        });
+                                    None
+                                });
+                                log::info!("osu_session found: {}", session.is_some());
+                                let _ = cookie_tx.send(session);
+                            },
+                        );
                     }
-                    None => { let _ = cookie_tx.send(None); }
+                    None => {
+                        let _ = cookie_tx.send(None);
+                    }
                 }
             }
             #[cfg(not(target_os = "linux"))]
             {
-                log::info!("Cookie extraction not available on this platform, falling back to BeatConnect");
+                log::info!(
+                    "Cookie extraction not available on this platform, falling back to BeatConnect"
+                );
                 let _ = cookie_tx.send(None);
             }
         }
     });
 
     let osu_session = tokio::task::spawn_blocking(move || {
-        cookie_rx.recv_timeout(std::time::Duration::from_secs(3)).ok().flatten()
+        cookie_rx
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .ok()
+            .flatten()
     })
     .await
     .unwrap_or(None);
@@ -158,7 +171,10 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         .await
         .map_err(|e| e.to_string())?;
 
-    log::info!("Logged in as: {}", user["username"].as_str().unwrap_or("unknown"));
+    log::info!(
+        "Logged in as: {}",
+        user["username"].as_str().unwrap_or("unknown")
+    );
 
     Ok(serde_json::json!({
         "access_token": access_token,
@@ -170,5 +186,40 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
             "username": user["username"],
             "avatar_url": user["avatar_url"],
         }
+    }))
+}
+
+#[tauri::command]
+pub async fn refresh_oauth_token(refresh_token: String) -> Result<serde_json::Value, String> {
+    let client_id = env!("OSU_CLIENT_ID");
+    let client_secret = env!("OSU_CLIENT_SECRET");
+
+    let client = reqwest::Client::new();
+    let response = client
+        .post("https://osu.ppy.sh/oauth/token")
+        .json(&serde_json::json!({
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "scope": "public identify",
+        }))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let expires_in = response["expires_in"].as_u64().unwrap_or(86400);
+    let expires_at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64 + (expires_in * 1000);
+
+    Ok(serde_json::json!({
+        "access_token": response["access_token"],
+        "refresh_token": response["refresh_token"],
+        "expires_at": expires_at,
     }))
 }

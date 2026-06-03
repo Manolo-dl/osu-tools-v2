@@ -26,15 +26,17 @@ export class AuthService {
         id: result.user.id,
         username: result.user.username,
         avatarUrl: result.user.avatar_url,
-        token: result.access_token,
-        refreshToken: result.refresh_token,
-        expiresAt: result.expires_at,
         osuSession: result.osu_session ?? undefined,
+        accessToken: result.access_token,
+        refreshToken: result.refresh_token,
+        tokenExpiresAt: result.expires_at,
       };
 
 
       this.userStore.setUser(user);
       await this.persist(user);
+
+      console.log('Login successful:', user);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -68,6 +70,45 @@ export class AuthService {
       }
     } catch (error) {
       console.error('Failed to load persisted user:', error);
+    }
+  }
+
+  async getValidToken(): Promise<string | null> {
+    const user = this.userStore.user();
+    if (!user?.accessToken) return null;
+
+    if (user.tokenExpiresAt && Date.now() > user.tokenExpiresAt) {
+      return await this.refreshToken();
+    }
+
+    return user.accessToken;
+  }
+
+  private async refreshToken(): Promise<string | null> {
+    try {
+      const user = this.userStore.user();
+      if (!user?.refreshToken) return null;
+
+      const token = await invoke<{
+        access_token: string;
+        refresh_token: string;
+        expires_at: number;
+      }>('refresh_oauth_token', {
+        refreshToken: user.refreshToken,
+      });
+
+      this.userStore.updateUser({
+        accessToken: token.access_token,
+        refreshToken: token.refresh_token,
+        tokenExpiresAt: token.expires_at,
+      });
+
+
+      await this.persist(user);
+      return token.access_token;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return null;
     }
   }
 
