@@ -24,12 +24,14 @@ export class OsuCookieInput {
     {
       submission: {
         action: async (field) => {
+          const previous = this.userStore.user()?.osuSession ?? '';
           try {
             await this.userStore.updateUser({ osuSession: field().value().osuSession });
             field().value.set({ osuSession: '' });
             field().reset();
             return null;
           } catch {
+            if (previous) field().value.set({ osuSession: previous });
             return { kind: 'error', message: 'Failed to update cookie' };
           }
         },
