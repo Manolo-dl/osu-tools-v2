@@ -3,4 +3,5 @@ export interface User {
     username: string;
     avatarUrl: string;
     osuSession?: string;
+    osuSessionExpiry?: string;
 }

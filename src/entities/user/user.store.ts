@@ -1,5 +1,7 @@
+import { effect } from "@angular/core";
 import { User } from "./user.model";
-import { patchState, signalStore, withMethods, withState } from "@ngrx/signals";
+import { patchState, signalStore, withHooks, withMethods, withState } from "@ngrx/signals";
+import { Store } from '@tauri-apps/plugin-store';
 
 interface UserState {
     user: User | null;
@@ -39,5 +41,23 @@ export const UserStore = signalStore(
             });
         }
     })),
+
+    withHooks({
+        onInit(store) {
+            effect(async () => {
+                const user = store.user();
+                if (!user?.osuSessionExpiry) return;
+
+                const expiryDate = new Date(user.osuSessionExpiry);
+                if (expiryDate < new Date()) {
+                    patchState(store, { user: { ...user, osuSession: undefined, osuSessionExpiry: undefined }});
+
+                    const tauriStore = await Store.load('auth.json');
+                    await tauriStore.set('user', store.user());
+                    await tauriStore.save();
+                }
+            });
+        }
+    })
 
 )

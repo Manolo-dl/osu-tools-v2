@@ -22,4 +22,6 @@ export class StatefulInputComponent {
 
   label = input<string>('');
   id = input<string>('');
+  type = input<string>('text');
+  placeholder = input<string>('');
 }

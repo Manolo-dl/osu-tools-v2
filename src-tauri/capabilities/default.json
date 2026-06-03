@@ -18,7 +18,14 @@
     "core:app:allow-version",
     "os:default",
     "http:default",
+    {
+      "identifier": "http:allow-fetch",
+      "allow": [
+        { "url": "https://osu.ppy.sh/*" }
+      ]
+    },
     "fs:default",
-    "fs:allow-home-write-recursive"
+    "fs:allow-read-file",
+    "fs:allow-home-read-recursive"
   ]
 }

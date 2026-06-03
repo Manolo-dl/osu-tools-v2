@@ -3,7 +3,8 @@
 @if (!hidden()) {
     <div class="input-container">
         <input 
-            type="text"
+            [type]="type()"
+            [placeholder]="placeholder()"
             [value]="value()"
             (input)="value.set($event.target.value)"
             [disabled]="disabled()"

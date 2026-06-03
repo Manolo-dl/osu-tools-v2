@@ -49,8 +49,17 @@ form {
   gap: 16px;
 }
 
+.cookie-expiry {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+}
+
 button[type="submit"] {
-  align-self: flex-start;
   padding: 9px 20px;
   background: var(--accent);
   color: #fff;
@@ -65,5 +74,24 @@ button[type="submit"]:hover {
 }
 
 button[type="submit"]:active {
+  transform: scale(0.97);
+}
+
+.btn-clear {
+  padding: 9px 20px;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-clear:hover {
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+.btn-clear:active {
   transform: scale(0.97);
 }
