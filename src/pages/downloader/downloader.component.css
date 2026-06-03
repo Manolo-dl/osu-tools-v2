@@ -5,14 +5,14 @@
 .downloader-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 32px;
   max-width: 720px;
 }
 
 .page-header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .page-title {
@@ -25,14 +25,20 @@
 .page-desc {
   font-size: 13px;
   color: var(--text-secondary);
-  line-height: 1.6;
 }
 
-.page-desc code {
-  font-family: monospace;
-  font-size: 12px;
-  color: var(--text-primary);
-  background: var(--bg-overlay);
-  padding: 1px 5px;
-  border-radius: 4px;
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
 }

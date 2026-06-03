@@ -1,14 +1,25 @@
 <div class="downloader-page">
 
-  <div class="page-header">
+  <header class="page-header">
     <h1 class="page-title">Downloader</h1>
-    <p class="page-desc">Drop a <code>.txt</code> file with one beatmap set ID per line. Downloads are fetched from BeatConnect and saved directly to your Songs folder.</p>
-  </div>
-  <app-osu-cookie-input />
+    <p class="page-desc">Download beatmap sets directly to your Songs folder.</p>
+  </header>
+
+  <section class="section">
+    <h2 class="section-title">Session</h2>
+    <app-osu-cookie-input />
+  </section>
 
   @if (userStore.user()?.osuSession) {
-    <app-beatmap-import />
-    <app-beatmap-queue />
+    <section class="section">
+      <h2 class="section-title">Import</h2>
+      <app-beatmap-import />
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Download Queue</h2>
+      <app-beatmap-queue />
+    </section>
   }
 
 </div>
