@@ -22,6 +22,19 @@
     "store:allow-save",
     "store:allow-load",
     "log:allow-log",
-    "os:default"
+    "os:default",
+    "http:default",
+    "fs:default",
+    {
+      "identifier": "http:allow-fetch",
+      "allow": [
+        { "url": "https://osu.ppy.sh/**" }
+      ]
+    },
+    "fs:allow-home-write-recursive",
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "$HOME/**" }]
+    }
   ]
 }

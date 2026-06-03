@@ -25,18 +25,18 @@ export const UserStore = signalStore(
         setLoading(isLoading: boolean) {
             patchState(store, { isLoading });
         },
-
-        updateToken(token: string, expiresAt: number) {
-            const user = store.user();
-            if (!user) return;
-
-            patchState(store, {
-                user: { ...user, token, expiresAt }
-            });
-        },
         
         logout() {
             patchState(store, { user: null, isLoggedIn: false });
+        },
+
+        updateUser(user: Partial<User>) {
+            const currentUser = store.user();
+            if (!currentUser) return;
+
+            patchState(store, {
+                user: { ...currentUser, ...user }
+            });
         }
     })),
 

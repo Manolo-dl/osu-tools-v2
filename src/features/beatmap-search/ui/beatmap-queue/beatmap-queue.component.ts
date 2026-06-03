@@ -11,7 +11,7 @@ import { BeatmapDownloadService } from '@features/beatmap-search';
 })
 export class BeatmapQueueComponent {
   readonly beatmapStore = inject(BeatmapStore);
-  private downloader = inject(BeatmapDownloadService);
+  readonly downloader = inject(BeatmapDownloadService);
 
   get pending() {
     return this.beatmapStore.queue().filter(i => i.status === 'pending').length;
@@ -20,7 +20,7 @@ export class BeatmapQueueComponent {
   get done() {
     return this.beatmapStore.queue().filter(i => i.status === 'done').length;
   }
-
+ 
   get failed() {
     return this.beatmapStore.queue().filter(i => i.status === 'failed').length;
   }
@@ -30,7 +30,7 @@ export class BeatmapQueueComponent {
   }
 
   pause() {
-    this.downloader.pause();
+    this.beatmapStore.setDownloading(false);
   }
 
   clearQueue() {

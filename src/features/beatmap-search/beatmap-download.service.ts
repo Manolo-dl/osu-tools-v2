@@ -2,26 +2,28 @@ import { inject, Injectable } from '@angular/core';
 import { BeatmapStore, DownloadItem } from '@entities/beatmap';
 import { UserStore } from '@entities/user';
 import { OsuPathService } from '@shared/services';
+import { fetch } from '@tauri-apps/plugin-http';
 import { invoke } from '@tauri-apps/api/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BeatmapDownloadService {
+  private osuPath = inject(OsuPathService);
   private beatmapStore = inject(BeatmapStore);
   private userStore = inject(UserStore);
-  private osuPath = inject(OsuPathService);
 
   async startDownload() {
     if (this.beatmapStore.isDownloading()) return;
 
     this.beatmapStore.setDownloading(true);
 
-    const queue = this.beatmapStore.queue();
-    const pending = queue.filter(i => i.status === 'pending' || i.status === 'failed');
+    const pending = this.beatmapStore.queue()
+      .filter(i => i.status === 'pending');
 
     for (const item of pending) {
       await this.downloadOne(item);
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
 
     this.beatmapStore.setDownloading(false);
@@ -37,35 +39,47 @@ export class BeatmapDownloadService {
     }
 
     const songsFolder = `${osuPath}/Songs`;
-    const user = this.userStore.user();
+    const osuSession = this.userStore.user()?.osuSession;
 
-    // Try official osu! first when logged in
-    if (user?.token) {
+    if (osuSession) {
       try {
-        await invoke('download_beatmap', {
-          beatmapsetId: item.beatmapSetId,
-          token: user.token,
-          osuSession: user.osuSession ?? null,
-          songsFolder,
-        });
+        await this.downloadFromOsu(item.beatmapSetId, osuSession, songsFolder);
         this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
         return;
       } catch (error) {
-        console.warn(`osu! download failed for ${item.beatmapSetId}, falling back to BeatConnect:`, error);
+        console.log(`Failed to download beatmap set ${item.beatmapSetId} from osu! website:`, error);
+        this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
       }
-    }
-
-    // Fall back to BeatConnect
-    try {
-      await invoke('download_beatmap_beatconnect', { beatmapsetId: item.beatmapSetId, songsFolder });
-      this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
-    } catch (error) {
-      console.error(`BeatConnect download failed for ${item.beatmapSetId}:`, error);
-      this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
     }
   }
 
-  pause() {
-    this.beatmapStore.setDownloading(false);
+  private async downloadFromOsu(beatmapSetId: number, osuSession: string, songsFolder: string) {
+    const response = await fetch(`https://osu.ppy.sh/beatmapsets/${beatmapSetId}/download`, {
+      method: 'GET',
+      headers: {
+        'Cookie': `osu_session=${osuSession}`,
+        'Referer': `https://osu.ppy.sh/beatmapsets/${beatmapSetId}`,
+      },
+      redirect: 'follow',
+    });
+
+    if (!response.ok) throw new Error(`Failed to download beatmap set ${beatmapSetId}: ${response.statusText}`);
+
+    const bytes = new Uint8Array(await response.arrayBuffer());
+
+    const MAX_SIZE = 200 * 1024 * 1024;
+    if (bytes.length > MAX_SIZE) throw new Error(`Beatmap set ${beatmapSetId} is too large to download (${(bytes.length / (1024 * 1024)).toFixed(2)} MB)`);
+
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    const filenameMatch = disposition.match(/filename="?([^";\n]+)"?/);
+    const filename = filenameMatch
+    ? filenameMatch[1].replace(/[/\\\0]/g, '_')
+    : `${beatmapSetId}.osz`;
+
+    await this.saveFile(songsFolder, filename, bytes);
+  }
+
+  private async saveFile(songsFolder: string, filename: string, bytes: Uint8Array) {
+    await invoke('write_beatmap_file', { path: `${songsFolder}/${filename}`, bytes: Array.from(bytes) });
   }
 }

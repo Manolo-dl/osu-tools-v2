@@ -1,22 +1,40 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { form, maxLength, minLength, pattern, required } from '@angular/forms/signals';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { form, maxLength, minLength, required, FormRoot, FormField } from '@angular/forms/signals';
+import { UserStore } from '@entities/user';
+import { StatefulInputComponent } from "@shared/ui";
 
 @Component({
   selector: 'app-osu-cookie-input',
-  imports: [],
+  imports: [FormRoot, StatefulInputComponent, FormField],
   templateUrl: './osu-cookie-input.html',
   styleUrl: './osu-cookie-input.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OsuCookieInput {
 
+  readonly userStore = inject(UserStore);
+
   readonly osuCookieForm = form(
-    signal({ cookie: '' }),
+    signal({ osuSession: '' }),
     (schemaPath) => {
-      required(schemaPath.cookie, { message: 'Osu! cookie is required' });
-      pattern(schemaPath.cookie, /^[A-Za-z0-9+/=_-]+$/, { message: 'Invalid cookie format' });
-      minLength(schemaPath.cookie, 300, { message: 'Cookie is too short' });
-      maxLength(schemaPath.cookie, 500, { message: 'Cookie is too long' });
+      required(schemaPath.osuSession, { message: 'Osu! cookie is required' });
+      minLength(schemaPath.osuSession, 300, { message: 'Cookie is too short' });
+      maxLength(schemaPath.osuSession, 500, { message: 'Cookie is too long' });
+    },
+    {
+      submission: {
+        action: async (field) => {
+          try {
+            await this.userStore.updateUser({ osuSession: field().value().osuSession });
+            field().value.set({ osuSession: '' });
+            field().reset();
+            return null;
+          } catch {
+            return { kind: 'error', message: 'Failed to update cookie' };
+          }
+        },
+        ignoreValidators: 'none',
+      }
     }
   );
 }

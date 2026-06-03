@@ -16,6 +16,9 @@
     "log:allow-log",
     "core:window:allow-start-dragging",
     "core:app:allow-version",
-    "os:default"
+    "os:default",
+    "http:default",
+    "fs:default",
+    "fs:allow-home-write-recursive"
   ]
 }

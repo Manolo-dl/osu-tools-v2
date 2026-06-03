@@ -26,9 +26,6 @@ export class AuthService {
         id: result.user.id,
         username: result.user.username,
         avatarUrl: result.user.avatar_url,
-        token: result.access_token,
-        refreshToken: result.refresh_token,
-        expiresAt: result.expires_at,
         osuSession: result.osu_session ?? undefined,
       };
 

@@ -5,6 +5,8 @@ mod commands;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
         .plugin(
             tauri_plugin_log::Builder::new()
@@ -23,8 +25,7 @@ pub fn run() {
             commands::osu_path::get_osu_path,
             commands::osu_path::save_osu_path,
             commands::auth::start_oauth,
-            commands::download::download_beatmap,
-            commands::download::download_beatmap_beatconnect,
+            commands::download::write_beatmap_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
