@@ -1,0 +1,22 @@
+@if (!hidden()) {
+    <div class="input-container">
+        <input 
+            type="text"
+            [value]="value()"
+            (input)="value.set($event.target.value)"
+            [disabled]="disabled()"
+            [readonly]="readonly()"
+            [class.invalid]="invalid()"
+            [attr.aria-invalid]="invalid()"
+            (blur)="touched.set(true)"
+        />
+
+        @if (invalid()) {
+            <div class="error-messages" role="alert">
+                @for (error of errors(); track error) {
+                    <span class="error">{{ error.message }}</span>
+                }
+            </div>
+        }
+    </div>
+}
