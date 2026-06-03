@@ -25,16 +25,7 @@
     "os:default",
     "http:default",
     "fs:default",
-    {
-      "identifier": "http:allow-fetch",
-      "allow": [
-        { "url": "https://osu.ppy.sh/**" }
-      ]
-    },
-    "fs:allow-home-write-recursive",
-    {
-      "identifier": "fs:allow-write-file",
-      "allow": [{ "path": "$HOME/**" }]
-    }
+    "fs:allow-read-file",
+    "fs:allow-home-read-recursive"
   ]
 }
