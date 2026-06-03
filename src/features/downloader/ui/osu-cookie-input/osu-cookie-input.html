@@ -13,6 +13,13 @@
   </span>
 </div>
 
+@if (platformStore.isWindows()) {
+  <div class="note note-warning">
+    <span class="note-icon">⚠</span>
+    <span>On Windows, the <strong>osu_session</strong> cookie is not captured automatically during login. You'll need to copy it manually from your browser.</span>
+  </div>
+}
+
 <form [formRoot]="osuCookieForm">
   <app-stateful-input
     [label]="'Osu Session Cookie'"
@@ -21,7 +28,6 @@
     [placeholder]="'Enter your osu_session cookie'" />
 
   <app-stateful-input
-    [type]="'date'"
     [label]="'Expiry Date'"
     [id]="'osuExpiry'"
     [formField]="osuCookieForm.osuSessionExpiry"

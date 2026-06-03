@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { form, maxLength, minLength, required, FormRoot, FormField } from '@angular/forms/signals';
 import { UserStore } from '@entities/user';
 import { StatefulInputComponent } from "@shared/ui";
+import { PlatformStore } from '@shared/stores';
 
 @Component({
   selector: 'app-osu-cookie-input',
@@ -13,6 +14,7 @@ import { StatefulInputComponent } from "@shared/ui";
 export class OsuCookieInput {
 
   readonly userStore = inject(UserStore);
+  readonly platformStore = inject(PlatformStore);
 
   readonly osuCookieForm = form(
     signal({ osuSession: '', osuSessionExpiry: '' }),
@@ -27,7 +29,15 @@ export class OsuCookieInput {
           const previous = this.userStore.user()?.osuSession ?? '';
           const previousExpiry = this.userStore.user()?.osuSessionExpiry ?? '';
           try {
-            const expiry = field().value().osuSessionExpiry.trim() || undefined;
+            const expiryText = field().value().osuSessionExpiry.trim();
+            let expiry: string | undefined;
+            if (expiryText) {
+              const parsed = new Date(expiryText);
+              if (isNaN(parsed.getTime())) {
+                return { kind: 'error', message: 'Invalid expiry date format' };
+              }
+              expiry = parsed.toISOString();
+            }
             this.userStore.updateUser({ osuSession: field().value().osuSession, osuSessionExpiry: expiry });
             field().value.set({ osuSession: '', osuSessionExpiry: '' });
             field().reset();
