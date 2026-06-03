@@ -25,6 +25,7 @@ pub fn run() {
             commands::osu_path::get_osu_path,
             commands::osu_path::save_osu_path,
             commands::auth::start_oauth,
+            commands::auth::refresh_oauth_token,
             commands::download::write_beatmap_file,
         ])
         .run(tauri::generate_context!())

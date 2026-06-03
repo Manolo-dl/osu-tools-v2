@@ -188,3 +188,38 @@ pub async fn start_oauth(app: tauri::AppHandle) -> Result<serde_json::Value, Str
         }
     }))
 }
+
+#[tauri::command]
+pub async fn refresh_oauth_token(refresh_token: String) -> Result<serde_json::Value, String> {
+    let client_id = env!("OSU_CLIENT_ID");
+    let client_secret = env!("OSU_CLIENT_SECRET");
+
+    let client = reqwest::Client::new();
+    let response = client
+        .post("https://osu.ppy.sh/oauth/token")
+        .json(&serde_json::json!({
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "scope": "public identify",
+        }))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let expires_in = response["expires_in"].as_u64().unwrap_or(86400);
+    let expires_at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64 + (expires_in * 1000);
+
+    Ok(serde_json::json!({
+        "access_token": response["access_token"],
+        "refresh_token": response["refresh_token"],
+        "expires_at": expires_at,
+    }))
+}

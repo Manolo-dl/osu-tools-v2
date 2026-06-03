@@ -4,4 +4,7 @@ export interface User {
     avatarUrl: string;
     osuSession?: string;
     osuSessionExpiry?: string;
+    accessToken?: string;
+    refreshToken?: string;
+    tokenExpiresAt?: number;
 }
