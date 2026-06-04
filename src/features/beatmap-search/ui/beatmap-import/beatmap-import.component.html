@@ -1,9 +1,6 @@
 <div
   class="dropzone"
   [class.drag-over]="isDragOver()"
-  (dragover)="onDragOver($event)"
-  (dragleave)="onDragLeave()"
-  (drop)="onFileDrop($event)"
 >
   <span class="dropzone-icon">↓</span>
   <span class="dropzone-label">Drop a <code>.txt</code> file here</span>

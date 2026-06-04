@@ -2,9 +2,13 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "dev",
   "description": "Dev capabilities",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "remote": {
-    "urls": ["http://localhost:1420"]
+    "urls": [
+      "http://localhost:1420"
+    ]
   },
   "permissions": [
     "core:default",
@@ -17,6 +21,17 @@
     "store:allow-delete",
     "store:allow-save",
     "store:allow-load",
-    "log:allow-log"
+    "log:allow-log",
+    "os:default",
+    "http:default",
+    {
+      "identifier": "http:allow-fetch",
+      "allow": [
+        { "url": "https://osu.ppy.sh/*" }
+      ]
+    },
+    "fs:default",
+    "fs:allow-read-file",
+    "fs:allow-home-read-recursive"
   ]
 }

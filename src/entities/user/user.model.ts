@@ -2,8 +2,9 @@ export interface User {
     id: number;
     username: string;
     avatarUrl: string;
-    token: string;
-    refreshToken: string;
-    expiresAt: number;
     osuSession?: string;
+    osuSessionExpiry?: string;
+    accessToken?: string;
+    refreshToken?: string;
+    tokenExpiresAt?: number;
 }

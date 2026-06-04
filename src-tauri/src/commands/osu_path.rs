@@ -1,5 +1,7 @@
 #[tauri::command]
-pub async fn get_osu_path(#[allow(unused_variables)] app: tauri::AppHandle) -> Result<String, String> {
+pub async fn get_osu_path(
+    #[allow(unused_variables)] app: tauri::AppHandle,
+) -> Result<String, String> {
     log::info!("Getting osu! path");
 
     if let Some(home) = dirs::home_dir() {
@@ -64,12 +66,15 @@ pub async fn get_osu_path(#[allow(unused_variables)] app: tauri::AppHandle) -> R
         use tauri_plugin_shell::ShellExt;
 
         log::info!("checking osumem");
-        let sidecar = app.shell()
-            .sidecar("osumem")
-            .map_err(|e| { log::error!("sidecar error: {}", e); e.to_string() })?;
+        let sidecar = app.shell().sidecar("osumem").map_err(|e| {
+            log::error!("sidecar error: {}", e);
+            e.to_string()
+        })?;
 
-        let (mut rx, child) = sidecar.spawn()
-            .map_err(|e| { log::error!("osumem spawn error: {}", e); e.to_string() })?;
+        let (mut rx, child) = sidecar.spawn().map_err(|e| {
+            log::error!("osumem spawn error: {}", e);
+            e.to_string()
+        })?;
 
         let found = tokio::time::timeout(std::time::Duration::from_secs(10), async {
             while let Some(event) = rx.recv().await {
@@ -90,7 +95,8 @@ pub async fn get_osu_path(#[allow(unused_variables)] app: tauri::AppHandle) -> R
                 }
             }
             None
-        }).await;
+        })
+        .await;
 
         let _ = child.kill();
 
