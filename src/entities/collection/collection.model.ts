@@ -1,6 +1,6 @@
 export interface Collection {
     name: string;
-    beatmapMd5s: string[];
+    md5s: string[];
 }
 
 export interface CollectionBeatmap {
@@ -10,7 +10,7 @@ export interface CollectionBeatmap {
     artist?: string;
 }
 
-export interface CollectionExport {
-    collection: Collection;
+export interface CollectionWithBeatmaps {
+    name: string;
     beatmaps: CollectionBeatmap[];
 }

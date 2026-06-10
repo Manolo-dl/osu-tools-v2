@@ -27,6 +27,8 @@ pub fn run() {
             commands::auth::start_oauth,
             commands::auth::refresh_oauth_token,
             commands::download::write_beatmap_file,
+            commands::collections::read_osu_collections,
+            commands::collections::read_osu_db,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
