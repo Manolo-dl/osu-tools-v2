@@ -104,6 +104,7 @@ export class CollectionExportService {
 
     if (path) {
       await invoke('write_text_file', { path, content });
+      this.collectionStore.clearSelection();
     }
   }
 }
