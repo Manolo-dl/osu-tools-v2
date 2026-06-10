@@ -1,5 +1,6 @@
 <div class="collection-list">
   <div class="list-header">
+    <span class="section-label">Collections</span>
     <label class="select-all">
       <input
         type="checkbox"
@@ -31,6 +32,7 @@
             (change)="toggleSelection(collection.name)"
           />
           <span class="name">{{ collection.name }}</span>
+          <span class="count">{{ collection.beatmaps.length }}</span>
         </li>
       }
     </ul>

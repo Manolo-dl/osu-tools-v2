@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CollectionStore } from '@entities/collection';
 import { CollectionExportService } from '@features/collection-exporter/services/collection-export.service';
 
@@ -9,17 +9,10 @@ import { CollectionExportService } from '@features/collection-exporter/services/
   styleUrl: './collection-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CollectionListComponent implements OnInit {
+export class CollectionListComponent {
   
   readonly collectionStore = inject(CollectionStore);
   readonly exporterService = inject(CollectionExportService);
-
-  ngOnInit() {
-    console.log('Loading collections...');
-    this.exporterService.loadCollections()
-    .then(() => console.log('Collections loaded'))
-    .catch(err => console.error('Failed to load collections:', err));
-  }
 
   readonly allSelected = computed(() => {
     const collections = this.collectionStore.collections();
