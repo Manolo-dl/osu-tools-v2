@@ -62,3 +62,8 @@ pub fn read_osu_db(osu_path: String) -> Result<Vec<OsuBeatmap>, String> {
 
     Ok(result)
 }
+
+#[tauri::command]
+pub async fn write_text_file(path: String, content: String) -> Result<(), String> {
+    std::fs::write(&path, content.as_bytes()).map_err(|e| e.to_string())
+}

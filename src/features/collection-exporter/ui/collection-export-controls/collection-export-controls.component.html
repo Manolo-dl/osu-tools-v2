@@ -1,0 +1,24 @@
+<div class="export-controls">
+  <div class="format-selector">
+    <button
+      [class.active]="format() === 'urls'"
+      (click)="setFormat('urls')"
+    >URLs</button>
+    <button
+      [class.active]="format() === 'ids'"
+      (click)="setFormat('ids')"
+    >IDs only</button>
+    <button
+      [class.active]="format() === 'with-headers'"
+      (click)="setFormat('with-headers')"
+    >With headers</button>
+  </div>
+
+  <button
+    class="export-btn"
+    [disabled]="collectionStore.selectedCollections().length === 0"
+    (click)="export()"
+  >
+    Export {{ collectionStore.selectedCollections().length }} collections
+  </button>
+</div>

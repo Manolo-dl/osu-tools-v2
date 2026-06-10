@@ -38,10 +38,6 @@ export class CollectionExportService {
         invoke<RustBeatmap[]>('read_osu_db', { osuPath }),
       ]);
 
-      console.log('Collections:', collections.length);
-      console.log('Beatmaps:', beatmaps.length);
-      console.log('First beatmap:', beatmaps[0]);
-
       const beatmapByMd5 = new Map(
         beatmaps.map(b => [b.md5, b])
       );
@@ -52,9 +48,6 @@ export class CollectionExportService {
           .map(md5 => {
             const beatmap = beatmapByMd5.get(md5);
             if (!beatmap) return null;
-
-            console.log('keys:', Object.keys(beatmap));
-            console.log('beatmapset_id value:', beatmap['beatmapset_id']);
 
             return {
               md5,
@@ -110,7 +103,7 @@ export class CollectionExportService {
     });
 
     if (path) {
-      await writeTextFile(path, content);
+      await invoke('write_text_file', { path, content });
     }
   }
 }

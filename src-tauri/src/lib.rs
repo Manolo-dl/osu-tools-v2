@@ -29,6 +29,7 @@ pub fn run() {
             commands::download::write_beatmap_file,
             commands::collections::read_osu_collections,
             commands::collections::read_osu_db,
+            commands::collections::write_text_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

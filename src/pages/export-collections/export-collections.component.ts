@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { CollectionListComponent, CollectionSummaryComponent } from "@features/collection-exporter";
-import { CollectionPreviewComponent } from "@features/collection-exporter/ui/collection-preview/collection-preview.component";
+import { CollectionListComponent, CollectionPreviewComponent, CollectionSummaryComponent, CollectionExportControlsComponent } from "@features/collection-exporter";
 
 @Component({
   selector: 'app-export-collections',
-  imports: [CollectionListComponent, CollectionSummaryComponent, CollectionPreviewComponent],
+  imports: [CollectionListComponent, CollectionSummaryComponent, CollectionPreviewComponent, CollectionExportControlsComponent],
   templateUrl: './export-collections.component.html',
   styleUrl: './export-collections.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
