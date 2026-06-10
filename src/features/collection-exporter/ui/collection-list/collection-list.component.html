@@ -8,9 +8,6 @@
       />
       Select all
     </label>
-    <span class="count">
-      {{ collectionStore.selectedCollections().length }} / {{ collectionStore.collections().length }} selected
-    </span>
   </div>
 
   @if (collectionStore.isLoading()) {
@@ -34,7 +31,6 @@
             (change)="toggleSelection(collection.name)"
           />
           <span class="name">{{ collection.name }}</span>
-          <span class="count">{{ collection.beatmaps.length }}</span>
         </li>
       }
     </ul>
