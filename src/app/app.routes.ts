@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { collectionResolver } from "@entities/collection";
 
 export const routes: Routes = [
     {
@@ -11,7 +12,8 @@ export const routes: Routes = [
     },
     {
         path: 'export-collections',
-        loadComponent: () => import('@pages/export-collections').then(m => m.ExportCollectionsComponent)
+        loadComponent: () => import('@pages/export-collections').then(m => m.ExportCollectionsComponent),
+        resolve: { collections: collectionResolver}
     },
     {
         path: 'export-song-folder',
