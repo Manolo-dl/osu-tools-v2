@@ -1,0 +1,14 @@
+<div class="preview">
+  @if (previewItems().length === 0) {
+    <div class="empty">Select a collection to preview</div>
+  } @else {
+    <div class="preview-list">
+      @for (item of previewItems(); track $index) {
+        <div class="preview-item" (click)="openMap(item.beatmapsetId!)">
+          <span class="badge">{{ item.collectionName }}</span>
+          <span class="title">{{ item.title }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>

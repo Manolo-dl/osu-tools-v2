@@ -12,7 +12,7 @@ interface RustCollection {
 
 interface RustBeatmap {
   md5: string;
-  beatmapsetId: number;
+  beatmapset_id: number;
   title: string;
   artist: string;
 }
@@ -53,9 +53,12 @@ export class CollectionExportService {
             const beatmap = beatmapByMd5.get(md5);
             if (!beatmap) return null;
 
+            console.log('keys:', Object.keys(beatmap));
+            console.log('beatmapset_id value:', beatmap['beatmapset_id']);
+
             return {
               md5,
-              beatmapSetId: beatmap.beatmapsetId,
+              beatmapSetId: beatmap['beatmapset_id'],
               title: beatmap.title,
               artist: beatmap.artist,
             };
