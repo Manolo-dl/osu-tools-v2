@@ -10,7 +10,9 @@ pub fn run() {
 
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                update(handle).await.unwrap();
+                if let Err(e) = update(handle).await {
+                    log::error!("failed to check for updates: {e}");
+                }
             });
             Ok(())
         })
