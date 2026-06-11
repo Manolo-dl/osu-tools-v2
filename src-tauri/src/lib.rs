@@ -1,10 +1,19 @@
 use tauri_plugin_log::{Target, TargetKind};
+use tauri_plugin_updater::UpdaterExt;
 
 mod commands;
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                update(handle).await.unwrap();
+            });
+            Ok(())
+        })
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
@@ -34,4 +43,35 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
+    if let Some(update) = app
+        .updater_builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()?
+        .check()
+        .await? 
+    {
+
+        let mut downloaded = 0;
+
+        update
+            .download_and_install(
+                |chunk_length, content_length| {
+                    downloaded += chunk_length;
+                    
+                    log::info!("downloaded {downloaded} of {content_length:?}");
+                },
+                || {
+                    log::info!("download complete, installing update...");
+                },
+            )
+            .await?;
+
+        log::info!("update installed");
+        app.restart();
+    }
+
+    Ok(())
 }
