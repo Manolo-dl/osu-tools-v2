@@ -215,7 +215,8 @@ pub async fn refresh_oauth_token(refresh_token: String) -> Result<serde_json::Va
     let expires_at = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
-        .as_millis() as u64 + (expires_in * 1000);
+        .as_millis() as u64
+        + (expires_in * 1000);
 
     Ok(serde_json::json!({
         "access_token": response["access_token"],

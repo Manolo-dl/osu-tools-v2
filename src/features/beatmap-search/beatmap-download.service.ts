@@ -4,6 +4,7 @@ import { UserStore } from '@entities/user';
 import { OsuPathService } from '@shared/services';
 import { fetch } from '@tauri-apps/plugin-http';
 import { invoke } from '@tauri-apps/api/core';
+import { sendNotification } from '@tauri-apps/plugin-notification';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,31 @@ export class BeatmapDownloadService {
     }
 
     this.beatmapStore.setDownloading(false);
+    await this.exportFailed();
+  }
+
+  private async exportFailed() {
+    const failed = this.beatmapStore.queue()
+      .filter(i => i.status === 'failed');
+
+    if (failed.length === 0) return;
+
+    const osuPath = this.osuPath.path();
+    if (!osuPath) return;
+
+    const content = failed
+      .map(i => `https://osu.ppy.sh/beatmapsets/${i.beatmapSetId}`)
+      .join('\n');
+
+    const filename = 'failed_downloads.txt';
+    const path = `${osuPath}/${filename}`;
+
+    await invoke('write_text_file', { path, content });
+
+    await sendNotification({
+      title: 'Downloads completed',
+      body: `${failed.length} maps failed. Saved to ${filename}`,
+    });
   }
 
   private async downloadOne(item: DownloadItem) {
@@ -47,7 +73,7 @@ export class BeatmapDownloadService {
         this.beatmapStore.updateStatus(item.beatmapSetId, 'done', 100);
         return;
       } catch (error) {
-        console.log(`Failed to download beatmap set ${item.beatmapSetId} from osu! website:`, error);
+        console.log(`Failed to download beatmap set ${item.beatmapSetId}:`, error);
         this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
       }
     }
@@ -68,18 +94,22 @@ export class BeatmapDownloadService {
     const bytes = new Uint8Array(await response.arrayBuffer());
 
     const MAX_SIZE = 200 * 1024 * 1024;
-    if (bytes.length > MAX_SIZE) throw new Error(`Beatmap set ${beatmapSetId} is too large to download (${(bytes.length / (1024 * 1024)).toFixed(2)} MB)`);
+    if (bytes.length > MAX_SIZE) throw new Error(`Beatmap set ${beatmapSetId} is too large`);
 
     const disposition = response.headers.get('Content-Disposition') ?? '';
     const filenameMatch = disposition.match(/filename="?([^";\n]+)"?/);
     const filename = filenameMatch
-    ? filenameMatch[1].replace(/[/\\\0]/g, '_')
-    : `${beatmapSetId}.osz`;
+      ? filenameMatch[1].replace(/[/\\\0]/g, '_')
+      : `${beatmapSetId}.osz`;
 
     await this.saveFile(songsFolder, filename, bytes);
   }
 
   private async saveFile(songsFolder: string, filename: string, bytes: Uint8Array) {
     await invoke('write_beatmap_file', { path: `${songsFolder}/${filename}`, bytes: Array.from(bytes) });
+  }
+
+  pause() {
+    this.beatmapStore.setDownloading(false);
   }
 }
