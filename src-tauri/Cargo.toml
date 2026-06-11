@@ -41,6 +41,7 @@ tauri-plugin-http = { version = "2", features = ["unsafe-headers"] }
 tauri-plugin-fs = "2"
 byteorder = "1.5.0"
 osynic_osudb = "0.1.5"
+tauri-plugin-notification = "2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0.2" }
