@@ -3,7 +3,6 @@ import { CollectionStore, CollectionWithBeatmaps } from '@entities/collection';
 import { OsuPathService } from '@shared/services';
 import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
-import { writeTextFile } from '@tauri-apps/plugin-fs';
 
 interface RustCollection {
   name: string;
@@ -42,22 +41,29 @@ export class CollectionExportService {
         beatmaps.map(b => [b.md5, b])
       );
 
-      const result: CollectionWithBeatmaps[] = collections.map(col => ({
-        name: col.name,
-        beatmaps: col.md5s
-          .map(md5 => {
-            const beatmap = beatmapByMd5.get(md5);
-            if (!beatmap) return null;
-
-            return {
-              md5,
-              beatmapSetId: beatmap['beatmapset_id'],
-              title: beatmap.title,
-              artist: beatmap.artist,
-            };
-          })
-          .filter((b): b is NonNullable<typeof b> => b !== null)
-      }));
+      const result: CollectionWithBeatmaps[] = collections.map(col => {
+        const seenIds = new Set<number>();
+        return {
+          name: col.name,
+          beatmaps: col.md5s
+            .map(md5 => {
+              const beatmap = beatmapByMd5.get(md5);
+              if (!beatmap) return null;
+              return {
+                md5,
+                beatmapSetId: beatmap['beatmapset_id'],
+                title: beatmap.title,
+                artist: beatmap.artist,
+              };
+            })
+            .filter((b): b is NonNullable<typeof b> => b !== null)
+            .filter(b => {
+              if (seenIds.has(b.beatmapSetId)) return false;
+              seenIds.add(b.beatmapSetId);
+              return true;
+            })
+        };
+      });
 
       this.collectionStore.setCollections(result);
     } catch (error) {
