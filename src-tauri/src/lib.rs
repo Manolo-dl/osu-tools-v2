@@ -7,7 +7,7 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
-            
+
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 update(handle).await.unwrap();
@@ -46,12 +46,13 @@ pub fn run() {
 }
 
 async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
-    if let Some(update) = app.
-        updater_builder()
+    if let Some(update) = app
+        .updater_builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()?
-        .check().
-        await? {
+        .check()
+        .await? 
+    {
 
         let mut downloaded = 0;
 
@@ -59,15 +60,16 @@ async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
             .download_and_install(
                 |chunk_length, content_length| {
                     downloaded += chunk_length;
-                    println!("dowloaded {downloaded} from {content_length:?}");
+                    
+                    log::info!("downloaded {downloaded} of {content_length:?}");
                 },
                 || {
-                    println!("download finished");
+                    log::info!("download complete, installing update...");
                 },
             )
             .await?;
 
-        println!("update installed");
+        log::info!("update installed");
         app.restart();
     }
 
