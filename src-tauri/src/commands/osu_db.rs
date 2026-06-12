@@ -1,4 +1,5 @@
 use osynic_osudb::entity::osu::osudb::OsuDB;
+use crate::OsuState;
 
 #[derive(serde::Serialize)]
 pub struct OsuBeatmapFull {
@@ -15,13 +16,16 @@ pub struct OsuBeatmapFull {
 }
 
 #[tauri::command]
-pub fn read_osu_db_full(osu_path: String) -> Result<Vec<OsuBeatmapFull>, String> {
+pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeatmapFull>, String> {
+
+    let path = state.path.lock().unwrap();
+    let osu_path = path.as_ref().ok_or("osu! path not set")?;
 
     use osynic_osudb::entity::osu::field::mode::Mode;
     use osynic_osudb::entity::osu::field::rank::RankedStatus;
 
-    let path = std::path::Path::new(&osu_path).join("osu!.db");
-    let db = OsuDB::from_file(&path).map_err(|e| e.to_string())?;
+    let db_path = std::path::Path::new(osu_path).join("osu!.db");
+    let db = OsuDB::from_file(&db_path).map_err(|e| e.to_string())?;
 
     let mut seen = std::collections::HashSet::new();
 

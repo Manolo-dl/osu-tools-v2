@@ -1,16 +1,15 @@
 <div class="filters">
-  <span class="section-title">Filters</span>
+  <div class="filters-header">
+    <span class="section-title">Filters</span>
+    <button class="reset-btn" (click)="reset()">Reset</button>
+  </div>
 
   <div class="filter-group">
     <label>Mode</label>
     <div class="button-group">
-      <button
-        [class.active]="mode() === null"
-        (click)="setMode(null)">All</button>
+      <button [class.active]="store.filters().mode === null" (click)="setMode(null)">All</button>
       @for (m of modes; track m.value) {
-        <button
-          [class.active]="mode() === m.value"
-          (click)="setMode(m.value)">{{ m.label }}</button>
+        <button [class.active]="store.filters().mode === m.value" (click)="setMode(m.value)">{{ m.label }}</button>
       }
     </div>
   </div>
@@ -18,37 +17,46 @@
   <div class="filter-group">
     <label>Status</label>
     <div class="button-group">
-      <button
-        [class.active]="status() === null"
-        (click)="setStatus(null)">All</button>
+      <button [class.active]="store.filters().status === null" (click)="setStatus(null)">All</button>
       @for (s of statuses; track s.value) {
-        <button
-          [class.active]="status() === s.value"
-          (click)="setStatus(s.value)">{{ s.label }}</button>
+        <button [class.active]="store.filters().status === s.value" (click)="setStatus(s.value)">{{ s.label }}</button>
       }
     </div>
   </div>
 
   <div class="filter-group">
     <label>Stars</label>
-    <div class="stars-range">
-      <input
-        type="number"
-        min="0"
-        max="10"
-        step="0.5"
-        placeholder="Min"
-        (change)="setMinStars($any($event.target).value)"
-      />
+    <div class="range-inputs">
+      <input type="number" min="0" max="10" step="0.5" placeholder="Min" (change)="setMinStars($any($event.target).value)" />
       <span>–</span>
-      <input
-        type="number"
-        min="0"
-        max="10"
-        step="0.5"
-        placeholder="Max"
-        (change)="setMaxStars($any($event.target).value)"
-      />
+      <input type="number" min="0" max="10" step="0.5" placeholder="Max" (change)="setMaxStars($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <label>BPM</label>
+    <div class="range-inputs">
+      <input type="number" min="0" placeholder="Min" (change)="setMinBpm($any($event.target).value)" />
+      <span>–</span>
+      <input type="number" min="0" placeholder="Max" (change)="setMaxBpm($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <label>Length (seconds)</label>
+    <div class="range-inputs">
+      <input type="number" min="0" placeholder="Min" (change)="setMinLength($any($event.target).value)" />
+      <span>–</span>
+      <input type="number" min="0" placeholder="Max" (change)="setMaxLength($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <label>Played</label>
+    <div class="button-group">
+      <button [class.active]="store.filters().lastPlayed === null" (click)="setLastPlayed(null)">All</button>
+      <button [class.active]="store.filters().lastPlayed === true" (click)="setLastPlayed(true)">Played</button>
+      <button [class.active]="store.filters().lastPlayed === false" (click)="setLastPlayed(false)">Not played</button>
     </div>
   </div>
 </div>

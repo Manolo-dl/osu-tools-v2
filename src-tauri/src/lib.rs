@@ -1,7 +1,12 @@
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_updater::UpdaterExt;
+use std::sync::Mutex;
 
 mod commands;
+
+pub struct OsuState {
+    pub path: Mutex<Option<String>>,
+}
 
 pub fn run() {
     tauri::Builder::default()
@@ -42,8 +47,9 @@ pub fn run() {
             commands::collections::read_osu_collections,
             commands::collections::read_osu_db,
             commands::collections::write_text_file,
-            commands::filter::read_osu_db_filtered,
+            commands::osu_db::read_osu_db_full,
         ])
+        .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

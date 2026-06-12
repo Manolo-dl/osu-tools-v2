@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
-import { BeatmapFilter } from '@features/export-songs'
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { BeatmapExporterStore } from '@features/export-songs/stores/beatmap-exporter.store';
 
 @Component({
   selector: 'app-beatmap-filters',
@@ -10,12 +10,7 @@ import { BeatmapFilter } from '@features/export-songs'
 })
 export class BeatmapFiltersComponent {
 
-  readonly filtersChange = output<BeatmapFilter>();
-
-  readonly mode = signal<number | null>(null);
-  readonly minStars = signal<number | null>(null);
-  readonly maxStars = signal<number | null>(null)
-  readonly status = signal<string | null>(null);
+  readonly store = inject(BeatmapExporterStore);
 
   readonly modes = [
     { label: 'Standard', value: 0 },
@@ -33,31 +28,42 @@ export class BeatmapFiltersComponent {
   ];
 
   setMode(value: number | null) {
-    this.mode.set(value);
-    this.emit();
+    this.store.setFilters({ mode: value });
   }
 
   setStatus(value: string | null) {
-    this.status.set(value);
-    this.emit();
+    this.store.setFilters({ status: value });
   }
 
   setMinStars(value: string) {
-    this.minStars.set(value ? parseFloat(value) : null);
-    this.emit();
+    this.store.setFilters({ minStars: value ? parseFloat(value) : null });
   }
 
   setMaxStars(value: string) {
-    this.maxStars.set(value ? parseFloat(value) : null);
-    this.emit();
+    this.store.setFilters({ maxStars: value ? parseFloat(value) : null });
   }
 
-  private emit() {
-    this.filtersChange.emit({
-      mode: this.mode() ?? undefined,
-      minStars: this.minStars() ?? undefined,
-      maxStars: this.maxStars() ?? undefined,
-      status: this.status() ?? undefined,
-    })
+  setMinBpm(value: string) {
+    this.store.setFilters({ minBpm: value ? parseFloat(value) : null });
+  }
+
+  setMaxBpm(value: string) {
+    this.store.setFilters({ maxBpm: value ? parseFloat(value) : null });
+  }
+
+  setMinLength(value: string) {
+    this.store.setFilters({ minLength: value ? parseInt(value) * 1000 : null });
+  }
+
+  setMaxLength(value: string) {
+    this.store.setFilters({ maxLength: value ? parseInt(value) * 1000 : null });
+  }
+
+  setLastPlayed(value: boolean | null) {
+    this.store.setFilters({ lastPlayed: value });
+  }
+
+  reset() {
+    this.store.resetFilters();
   }
 }
