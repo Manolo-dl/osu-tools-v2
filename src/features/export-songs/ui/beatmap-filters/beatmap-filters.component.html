@@ -18,8 +18,8 @@
     <label>Status</label>
     <div class="button-group">
       <button [class.active]="store.filters().status === null" (click)="setStatus(null)">All</button>
-      @for (s of statuses; track s.value) {
-        <button [class.active]="store.filters().status === s.value" (click)="setStatus(s.value)">{{ s.label }}</button>
+      @for (status of statuses; track status) {
+        <button [class.active]="store.filters().status === status" (click)="setStatus(status)">{{ status }}</button>
       }
     </div>
   </div>

@@ -55,10 +55,10 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
         .unwrap_or(0.0);
 
         let status = match b.status {
-            RankedStatus::Ranked => "Ranked",
-            RankedStatus::Loved => "Loved",
-            RankedStatus::Approved => "Approved",
-            RankedStatus::Qualified => "Qualified",
+            RankedStatus::Ranked => "ranked",
+            RankedStatus::Loved => "loved",
+            RankedStatus::Approved => "approved",
+            RankedStatus::Qualified => "qualified",
             RankedStatus::PendingWipGraveyard => "unranked",
             _ => "unknown",
         }.to_string();

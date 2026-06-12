@@ -20,11 +20,11 @@ export class BeatmapFiltersComponent {
   ];
 
   readonly statuses = [
-    { label: 'Ranked', value: 'ranked' },
-    { label: 'Loved', value: 'loved' },
-    { label: 'Approved', value: 'approved' },
-    { label: 'Qualified', value: 'qualified' },
-    { label: 'Unranked', value: 'unranked' },
+    'Ranked',
+    'Loved',
+    'Approved',
+    'Qualified',
+    'Unranked',
   ];
 
   setMode(value: number | null) {
@@ -32,7 +32,7 @@ export class BeatmapFiltersComponent {
   }
 
   setStatus(value: string | null) {
-    this.store.setFilters({ status: value });
+    this.store.setFilters({ status: value?.toLowerCase() });
   }
 
   setMinStars(value: string) {
