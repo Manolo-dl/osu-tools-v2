@@ -42,6 +42,7 @@ pub fn run() {
             commands::collections::read_osu_collections,
             commands::collections::read_osu_db,
             commands::collections::write_text_file,
+            commands::filter::read_osu_db_filtered,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
