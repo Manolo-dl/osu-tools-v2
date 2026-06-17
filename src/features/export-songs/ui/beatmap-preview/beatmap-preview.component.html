@@ -1,24 +1,34 @@
-<div class="preview">
-  <span class="section-title">Preview</span>
+<div class="songs-panel">
+  <div class="panel-header">
+    <span class="section-title">Preview</span>
+  </div>
+
   @if (store.filteredBeatmaps().length === 0) {
     <div class="empty">No beatmaps match the current filters</div>
   } @else {
-    <div class="preview-list">
+    <div class="song-list">
       @for (set of store.filteredBeatmaps(); track set.beatmapSetId) {
-        <div class="preview-set">
-          <div class="set-header">
-            <span class="title">{{ set.title }}</span>
-            <span class="artist">{{ set.artist }}</span>
-            <span class="status">{{ set.status }}</span>
-          </div>
-          <div class="diffs">
-            @for (diff of set.diffs; track diff.md5) {
-              <div class="diff-item">
-                <span class="diff-name">{{ diff.diffName }}</span>
-                <span class="stars">{{ diff.stars | number:'1.1-2' }}★</span>
-                <span class="length">{{ diff.length / 1000 | number:'1.0-0' }}s</span>
+        <div class="song-card" [ngClass]="set.status">
+          <div class="status-bar"></div>
+          <div class="card-body">
+            <div class="card-meta">
+              <div class="card-titles">
+                <span class="song-title">{{ set.title }}</span>
+                <span class="song-artist">{{ set.artist }}</span>
               </div>
-            }
+              <span class="status-badge">{{ set.status }}</span>
+            </div>
+            <div class="diffs-row">
+              @for (diff of set.diffs | slice:0:12; track diff.md5) {
+                <span class="diff-tag" [style.color]="diffColor(diff.stars)">
+                  <span class="diff-sr">{{ diff.stars | number:'1.1-1' }}★</span>
+                  <span class="diff-name">{{ diff.diffName }}</span>
+                </span>
+              }
+              @if (set.diffs.length > 12) {
+                <span class="more-diffs">+{{ set.diffs.length - 12 }}</span>
+              }
+            </div>
           </div>
         </div>
       }
