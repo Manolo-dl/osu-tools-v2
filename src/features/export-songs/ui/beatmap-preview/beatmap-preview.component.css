@@ -27,6 +27,12 @@
 
 .song-list {
   height: calc(100vh - 320px);
+  overflow-x: hidden;
+}
+
+:host ::ng-deep .cdk-virtual-scroll-content-wrapper {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .song-list::-webkit-scrollbar { width: 4px; }
@@ -42,6 +48,8 @@
 
 .card-wrapper {
   padding: 0 8px 2px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .song-card {
