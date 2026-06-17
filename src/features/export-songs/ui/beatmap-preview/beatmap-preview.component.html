@@ -14,7 +14,7 @@
 
             <div class="card-head">
               <div class="card-titles">
-                <span class="song-title">{{ set.title }}</span>
+                <span class="song-title" (click)="openSet(set.beatmapsetId); $event.stopPropagation()">{{ set.title }}</span>
                 <span class="song-artist">{{ set.artist }}</span>
               </div>
               <div class="card-side">

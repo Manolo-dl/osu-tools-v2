@@ -2,6 +2,7 @@ import { DecimalPipe, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { BeatmapExporterStore } from '@features/export-songs/stores/beatmap-exporter.store';
 import { OsuDiff } from '@entities/osu-db/osu-db-model';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 @Component({
   selector: 'app-beatmap-preview',
@@ -44,5 +45,9 @@ export class BeatmapPreviewComponent {
 
   modeColor(mode: number): string {
     return ['#ff66ab', '#e05555', '#66bbff', '#c966ff'][mode] ?? '#aaa';
+  }
+
+  openSet(beatmapsetId: number) {
+    openUrl(`https://osu.ppy.sh/beatmapsets/${beatmapsetId}`);
   }
 }
