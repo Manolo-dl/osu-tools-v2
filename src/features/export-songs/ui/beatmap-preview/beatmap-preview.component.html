@@ -6,12 +6,13 @@
   @if (store.filteredBeatmaps().length === 0) {
     <div class="empty">No beatmaps match the current filters</div>
   } @else {
-    <div class="song-list">
-      @for (set of store.filteredBeatmaps(); track set.beatmapsetId) {
+    <cdk-virtual-scroll-viewport itemSize="56" class="song-list">
+      <div *cdkVirtualFor="let set of filteredBeatmaps$ | async; trackBy: trackSet" class="card-wrapper">
+
         <div class="song-card" [ngClass]="set.status" (click)="toggleExpand(set.beatmapsetId, $event)">
           <div class="status-bar"></div>
           <div class="card-body">
-
+            
             <div class="card-head">
               <div class="card-titles">
                 <span class="song-title" (click)="openSet(set.beatmapsetId); $event.stopPropagation()">{{ set.title }}</span>
@@ -29,7 +30,7 @@
                 </div>
               </div>
             </div>
-
+            
             <div class="diff-drawer" [class.open]="isExpanded(set.beatmapsetId)">
               <div class="diff-separator"></div>
               @for (diff of sortedDiffs(set.diffs); track diff.md5) {
@@ -44,10 +45,10 @@
                 </div>
               }
             </div>
-
+            
           </div>
         </div>
-      }
-    </div>
+      </div>
+    </cdk-virtual-scroll-viewport>
   }
 </div>

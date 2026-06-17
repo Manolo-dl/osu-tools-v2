@@ -2,7 +2,6 @@
   display: block;
 }
 
-/* ── Outer panel ── */
 .songs-panel {
   display: flex;
   flex-direction: column;
@@ -26,21 +25,14 @@
   color: var(--text-muted);
 }
 
-/* ── Scrollable list ── */
 .song-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px;
-  max-height: calc(100vh - 320px);
-  overflow-y: auto;
+  height: calc(100vh - 320px);
 }
 
 .song-list::-webkit-scrollbar { width: 4px; }
 .song-list::-webkit-scrollbar-track { background: transparent; }
 .song-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ── Empty state ── */
 .empty {
   padding: 48px 20px;
   text-align: center;
@@ -48,7 +40,10 @@
   font-size: 13px;
 }
 
-/* ── Song card ── */
+.card-wrapper {
+  padding: 0 8px 2px;
+}
+
 .song-card {
   display: flex;
   border-radius: 5px;
@@ -56,13 +51,13 @@
   border: 1px solid transparent;
   cursor: pointer;
   transition: border-color 120ms ease;
+  margin-bottom: 2px;
 }
 
 .song-card:hover {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* ── Status accent bar ── */
 .status-bar {
   width: 3px;
   flex-shrink: 0;
@@ -76,14 +71,12 @@
 .song-card.qualified .status-bar { background: #aaaaff; }
 .song-card.unranked  .status-bar { background: #ffaa44; }
 
-/* ── Card body ── */
 .card-body {
   flex: 1;
   padding: 8px 12px 8px;
   min-width: 0;
 }
 
-/* ── Card header (always visible) ── */
 .card-head {
   display: flex;
   align-items: flex-start;
@@ -126,7 +119,6 @@
   text-overflow: ellipsis;
 }
 
-/* ── Card right side: badge + mode pips + chevron ── */
 .card-side {
   display: flex;
   flex-direction: column;
@@ -158,7 +150,6 @@
 .song-card.qualified .status-badge { color: #aaaaff; background: rgba(170,170,255,0.12); }
 .song-card.unranked  .status-badge { color: #ffaa44; background: rgba(255,170,68,0.12); }
 
-/* Mode pips: colored dots showing which modes exist */
 .mode-pips {
   display: flex;
   gap: 3px;
@@ -172,7 +163,6 @@
   opacity: 0.75;
 }
 
-/* ── Expand chevron ── */
 .expand-chevron {
   font-size: 11px;
   color: var(--text-muted);
@@ -187,7 +177,6 @@
   color: var(--accent);
 }
 
-/* ── Diff drawer: hidden by default, expands on click ── */
 .diff-drawer {
   max-height: 0;
   overflow: hidden;
@@ -204,7 +193,6 @@
   margin: 6px 0 5px;
 }
 
-/* ── Diff row ── */
 .diff-row {
   display: flex;
   align-items: center;

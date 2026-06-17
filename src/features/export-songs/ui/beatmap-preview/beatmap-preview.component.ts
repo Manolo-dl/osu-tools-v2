@@ -1,18 +1,22 @@
-import { DecimalPipe, NgClass } from '@angular/common';
+import { AsyncPipe, DecimalPipe, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { BeatmapExporterStore } from '@features/export-songs/stores/beatmap-exporter.store';
-import { OsuDiff } from '@entities/osu-db/osu-db-model';
+import { OsuDiff, OsuBeatmapSet } from '@entities/osu-db/osu-db-model';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
 @Component({
   selector: 'app-beatmap-preview',
-  imports: [DecimalPipe, NgClass],
+  imports: [DecimalPipe, NgClass, AsyncPipe, ScrollingModule],
   templateUrl: './beatmap-preview.component.html',
   styleUrl: './beatmap-preview.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BeatmapPreviewComponent {
   readonly store = inject(BeatmapExporterStore);
+
+  readonly filteredBeatmaps$ = toObservable(this.store.filteredBeatmaps);
 
   private expandedId = signal<number | null>(null);
 
@@ -23,6 +27,10 @@ export class BeatmapPreviewComponent {
 
   isExpanded(id: number): boolean {
     return this.expandedId() === id;
+  }
+
+  trackSet(_: number, set: OsuBeatmapSet): number {
+    return set.beatmapsetId;
   }
 
   sortedDiffs(diffs: OsuDiff[]): OsuDiff[] {
