@@ -2,25 +2,36 @@ import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
 
-export interface BeatmapFilters {
-    mode: number | null;
-    minStars: number | null;
-    maxStars: number | null;
+export interface ModeFilters {
     status: string | null;
-    minBpm: number | null;
-    maxBpm: number | null;
     minLength: number | null;
     maxLength: number | null;
-    lastPlayed: boolean | null;
-    keyCount: number | null;
-    minCircleSize: number | null;
-    maxCircleSize: number | null;
+    minStars: number | null;
+    maxStars: number | null;
     minAr: number | null;
     maxAr: number | null;
     minOd: number | null;
     maxOd: number | null;
     minHp: number | null;
     maxHp: number | null;
+    minCs: number | null;
+    maxCs: number | null;
+}
+
+export const emptyModeFilters = (): ModeFilters => ({
+    status: null,
+    minLength: null, maxLength: null,
+    minStars: null, maxStars: null,
+    minAr: null, maxAr: null,
+    minOd: null, maxOd: null,
+    minHp: null, maxHp: null,
+    minCs: null, maxCs: null,
+});
+
+export interface BeatmapFilters {
+    excludedModes: number[];
+    modeFilters: { [mode: number]: ModeFilters };
+    lastPlayed: boolean | null;
 }
 
 interface BeatmapExporterState {
@@ -29,24 +40,9 @@ interface BeatmapExporterState {
 
 const initialState: BeatmapExporterState = {
     filters: {
-        mode: null,
-        minStars: null,
-        maxStars: null,
-        status: null,
-        minBpm: null,
-        maxBpm: null,
-        minLength: null,
-        maxLength: null,
+        excludedModes: [],
+        modeFilters: {},
         lastPlayed: null,
-        keyCount: null,
-        minCircleSize: null,
-        maxCircleSize: null,
-        minAr: null,
-        maxAr: null,
-        minOd: null,
-        maxOd: null,
-        minHp: null,
-        maxHp: null,
     },
 };
 
@@ -56,54 +52,34 @@ export const BeatmapExporterStore = signalStore(
 
     withComputed((store, osuDb = inject(OsuDbStore)) => ({
         filteredBeatmaps: computed(() => {
-            const {
-                mode, minStars, maxStars, status, minBpm, maxBpm, minLength, maxLength,
-                lastPlayed, keyCount, minCircleSize, maxCircleSize,
-                minAr, maxAr, minOd, maxOd, minHp, maxHp,
-            } = store.filters();
+            const { excludedModes, modeFilters, lastPlayed } = store.filters();
 
             return osuDb.beatmapSets().filter(set => {
-                if (status != null && set.status !== status) return false;
-
-                const hasMatchingDiff = set.diffs.some(d => {
-                    if (mode !== null && d.mode !== mode) return false;
-                    if (minStars !== null && d.stars < minStars) return false;
-                    if (maxStars !== null && d.stars > maxStars) return false;
-                    if (minBpm !== null && d.bpm < minBpm) return false;
-                    if (maxBpm !== null && d.bpm > maxBpm) return false;
-                    if (minLength !== null && d.length < minLength) return false;
-                    if (maxLength !== null && d.length > maxLength) return false;
+                return set.diffs.some(d => {
                     if (lastPlayed !== null && d.lastPlayed !== lastPlayed) return false;
-                    // AR only meaningful in Standard (0) and Catch (2)
-                    if (d.mode === 0 || d.mode === 2) {
-                        if (minAr !== null && d.approachRate < minAr) return false;
-                        if (maxAr !== null && d.approachRate > maxAr) return false;
+                    if (excludedModes.includes(d.mode)) return false;
+
+                    const mf = modeFilters[d.mode];
+                    if (mf) {
+                        if (mf.status !== null && set.status !== mf.status) return false;
+                        if (mf.minLength !== null && d.length < mf.minLength) return false;
+                        if (mf.maxLength !== null && d.length > mf.maxLength) return false;
+                        if (mf.minStars !== null && d.stars < mf.minStars) return false;
+                        if (mf.maxStars !== null && d.stars > mf.maxStars) return false;
+                        if (mf.minOd !== null && d.overallDifficulty < mf.minOd) return false;
+                        if (mf.maxOd !== null && d.overallDifficulty > mf.maxOd) return false;
+                        if (mf.minHp !== null && d.hpDrain < mf.minHp) return false;
+                        if (mf.maxHp !== null && d.hpDrain > mf.maxHp) return false;
+                        if (d.mode === 0 || d.mode === 2) {
+                            if (mf.minAr !== null && d.approachRate < mf.minAr) return false;
+                            if (mf.maxAr !== null && d.approachRate > mf.maxAr) return false;
+                        }
+                        if (mf.minCs !== null && d.circleSize < mf.minCs) return false;
+                        if (mf.maxCs !== null && d.circleSize > mf.maxCs) return false;
                     }
-                    if (minOd !== null && d.overallDifficulty < minOd) return false;
-                    if (maxOd !== null && d.overallDifficulty > maxOd) return false;
-                    if (minHp !== null && d.hpDrain < minHp) return false;
-                    if (maxHp !== null && d.hpDrain > maxHp) return false;
-                    // circleSize represents key count in Mania (mode 3) and circle size in other modes
-                    if (d.mode === 3) {
-                        if (keyCount !== null && d.circleSize !== keyCount) return false;
-                    } else {
-                        if (minCircleSize !== null && d.circleSize < minCircleSize) return false;
-                        if (maxCircleSize !== null && d.circleSize > maxCircleSize) return false;
-                    }
+
                     return true;
                 });
-
-                if (mode !== null || minStars !== null || maxStars !== null ||
-                    minBpm !== null || maxBpm !== null || minLength !== null ||
-                    maxLength !== null || lastPlayed !== null || keyCount !== null ||
-                    minCircleSize !== null || maxCircleSize !== null ||
-                    minAr !== null || maxAr !== null ||
-                    minOd !== null || maxOd !== null ||
-                    minHp !== null || maxHp !== null) {
-                    return hasMatchingDiff;
-                }
-
-                return true;
             });
         }),
     })),
@@ -113,11 +89,23 @@ export const BeatmapExporterStore = signalStore(
     })),
 
     withMethods((store) => ({
-        setFilters(filters: Partial<BeatmapFilters>) {
-            patchState(store, { filters: { ...store.filters(), ...filters }});
+        setFilters(filters: Partial<Omit<BeatmapFilters, 'modeFilters'>>) {
+            patchState(store, { filters: { ...store.filters(), ...filters } });
+        },
+        setModeFilters(mode: number, filters: Partial<ModeFilters>) {
+            const current = store.filters();
+            patchState(store, {
+                filters: {
+                    ...current,
+                    modeFilters: {
+                        ...current.modeFilters,
+                        [mode]: { ...(current.modeFilters[mode] ?? emptyModeFilters()), ...filters },
+                    },
+                },
+            });
         },
         resetFilters() {
             patchState(store, { filters: initialState.filters });
-        }
+        },
     }))
 )
