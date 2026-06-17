@@ -12,7 +12,10 @@ pub struct OsuDiff {
     pub length: u32,
     pub stars: f64,
     pub last_played: bool,
-    pub circle_size: f32
+    pub circle_size: f32,
+    pub approach_rate: f32,
+    pub hp_drain: f32,
+    pub overall_difficulty: f32,
 }
 
 #[derive(serde::Serialize)]
@@ -82,6 +85,9 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
             stars,
             last_played: b.last_played.is_some(),
             circle_size: b.circle_size,
+            approach_rate: b.approach_rate,
+            hp_drain: b.hp_drain,
+            overall_difficulty: b.overall_difficulty,
         };
 
         sets.entry(b.beatmapset_id as u32)

@@ -54,6 +54,17 @@
   letter-spacing: 0.05em;
 }
 
+.filter-section {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding-top: 8px;
+  margin-top: 2px;
+  border-top: 1px solid var(--border);
+}
+
 .label-hint {
   font-size: 10px;
   font-weight: 400;

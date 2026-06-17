@@ -19,37 +19,121 @@
     <div class="button-group">
       <button [class.active]="store.filters().status === null" (click)="setStatus(null)">All</button>
       @for (status of statuses; track status) {
-        <button [class.active]="store.filters().status === status" (click)="setStatus(status)">{{ status }}</button>
+        <button [class.active]="store.filters().status === status.toLowerCase()" (click)="setStatus(status)">{{ status }}</button>
       }
     </div>
   </div>
 
+  <div class="filter-section">Difficulty</div>
+
   <div class="filter-group">
     <label>Stars</label>
     <div class="range-inputs">
-      <input type="number" min="0" max="10" step="0.5" placeholder="Min" (change)="setMinStars($any($event.target).value)" />
+      <input type="number" min="0" max="15" step="0.5" placeholder="Min"
+        [value]="store.filters().minStars ?? ''"
+        (change)="setMinStars($any($event.target).value)" />
       <span>–</span>
-      <input type="number" min="0" max="10" step="0.5" placeholder="Max" (change)="setMaxStars($any($event.target).value)" />
+      <input type="number" min="0" max="15" step="0.5" placeholder="Max"
+        [value]="store.filters().maxStars ?? ''"
+        (change)="setMaxStars($any($event.target).value)" />
     </div>
   </div>
 
   <div class="filter-group">
+    <label>OD</label>
+    <div class="range-inputs">
+      <input type="number" min="0" max="10" step="0.5" placeholder="Min"
+        [value]="store.filters().minOd ?? ''"
+        (change)="setMinOd($any($event.target).value)" />
+      <span>–</span>
+      <input type="number" min="0" max="10" step="0.5" placeholder="Max"
+        [value]="store.filters().maxOd ?? ''"
+        (change)="setMaxOd($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <label>HP</label>
+    <div class="range-inputs">
+      <input type="number" min="0" max="10" step="0.5" placeholder="Min"
+        [value]="store.filters().minHp ?? ''"
+        (change)="setMinHp($any($event.target).value)" />
+      <span>–</span>
+      <input type="number" min="0" max="10" step="0.5" placeholder="Max"
+        [value]="store.filters().maxHp ?? ''"
+        (change)="setMaxHp($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="filter-section">Standard / Catch</div>
+
+  <div class="filter-group">
+    <label>AR</label>
+    <div class="range-inputs">
+      <input type="number" min="0" max="10" step="0.5" placeholder="Min"
+        [value]="store.filters().minAr ?? ''"
+        (change)="setMinAr($any($event.target).value)" />
+      <span>–</span>
+      <input type="number" min="0" max="10" step="0.5" placeholder="Max"
+        [value]="store.filters().maxAr ?? ''"
+        (change)="setMaxAr($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <label>Circle Size</label>
+    <div class="range-inputs">
+      <input type="number" min="0" max="10" step="0.5" placeholder="Min"
+        [value]="store.filters().minCircleSize ?? ''"
+        (change)="setMinCircleSize($any($event.target).value)" />
+      <span>–</span>
+      <input type="number" min="0" max="10" step="0.5" placeholder="Max"
+        [value]="store.filters().maxCircleSize ?? ''"
+        (change)="setMaxCircleSize($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="filter-section">Mania</div>
+
+  <div class="filter-group">
+    <label>Key Count</label>
+    <div class="button-group">
+      <button [class.active]="store.filters().keyCount === null" (click)="setKeyCount(null)">All</button>
+      @for (k of [4, 5, 6, 7, 8]; track k) {
+        <button [class.active]="store.filters().keyCount === k" (click)="setKeyCount(k)">{{ k }}K</button>
+      }
+    </div>
+  </div>
+
+  <div class="filter-section">Timing</div>
+
+  <div class="filter-group">
     <label>BPM</label>
     <div class="range-inputs">
-      <input type="number" min="0" placeholder="Min" (change)="setMinBpm($any($event.target).value)" />
+      <input type="number" min="0" placeholder="Min"
+        [value]="store.filters().minBpm ?? ''"
+        (change)="setMinBpm($any($event.target).value)" />
       <span>–</span>
-      <input type="number" min="0" placeholder="Max" (change)="setMaxBpm($any($event.target).value)" />
+      <input type="number" min="0" placeholder="Max"
+        [value]="store.filters().maxBpm ?? ''"
+        (change)="setMaxBpm($any($event.target).value)" />
     </div>
   </div>
 
   <div class="filter-group">
     <label>Length (seconds)</label>
     <div class="range-inputs">
-      <input type="number" min="0" placeholder="Min" (change)="setMinLength($any($event.target).value)" />
+      <input type="number" min="0" placeholder="Min"
+        [value]="msToSec(store.filters().minLength)"
+        (change)="setMinLength($any($event.target).value)" />
       <span>–</span>
-      <input type="number" min="0" placeholder="Max" (change)="setMaxLength($any($event.target).value)" />
+      <input type="number" min="0" placeholder="Max"
+        [value]="msToSec(store.filters().maxLength)"
+        (change)="setMaxLength($any($event.target).value)" />
     </div>
   </div>
+
+  <div class="filter-section">Other</div>
 
   <div class="filter-group">
     <label>Played</label>
@@ -57,25 +141,6 @@
       <button [class.active]="store.filters().lastPlayed === null" (click)="setLastPlayed(null)">All</button>
       <button [class.active]="store.filters().lastPlayed === true" (click)="setLastPlayed(true)">Played</button>
       <button [class.active]="store.filters().lastPlayed === false" (click)="setLastPlayed(false)">Not played</button>
-    </div>
-  </div>
-
-  <div class="filter-group">
-    <label>Circle Size</label>
-    <div class="range-inputs">
-      <input type="number" min="0" max="10" step="0.5" placeholder="Min" (change)="setMinCircleSize($any($event.target).value)" />
-      <span>–</span>
-      <input type="number" min="0" max="10" step="0.5" placeholder="Max" (change)="setMaxCircleSize($any($event.target).value)" />
-    </div>
-  </div>
-
-  <div class="filter-group">
-    <label>Key Count <span class="label-hint">(Mania)</span></label>
-    <div class="button-group">
-      <button [class.active]="store.filters().keyCount === null" (click)="setKeyCount(null)">All</button>
-      @for (k of [4, 5, 6, 7, 8]; track k) {
-        <button [class.active]="store.filters().keyCount === k" (click)="setKeyCount(k)">{{ k }}K</button>
-      }
     </div>
   </div>
 </div>

@@ -7,6 +7,9 @@ export interface OsuDiff {
     stars: number;
     lastPlayed: boolean;
     circleSize: number;
+    approachRate: number;
+    hpDrain: number;
+    overallDifficulty: number;
 }
 
 export interface OsuBeatmapSet {
