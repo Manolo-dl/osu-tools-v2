@@ -14,19 +14,15 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 export class BeatmapPreviewComponent {
   readonly store = inject(BeatmapExporterStore);
 
-  private expandedIds = signal<Set<number>>(new Set());
+  private expandedId = signal<number | null>(null);
 
   toggleExpand(id: number, event: Event) {
     event.stopPropagation();
-    this.expandedIds.update(ids => {
-      const next = new Set(ids);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    this.expandedId.update(current => current === id ? null : id);
   }
 
   isExpanded(id: number): boolean {
-    return this.expandedIds().has(id);
+    return this.expandedId() === id;
   }
 
   sortedDiffs(diffs: OsuDiff[]): OsuDiff[] {
