@@ -23,23 +23,23 @@ export class BeatmapExportControlsComponent {
   }
 
   async export() {
-    const beatmaps = this.store.filteredBeatmaps();
+    const sets = this.store.filteredBeatmaps();
 
-    const lines = beatmaps.map(b =>
-      this.format() === 'ids'
-        ? `${b.beatmapset_id}`
-        : `https://osu.ppy.sh/beatmapsets/${b.beatmapset_id}`
+    const lines = sets.map(s =>
+        this.format() === 'ids'
+            ? `${s.beatmapSetId}`
+            : `https://osu.ppy.sh/beatmapsets/${s.beatmapSetId}`
     );
 
     const content = lines.join('\n');
 
     const path = await save({
-      filters: [{ name: 'Text', extensions: ['txt'] }],
-      defaultPath: 'beatmaps.txt',
+        filters: [{ name: 'Text', extensions: ['txt'] }],
+        defaultPath: 'beatmaps.txt',
     });
 
     if (path) {
-      await invoke('write_text_file', { path, content });
+        await invoke('write_text_file', { path, content });
     }
   }
 }

@@ -4,12 +4,22 @@
     <div class="empty">No beatmaps match the current filters</div>
   } @else {
     <div class="preview-list">
-      @for (beatmap of store.filteredBeatmaps(); track beatmap.md5) {
-        <div class="preview-item">
-          <span class="title">{{ beatmap.title }}</span>
-          <span class="artist">{{ beatmap.artist }}</span>
-          <span class="stars">{{ beatmap.stars | number:'1.1-2' }}★</span>
-          <span class="bpm">{{ beatmap.bpm }} BPM</span>
+      @for (set of store.filteredBeatmaps(); track set.beatmapSetId) {
+        <div class="preview-set">
+          <div class="set-header">
+            <span class="title">{{ set.title }}</span>
+            <span class="artist">{{ set.artist }}</span>
+            <span class="status">{{ set.status }}</span>
+          </div>
+          <div class="diffs">
+            @for (diff of set.diffs; track diff.md5) {
+              <div class="diff-item">
+                <span class="diff-name">{{ diff.diffName }}</span>
+                <span class="stars">{{ diff.stars | number:'1.1-2' }}★</span>
+                <span class="length">{{ diff.length / 1000 | number:'1.0-0' }}s</span>
+              </div>
+            }
+          </div>
         </div>
       }
     </div>

@@ -40,16 +40,27 @@ export const BeatmapExporterStore = signalStore(
         filteredBeatmaps: computed(() => {
             const { mode, minStars, maxStars, status, minBpm, maxBpm, minLength, maxLength, lastPlayed } = store.filters();
 
-            return osuDb.beatmaps().filter(b => {
-                if (mode !== null && b.mode !== mode) return false;
-                if (status !== null && b.status !== status) return false;
-                if (minStars !== null && b.stars < minStars) return false;
-                if (maxStars !== null && b.stars > maxStars) return false;
-                if (minBpm !== null && b.bpm < minBpm) return false;
-                if (maxBpm !== null && b.bpm > maxBpm) return false;
-                if (minLength !== null && b.length < minLength) return false;
-                if (maxLength !== null && b.length > maxLength) return false;
-                if (lastPlayed !== null && b.lastPlayed !== lastPlayed) return false;
+            return osuDb.beatmapSets().filter(set => {
+                if (status !== null && set.status !== status) return false;
+
+                const hasMatchingDiff = set.diffs.some(d => {
+                    if (mode !== null && d.mode !== mode) return false;
+                    if (minStars !== null && d.stars < minStars) return false;
+                    if (maxStars !== null && d.stars > maxStars) return false;
+                    if (minBpm !== null && d.bpm < minBpm) return false;
+                    if (maxBpm !== null && d.bpm > maxBpm) return false;
+                    if (minLength !== null && d.length < minLength) return false;
+                    if (maxLength !== null && d.length > maxLength) return false;
+                    if (lastPlayed !== null && d.lastPlayed !== lastPlayed) return false;
+                    return true;
+                });
+
+                if (mode !== null || minStars !== null || maxStars !== null ||
+                    minBpm !== null || maxBpm !== null || minLength !== null ||
+                    maxLength !== null || lastPlayed !== null) {
+                    return hasMatchingDiff;
+                }
+
                 return true;
             });
         }),

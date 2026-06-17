@@ -2,28 +2,16 @@ import { computed, inject } from "@angular/core";
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
 import { OsuPathService } from "@shared/services";
 import { invoke } from "@tauri-apps/api/core";
-
-export interface OsuBeatmapFull {
-    md5: string;
-    beatmapset_id: number;
-    title: string;
-    artist: string;
-    stars: number;
-    mode: number;
-    status: string;
-    bpm: number;
-    length: number;
-    lastPlayed: boolean;
-}
+import { OsuBeatmapSet, OsuDiff } from "./osu-db-model";
 
 interface OsuDbState {
-    beatmaps: OsuBeatmapFull[];
+    beatmapSets: OsuBeatmapSet[];
     isLoading: boolean;
     isLoaded: boolean;
 }
 
 const initialState: OsuDbState = {
-    beatmaps: [],
+    beatmapSets: [],
     isLoading: false,
     isLoaded: false,
 };
@@ -33,45 +21,63 @@ export const OsuDbStore = signalStore(
     withState(initialState),
 
     withComputed((store) => ({
-        beatmapsByMd5: computed(() =>
-            new Map(store.beatmaps().map(b => [b.md5, b]))
+        diffsByMd5: computed(() => {
+            const map = new Map<string, OsuDiff>();
+            for (const set of store.beatmapSets()) {
+                for (const diff of set.diffs) {
+                    map.set(diff.md5, diff);
+                }
+            }
+            return map;
+        }),
+
+        totalSets: computed(() => store.beatmapSets().length),
+
+        totalDiffs: computed(() =>
+            store.beatmapSets().reduce((sum, s) => sum + s.diffs.length, 0)
         ),
-        totalCount: computed(() => store.beatmaps().length),
+
         countByStatus: computed(() => {
             const counts: Record<string, number> = {};
-            for (const b of store.beatmaps()) {
-                counts[b.status] = (counts[b.status] ?? 0) + 1;
+            for (const s of store.beatmapSets()) {
+                counts[s.status] = (counts[s.status] || 0) + 1;
             }
             return counts;
         }),
+
         countByMode: computed(() => {
             const counts: Record<number, number> = {};
-            for (const b of store.beatmaps()) {
-                counts[b.mode] = (counts[b.mode] ?? 0) + 1;
+            for (const s of store.beatmapSets()) {
+                for (const d of s.diffs) {
+                    counts[d.mode] = (counts[d.mode] ?? 0) + 1;
+                }
             }
             return counts;
         }),
     })),
 
     withMethods((store, osuPath = inject(OsuPathService)) => ({
-        setBeatmaps(beatmaps: OsuBeatmapFull[]) {
-            patchState(store, { beatmaps, isLoaded: true, isLoading: false });
+        setBeatmapSets(beatmapSets: OsuBeatmapSet[]) {
+            patchState(store, { beatmapSets, isLoaded: true, isLoading: false });
         },
+
         setLoading(isLoading: boolean) {
             patchState(store, { isLoading });
         },
+
         reset() {
             patchState(store, initialState);
         },
+
         async load() {
             const path = osuPath.path();
             if (!path) throw new Error("Osu! path not set");
 
             patchState(store, { isLoading: true });
 
-            const beatmaps = await invoke<OsuBeatmapFull[]>('read_osu_db_full', { osuPath: path });
+            const beatmapSets = await invoke<OsuBeatmapSet[]>('read_osu_db_full');
 
-            patchState(store, { beatmaps, isLoaded: true, isLoading: false });
+            patchState(store, { beatmapSets, isLoaded: true, isLoading: false });
         }
     })),
 )
