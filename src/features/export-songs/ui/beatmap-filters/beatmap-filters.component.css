@@ -54,6 +54,14 @@
   letter-spacing: 0.05em;
 }
 
+.label-hint {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .button-group {
   display: flex;
   flex-wrap: wrap;

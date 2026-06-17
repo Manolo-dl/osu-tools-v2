@@ -11,7 +11,8 @@ pub struct OsuDiff {
     pub bpm: f64,
     pub length: u32,
     pub stars: f64,
-    pub last_played: bool
+    pub last_played: bool,
+    pub circle_size: f32
 }
 
 #[derive(serde::Serialize)]
@@ -79,7 +80,8 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
             bpm,
             length: b.total_time,
             stars,
-            last_played: b.last_played.is_some()
+            last_played: b.last_played.is_some(),
+            circle_size: b.circle_size,
         };
 
         sets.entry(b.beatmapset_id as u32)

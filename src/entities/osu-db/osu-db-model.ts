@@ -6,6 +6,7 @@ export interface OsuDiff {
     length: number;
     stars: number;
     lastPlayed: boolean;
+    circleSize: number;
 }
 
 export interface OsuBeatmapSet {

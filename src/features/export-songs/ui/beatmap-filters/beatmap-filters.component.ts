@@ -63,6 +63,18 @@ export class BeatmapFiltersComponent {
     this.store.setFilters({ lastPlayed: value });
   }
 
+  setMinCircleSize(value: string) {
+    this.store.setFilters({ minCircleSize: value ? parseFloat(value) : null });
+  }
+
+  setMaxCircleSize(value: string) {
+    this.store.setFilters({ maxCircleSize: value ? parseFloat(value) : null });
+  }
+
+  setKeyCount(value: number | null) {
+    this.store.setFilters({ keyCount: value });
+  }
+
   reset() {
     this.store.resetFilters();
   }
