@@ -27,8 +27,6 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
     let db_path = std::path::Path::new(osu_path).join("osu!.db");
     let db = OsuDB::from_file(&db_path).map_err(|e| e.to_string())?;
 
-    let mut seen = std::collections::HashSet::new();
-
     let result = db.beatmaps.into_iter()
         .filter_map(|b| {
 
@@ -37,8 +35,6 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
             if b.beatmapset_id < 0 { return None; }
 
             if matches!(b.status, RankedStatus::Unknown | RankedStatus::Unsubmitted | RankedStatus::Unused) { return None; }
-
-            if !seen.insert(b.beatmapset_id) { return None; }
 
             let stars = match b.mode {
                 Mode::Standard => &b.std_ratings,
