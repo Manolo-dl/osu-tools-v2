@@ -54,7 +54,7 @@
   border-radius: 5px;
   background: var(--bg-overlay);
   border: 1px solid transparent;
-  cursor: default;
+  cursor: pointer;
   transition: border-color 120ms ease;
 }
 
@@ -126,13 +126,19 @@
   text-overflow: ellipsis;
 }
 
-/* ── Card right side: badge + mode pips ── */
+/* ── Card right side: badge + mode pips + chevron ── */
 .card-side {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
   flex-shrink: 0;
+}
+
+.card-side-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .status-badge {
@@ -166,14 +172,29 @@
   opacity: 0.75;
 }
 
-/* ── Diff drawer: hidden by default, expands on card hover ── */
+/* ── Expand chevron ── */
+.expand-chevron {
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease, color 0.15s;
+  display: inline-block;
+  line-height: 1;
+  user-select: none;
+}
+
+.expand-chevron.open {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+/* ── Diff drawer: hidden by default, expands on click ── */
 .diff-drawer {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.22s ease;
 }
 
-.song-card:hover .diff-drawer {
+.diff-drawer.open {
   max-height: 700px;
 }
 

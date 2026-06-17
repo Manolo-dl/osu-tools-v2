@@ -1,5 +1,5 @@
 import { DecimalPipe, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { BeatmapExporterStore } from '@features/export-songs/stores/beatmap-exporter.store';
 import { OsuDiff } from '@entities/osu-db/osu-db-model';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -13,6 +13,21 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 })
 export class BeatmapPreviewComponent {
   readonly store = inject(BeatmapExporterStore);
+
+  private expandedIds = signal<Set<number>>(new Set());
+
+  toggleExpand(id: number, event: Event) {
+    event.stopPropagation();
+    this.expandedIds.update(ids => {
+      const next = new Set(ids);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  isExpanded(id: number): boolean {
+    return this.expandedIds().has(id);
+  }
 
   sortedDiffs(diffs: OsuDiff[]): OsuDiff[] {
     return [...diffs].sort((a, b) =>

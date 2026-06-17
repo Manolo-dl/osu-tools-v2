@@ -8,7 +8,7 @@
   } @else {
     <div class="song-list">
       @for (set of store.filteredBeatmaps(); track set.beatmapsetId) {
-        <div class="song-card" [ngClass]="set.status">
+        <div class="song-card" [ngClass]="set.status" (click)="toggleExpand(set.beatmapsetId, $event)">
           <div class="status-bar"></div>
           <div class="card-body">
 
@@ -19,15 +19,18 @@
               </div>
               <div class="card-side">
                 <span class="status-badge">{{ set.status }}</span>
-                <div class="mode-pips">
-                  @for (mode of uniqueModes(set.diffs); track mode) {
-                    <span class="mode-pip" [style.background]="modeColor(mode)"></span>
-                  }
+                <div class="card-side-bottom">
+                  <div class="mode-pips">
+                    @for (mode of uniqueModes(set.diffs); track mode) {
+                      <span class="mode-pip" [style.background]="modeColor(mode)"></span>
+                    }
+                  </div>
+                  <span class="expand-chevron" [class.open]="isExpanded(set.beatmapsetId)">▾</span>
                 </div>
               </div>
             </div>
 
-            <div class="diff-drawer">
+            <div class="diff-drawer" [class.open]="isExpanded(set.beatmapsetId)">
               <div class="diff-separator"></div>
               @for (diff of sortedDiffs(set.diffs); track diff.md5) {
                 <div class="diff-row">
