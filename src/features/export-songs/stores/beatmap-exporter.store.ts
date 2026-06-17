@@ -41,7 +41,7 @@ export const BeatmapExporterStore = signalStore(
             const { mode, minStars, maxStars, status, minBpm, maxBpm, minLength, maxLength, lastPlayed } = store.filters();
 
             return osuDb.beatmapSets().filter(set => {
-                if (status !== null && set.status !== status) return false;
+                if (status != null && set.status !== status) return false;
 
                 const hasMatchingDiff = set.diffs.some(d => {
                     if (mode !== null && d.mode !== mode) return false;

@@ -32,7 +32,7 @@ export class BeatmapFiltersComponent {
   }
 
   setStatus(value: string | null) {
-    this.store.setFilters({ status: value?.toLowerCase() });
+    this.store.setFilters({ status: value ? value.toLowerCase() : null });
   }
 
   setMinStars(value: string) {

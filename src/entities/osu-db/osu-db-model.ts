@@ -9,7 +9,7 @@ export interface OsuDiff {
 }
 
 export interface OsuBeatmapSet {
-    beatmapSetId: number;
+    beatmapsetId: number;
     title: string;
     artist: string;
     status: string;

@@ -27,8 +27,8 @@ export class BeatmapExportControlsComponent {
 
     const lines = sets.map(s =>
         this.format() === 'ids'
-            ? `${s.beatmapSetId}`
-            : `https://osu.ppy.sh/beatmapsets/${s.beatmapSetId}`
+            ? `${s.beatmapsetId}`
+            : `https://osu.ppy.sh/beatmapsets/${s.beatmapsetId}`
     );
 
     const content = lines.join('\n');

@@ -7,7 +7,7 @@
     <div class="empty">No beatmaps match the current filters</div>
   } @else {
     <div class="song-list">
-      @for (set of store.filteredBeatmaps(); track set.beatmapSetId) {
+      @for (set of store.filteredBeatmaps(); track set.beatmapsetId) {
         <div class="song-card" [ngClass]="set.status">
           <div class="status-bar"></div>
           <div class="card-body">
