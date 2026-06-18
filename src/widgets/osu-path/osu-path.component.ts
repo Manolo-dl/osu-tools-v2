@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { OsuPathStore } from '@shared/services';
+import { OsuPathStore } from '@shared/stores'; 
 
 @Component({
   selector: 'app-osu-path',

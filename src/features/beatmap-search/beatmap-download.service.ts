@@ -1,7 +1,7 @@
 import { inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { BeatmapStore } from '@entities/beatmap';
 import { UserStore } from '@entities/user';
-import { OsuPathStore } from '@shared/services';
+import { OsuPathStore } from '@shared/stores'; 
 import { invoke } from '@tauri-apps/api/core';
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';

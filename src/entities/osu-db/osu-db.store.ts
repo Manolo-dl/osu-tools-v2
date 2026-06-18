@@ -1,6 +1,6 @@
 import { computed, inject } from "@angular/core";
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
-import { OsuPathStore } from "@shared/services";
+import { OsuPathStore } from "@shared/stores"; 
 import { invoke } from "@tauri-apps/api/core";
 import { OsuBeatmapSet, OsuDiff } from "./osu-db-model";
 

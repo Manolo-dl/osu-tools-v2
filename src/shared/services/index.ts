@@ -1,4 +1,3 @@
-export { OsuPathStore } from './osu-path.store';
 export { AuthService } from './auth.service';
 export { ThemeService } from './theme.service';
 export type { Theme } from './theme.service';

@@ -3,7 +3,7 @@ import { OsuCollection } from "./collection-model";
 import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
 import { OsuBeatmapSet } from "@entities/osu-db/osu-db-model";
-import { OsuPathStore } from "@shared/services";
+import { OsuPathStore } from "@shared/stores"; 
 import { invoke } from "@tauri-apps/api/core";
 
 
