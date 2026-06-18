@@ -68,7 +68,6 @@ pub fn run() {
             commands::auth::refresh_oauth_token,
             commands::download::write_beatmap_file,
             commands::collections::read_osu_collections,
-            commands::collections::read_osu_db,
             commands::collections::write_text_file,
             commands::osu_db::read_osu_db_full,
         ])

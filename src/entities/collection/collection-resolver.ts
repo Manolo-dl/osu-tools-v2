@@ -1,13 +1,12 @@
 import { inject } from '@angular/core';
 import type { ResolveFn } from '@angular/router';
-import { CollectionStore } from './collection.store';
+import { CollectionStore } from './collection-store';
 import { CollectionExportService } from '@features/collection-exporter/services/collection-export.service';
 
 export const collectionResolver: ResolveFn<void> = async () => {
   const store = inject(CollectionStore);
-  const service = inject(CollectionExportService);
 
   if (!store.isLoaded()) {
-    await service.loadCollections();
+    await store.load();
   }
 };

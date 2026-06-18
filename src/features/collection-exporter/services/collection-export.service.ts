@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { CollectionStore, CollectionWithBeatmaps } from '@entities/collection';
-import { OsuPathService } from '@shared/services';
+import { CollectionStore } from '@entities/collection';
+import { OsuDbStore } from '@entities/osu-db';
 import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
 
@@ -22,59 +22,11 @@ interface RustBeatmap {
 export class CollectionExportService {
 
   private collectionStore = inject(CollectionStore);
-  private osuPath = inject(OsuPathService);
-
-  async loadCollections() {
-    const osuPath = this.osuPath.path();
-    console.log('Osu! path:', osuPath);
-    if (!osuPath) throw new Error("Osu! path not set");
-
-    this.collectionStore.setLoading(true);
-
-    try {
-      const [collections, beatmaps] = await Promise.all([
-        invoke<RustCollection[]>('read_osu_collections', { osuPath }),
-        invoke<RustBeatmap[]>('read_osu_db', { osuPath }),
-      ]);
-
-      const beatmapByMd5 = new Map(
-        beatmaps.map(b => [b.md5, b])
-      );
-
-      const result: CollectionWithBeatmaps[] = collections.map(col => {
-        const seenIds = new Set<number>();
-        return {
-          name: col.name,
-          beatmaps: col.md5s
-            .map(md5 => {
-              const beatmap = beatmapByMd5.get(md5);
-              if (!beatmap) return null;
-              return {
-                md5,
-                beatmapSetId: beatmap['beatmapset_id'],
-                title: beatmap.title,
-                artist: beatmap.artist,
-              };
-            })
-            .filter((b): b is NonNullable<typeof b> => b !== null)
-            .filter(b => {
-              if (seenIds.has(b.beatmapSetId)) return false;
-              seenIds.add(b.beatmapSetId);
-              return true;
-            })
-        };
-      });
-
-      this.collectionStore.setCollections(result);
-    } catch (error) {
-      this.collectionStore.setLoading(false);
-      throw error;
-    }
-  }
+  private osuDbStore = inject(OsuDbStore);
 
   exportToTxt(format: 'urls' | 'ids' | 'with-headers'): string {
     const selected = this.collectionStore.selectedCollections();
-    const collections = this.collectionStore.collections()
+    const collections = this.collectionStore.collectionsWithBeatmaps()
       .filter(c => selected.includes(c.name));
 
     const lines: string[] = [];
@@ -85,10 +37,14 @@ export class CollectionExportService {
       }
 
       for (const beatmap of collection.beatmaps) {
+
+        const setId = this.osuDbStore.beatmapSetIdByMd5().get(beatmap.md5);
+        if (!setId) continue;
+
         if (format === 'ids') {
-          lines.push(`${beatmap.beatmapSetId}`);
+          lines.push(`${setId}`);
         } else {
-          lines.push(`https://osu.ppy.sh/beatmapsets/${beatmap.beatmapSetId}`);
+          lines.push(`https://osu.ppy.sh/beatmapsets/${setId}`);
         }
       }
 

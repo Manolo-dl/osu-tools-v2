@@ -14,7 +14,7 @@ export const routes: Routes = [
     {
         path: 'export-collections',
         loadComponent: () => import('@pages/export-collections').then(m => m.ExportCollectionsComponent),
-        resolve: { collections: collectionResolver}
+        resolve: { osuDb: osuDbResolver, collections: collectionResolver }
     },
     {
         path: 'export-song-folder',
