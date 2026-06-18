@@ -1,13 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { CollectionStore } from '@entities/collection';
-import { invoke } from '@tauri-apps/api/core';
-import { save } from '@tauri-apps/plugin-dialog';
+import { BeatmapsetExportService } from '@shared/services';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class CollectionExportService {
   private store = inject(CollectionStore);
+  private exportService = inject(BeatmapsetExportService);
 
   exportToTxt(format: 'urls' | 'ids' | 'with-headers'): string {
     const selected = this.store.selectedCollections();
@@ -15,32 +13,26 @@ export class CollectionExportService {
       .filter(c => selected.includes(c.name));
 
     const lines: string[] = [];
-
     for (const col of collections) {
       if (format === 'with-headers') {
         lines.push(`----------------- ${col.name} -----------------`);
       }
       for (const set of col.sets) {
-        lines.push(format === 'ids'
-          ? `${set.beatmapsetId}`
-          : `https://osu.ppy.sh/beatmapsets/${set.beatmapsetId}`
-        );
+        lines.push(this.exportService.formatLine(
+          set.beatmapsetId,
+          format === 'with-headers' ? 'urls' : format
+        ));
       }
       if (format === 'with-headers') lines.push('');
     }
-
     return lines.join('\n');
   }
 
   async exportToFile(format: 'urls' | 'ids' | 'with-headers') {
-    const content = this.exportToTxt(format);
-    const path = await save({
-      filters: [{ name: 'Text', extensions: ['txt'] }],
-      defaultPath: 'collections.txt',
-    });
-    if (path) {
-      await invoke('write_text_file', { path, content });
-      this.store.clearSelection();
-    }
+    const saved = await this.exportService.saveToFile(
+      this.exportToTxt(format),
+      'collections.txt'
+    );
+    if (saved) this.store.clearSelection();
   }
 }

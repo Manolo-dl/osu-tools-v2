@@ -1,14 +1,8 @@
 <div class="export-controls">
-  <div class="format-selector">
-    <button [class.active]="format() === 'urls'" (click)="setFormat('urls')">URLs</button>
-    <button [class.active]="format() === 'ids'" (click)="setFormat('ids')">IDs</button>
-  </div>
-
-  <div class="export-info">
-    <span>{{ store.totalFiltered() }} beatmaps</span>
-  </div>
-
-  <button class="export-btn" [disabled]="store.totalFiltered() === 0" (click)="export()">
-    Export
-  </button>
+  <app-export-controls
+    [formats]="formats"
+    [count]="store.totalFiltered()"
+    countLabel="beatmapsets"
+    (doExport)="export($event)"
+  />
 </div>

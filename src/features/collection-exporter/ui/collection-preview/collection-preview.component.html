@@ -1,8 +1,13 @@
-<div class="preview">
-  <span class="section-title">Preview</span>
+<div class="preview-panel">
+  <div class="panel-header">
+    <span class="section-title">Preview</span>
+    @if (store.selectedCount() > 0) {
+      <span class="count-badge">{{ store.totalSelectedSets() }} sets</span>
+    }
+  </div>
   <app-beatmap-set-list
     [sets]="store.selectedSets()"
     emptyText="Select a collection to preview"
-    listHeight="400px"
+    listHeight="calc(100vh - 160px)"
   />
 </div>

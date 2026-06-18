@@ -1,45 +1,29 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { OsuDbStore } from '@entities/osu-db';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { BeatmapExporterStore } from '@features/export-songs/stores/beatmap-exporter.store';
-import { invoke } from '@tauri-apps/api/core';
-import { save } from '@tauri-apps/plugin-dialog';
+import { BeatmapsetExportService } from '@shared/services';
+import { ExportControlsComponent, ExportFormat } from '@shared/ui';
+
+const FORMATS: ExportFormat[] = [
+  { value: 'urls', label: 'URLs' },
+  { value: 'ids',  label: 'IDs' },
+];
 
 @Component({
   selector: 'app-beatmap-export-controls',
-  imports: [],
+  imports: [ExportControlsComponent],
   templateUrl: './beatmap-export-controls.component.html',
   styleUrl: './beatmap-export-controls.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BeatmapExportControlsComponent {
-
   readonly store = inject(BeatmapExporterStore);
-  readonly osuDb = inject(OsuDbStore);
+  readonly exportService = inject(BeatmapsetExportService);
 
-  readonly format = signal<'urls' | 'ids'>('urls');
+  readonly formats = FORMATS;
 
-  setFormat(format: 'urls' | 'ids') {
-    this.format.set(format);
-  }
-
-  async export() {
-    const sets = this.store.filteredBeatmaps();
-
-    const lines = sets.map(s =>
-        this.format() === 'ids'
-            ? `${s.beatmapsetId}`
-            : `https://osu.ppy.sh/beatmapsets/${s.beatmapsetId}`
-    );
-
-    const content = lines.join('\n');
-
-    const path = await save({
-        filters: [{ name: 'Text', extensions: ['txt'] }],
-        defaultPath: 'beatmaps.txt',
-    });
-
-    if (path) {
-        await invoke('write_text_file', { path, content });
-    }
+  async export(format: string) {
+    const lines = this.store.filteredBeatmaps()
+      .map(s => this.exportService.formatLine(s.beatmapsetId, format as 'urls' | 'ids'));
+    await this.exportService.saveToFile(lines.join('\n'), 'beatmaps.txt');
   }
 }
