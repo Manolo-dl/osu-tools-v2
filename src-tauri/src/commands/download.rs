@@ -127,3 +127,15 @@ fn extract_filename(disposition: &str, beatmap_set_id: u32) -> String {
     }
     format!("{}.osz", beatmap_set_id)
 }
+
+#[tauri::command]
+pub async fn append_text_file(path: String, content: String) -> Result<(), String> {
+    use std::io::Write;
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| e.to_string())?;
+
+    file.write_all(content.as_bytes()).map_err(|e| e.to_string())
+}
