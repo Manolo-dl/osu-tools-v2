@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { phosphorDownloadSimple, phosphorFolder, phosphorMusicNote } from '@ng-icons/phosphor-icons/regular';
+import { OsuPathService } from '@shared/services';
 
 @Component({
   selector: 'app-home',
@@ -11,4 +12,6 @@ import { phosphorDownloadSimple, phosphorFolder, phosphorMusicNote } from '@ng-i
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ phosphorDownloadSimple, phosphorFolder, phosphorMusicNote })],
 })
-export class HomeComponent {}
+export class HomeComponent {
+  readonly osuPath = inject(OsuPathService);
+}

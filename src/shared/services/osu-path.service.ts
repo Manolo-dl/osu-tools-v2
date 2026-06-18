@@ -10,16 +10,23 @@ export class OsuPathService {
   error = signal<string | null>(null);
   isLoading = signal<boolean>(false);
 
-  async detect() {
+  private detectPromise?: Promise<void>;
+
+  async detect(): Promise<void> {
+    if (!this.detectPromise) {
+      this.detectPromise = this._detect();
+    }
+    return this.detectPromise;
+  }
+
+  private async _detect(): Promise<void> {
     this.isLoading.set(true);
     try {
       const path = await invoke<string>('get_osu_path');
-      console.log('Detected osu! path:', path);
       this.path.set(path);
       this.error.set(null);
       await invoke('save_osu_path', { path });
     } catch (error) {
-      console.error('Error detecting osu! path:', error);
       this.error.set(error as string);
     } finally {
       this.isLoading.set(false);
@@ -36,6 +43,7 @@ export class OsuPathService {
     if (selected) {
       this.path.set(selected as string);
       this.error.set(null);
+      this.detectPromise = Promise.resolve();
       try {
         await invoke('save_osu_path', { path: selected });
       } catch (e) {
