@@ -1,5 +1,7 @@
 use osynic_osudb::entity::collection::collectiondb::CollectionDB;
 use crate::OsuState;
+use crate::DbState;
+use crate::commands::collection_cache;
 
 #[derive(serde::Serialize)]
 pub struct OsuCollection {
@@ -8,24 +10,51 @@ pub struct OsuCollection {
 }
 
 #[tauri::command]
-pub fn read_osu_collections(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuCollection>, String> {
-    
+pub async fn read_osu_collections(
+    osu_state: tauri::State<'_, OsuState>,
+    db_state: tauri::State<'_, DbState>,
+) -> Result<Vec<OsuCollection>, String> {
+
     let osu_path = {
-        let path = state.path.lock().unwrap();
+        let path = osu_state.path.lock().unwrap();
         path.as_ref().ok_or("osu! path not set")?.clone()
     };
 
-    let path = std::path::Path::new(&osu_path).join("collection.db");
-    let db = CollectionDB::from_file(&path).map_err(|e| e.to_string())?;
+    let collection_path = std::path::Path::new(&osu_path).join("collection.db");
 
-    Ok(db.collections
+    let metadata = std::fs::metadata(&collection_path).map_err(|e| e.to_string())?;
+    let file_size = metadata.len() as i64;
+    let last_modified = metadata
+        .modified()
+        .map_err(|e| e.to_string())?
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|e| e.to_string())?
+        .as_secs() as i64;
+
+    let pool = &db_state.pool;
+
+    if let Some(meta) = collection_cache::get_meta(pool).await {
+        if meta.last_modified == last_modified && meta.file_size == file_size {
+            log::info!("loading collection.db from cache");
+            return collection_cache::get_collections(pool).await.map_err(|e| e.to_string());
+        }
+    }
+
+    log::info!("cache miss, reading collection.db");
+    let db = CollectionDB::from_file(&collection_path).map_err(|e| e.to_string())?;
+
+    let collections: Vec<OsuCollection> = db.collections
         .into_iter()
         .map(|c| OsuCollection {
             name: c.name.unwrap_or_default(),
             md5s: c.beatmap_hashes.into_iter().flatten().collect(),
         })
-        .collect()
-    )
+        .collect();
+
+    collection_cache::save_collections(pool, &collections).await.map_err(|e| e.to_string())?;
+    collection_cache::set_meta(pool, last_modified, file_size).await.map_err(|e| e.to_string())?;
+
+    Ok(collections)
 }
 
 #[tauri::command]

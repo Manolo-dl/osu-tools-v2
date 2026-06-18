@@ -13,11 +13,6 @@ struct CollectionRow {
     pub name: String,
 }
 
-#[derive(FromRow)]
-struct CollectionMd5Row {
-    pub md5: String,
-}
-
 pub async fn get_meta(pool: &SqlitePool) -> Option<CollectionMeta> {
     sqlx::query_as::<_, CollectionMeta>(
         "SELECT last_modified, file_size FROM collection_meta WHERE id = 1"
