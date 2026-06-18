@@ -2,37 +2,33 @@
   <div class="list-header">
     <span class="section-label">Collections</span>
     <label class="select-all">
-      <input
-        type="checkbox"
-        [checked]="allSelected()"
-        (change)="toggleAll()"
-      />
+      <input type="checkbox" [checked]="store.allSelected()" (change)="store.allSelected() ? store.clearSelection() : store.selectAll()" />
       Select all
     </label>
   </div>
 
-  @if (collectionStore.isLoading()) {
+  @if (store.isLoading()) {
     <div class="loading">Loading collections...</div>
-  } @else if (!collectionStore.isLoaded()) {
+  } @else if (!store.isLoaded()) {
     <div class="empty">Open a collection to get started</div>
-  } @else if (collectionStore.collections().length === 0) {
+  } @else if (store.collectionsWithBeatmaps().length === 0) {
     <div class="empty">No collections found</div>
   } @else {
     <ul role="list">
-      @for (collection of collectionStore.collections(); track collection.name) {
+      @for (col of store.collectionsWithBeatmaps(); track col.name) {
         <li
           class="collection-item"
-          [class.selected]="isSelected(collection.name)"
-          (click)="toggleSelection(collection.name)"
+          [class.selected]="store.selectedCollections().includes(col.name)"
+          (click)="store.toggleSelection(col.name)"
         >
           <input
             type="checkbox"
-            [checked]="isSelected(collection.name)"
+            [checked]="store.selectedCollections().includes(col.name)"
             (click)="$event.stopPropagation()"
-            (change)="toggleSelection(collection.name)"
+            (change)="store.toggleSelection(col.name)"
           />
-          <span class="name">{{ collection.name }}</span>
-          <span class="count">{{ collection.beatmaps.length }}</span>
+          <span class="name">{{ col.name }}</span>
+          <span class="count">{{ col.sets.length }}</span>
         </li>
       }
     </ul>

@@ -1,15 +1,13 @@
-<div class="preview">
-  <span class="section-title">Preview</span>
-  @if (previewItems().length === 0) {
-    <div class="empty">Select a collection to preview</div>
-  } @else {
-    <div class="preview-list">
-      @for (item of previewItems(); track $index) {
-        <div class="preview-item" (click)="openMap(item.beatmapsetId!)">
-          <span class="badge">{{ item.collectionName }}</span>
-          <span class="title">{{ item.title }}</span>
-        </div>
-      }
-    </div>
-  }
+<div class="preview-panel">
+  <div class="panel-header">
+    <span class="section-title">Preview</span>
+    @if (store.selectedCount() > 0) {
+      <span class="count-badge">{{ store.totalSelectedSets() }} sets</span>
+    }
+  </div>
+  <app-beatmap-set-list
+    [sets]="store.selectedSets()"
+    emptyText="Select a collection to preview"
+    listHeight="calc(100vh - 160px)"
+  />
 </div>

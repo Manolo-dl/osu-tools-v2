@@ -41,7 +41,13 @@
 
 ul {
   padding: 4px 0;
+  max-height: calc(100vh - 360px);
+  overflow-y: auto;
 }
+
+ul::-webkit-scrollbar { width: 4px; }
+ul::-webkit-scrollbar-track { background: transparent; }
+ul::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .collection-item {
   display: flex;

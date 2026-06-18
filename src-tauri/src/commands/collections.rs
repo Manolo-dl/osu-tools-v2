@@ -1,13 +1,7 @@
 use osynic_osudb::entity::collection::collectiondb::CollectionDB;
-use osynic_osudb::entity::osu::osudb::OsuDB;
-
-#[derive(serde::Serialize)]
-pub struct OsuBeatmap {
-    pub md5: String,
-    pub beatmapset_id: u32,
-    pub title: String,
-    pub artist: String,
-}
+use crate::OsuState;
+use crate::DbState;
+use crate::commands::collection_cache;
 
 #[derive(serde::Serialize)]
 pub struct OsuCollection {
@@ -16,12 +10,40 @@ pub struct OsuCollection {
 }
 
 #[tauri::command]
-pub fn read_osu_collections(osu_path: String) -> Result<Vec<OsuCollection>, String> {
-    let path = std::path::Path::new(&osu_path).join("collection.db");
-    let db = CollectionDB::from_file(&path).map_err(|e| e.to_string())?;
+pub async fn read_osu_collections(
+    osu_state: tauri::State<'_, OsuState>,
+    db_state: tauri::State<'_, DbState>,
+) -> Result<Vec<OsuCollection>, String> {
 
-    let result: Vec<OsuCollection> = db
-        .collections
+    let osu_path = {
+        let path = osu_state.path.lock().unwrap();
+        path.as_ref().ok_or("osu! path not set")?.clone()
+    };
+
+    let collection_path = std::path::Path::new(&osu_path).join("collection.db");
+
+    let metadata = std::fs::metadata(&collection_path).map_err(|e| e.to_string())?;
+    let file_size = metadata.len() as i64;
+    let last_modified = metadata
+        .modified()
+        .map_err(|e| e.to_string())?
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|e| e.to_string())?
+        .as_secs() as i64;
+
+    let pool = &db_state.pool;
+
+    if let Some(meta) = collection_cache::get_meta(pool).await {
+        if meta.last_modified == last_modified && meta.file_size == file_size {
+            log::info!("loading collection.db from cache");
+            return collection_cache::get_collections(pool).await.map_err(|e| e.to_string());
+        }
+    }
+
+    log::info!("cache miss, reading collection.db");
+    let db = CollectionDB::from_file(&collection_path).map_err(|e| e.to_string())?;
+
+    let collections: Vec<OsuCollection> = db.collections
         .into_iter()
         .map(|c| OsuCollection {
             name: c.name.unwrap_or_default(),
@@ -29,48 +51,10 @@ pub fn read_osu_collections(osu_path: String) -> Result<Vec<OsuCollection>, Stri
         })
         .collect();
 
-    if let Some(first) = result.first() {
-        log::info!(
-            "First collection: {} with {} maps",
-            first.name,
-            first.md5s.len()
-        );
-        if let Some(first_md5) = first.md5s.first() {
-            log::info!("First MD5 from collection: {}", first_md5);
-        }
-    }
+    collection_cache::save_collections(pool, &collections).await.map_err(|e| e.to_string())?;
+    collection_cache::set_meta(pool, last_modified, file_size).await.map_err(|e| e.to_string())?;
 
-    Ok(result)
-}
-
-#[tauri::command]
-pub fn read_osu_db(osu_path: String) -> Result<Vec<OsuBeatmap>, String> {
-    let path = std::path::Path::new(&osu_path).join("osu!.db");
-    let db = OsuDB::from_file(&path).map_err(|e| e.to_string())?;
-
-    let result: Vec<OsuBeatmap> = db
-        .beatmaps
-        .into_iter()
-        .filter_map(|b| {
-            let md5 = b.hash?;
-            if b.beatmapset_id < 0 {
-                return None;
-            }
-            Some(OsuBeatmap {
-                md5,
-                beatmapset_id: b.beatmapset_id as u32,
-                title: b.title_ascii.unwrap_or_default(),
-                artist: b.artist_ascii.unwrap_or_default(),
-            })
-        })
-        .collect();
-
-    if let Some(first) = result.first() {
-        log::info!("First MD5 from osu!.db: {}", first.md5);
-        log::info!("First beatmapset_id: {}", first.beatmapset_id);
-    }
-
-    Ok(result)
+    Ok(collections)
 }
 
 #[tauri::command]
