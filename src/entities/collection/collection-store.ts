@@ -25,10 +25,9 @@ export const CollectionStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
 
-    withComputed((store, osuDb = inject(OsuDbStore)) => ({
-        collectionsWithBeatmaps: computed(() => {
+    withComputed((store, osuDb = inject(OsuDbStore)) => {
+        const collectionsWithBeatmaps = computed(() => {
             const setsByMd5 = osuDb.beatmapSetsByMd5();
-
             return store.collections().map(col => {
                 const seenIds = new Set<number>();
                 const sets = col.md5s
@@ -39,11 +38,36 @@ export const CollectionStore = signalStore(
                         seenIds.add(set.beatmapsetId);
                         return true;
                     });
-
                 return { name: col.name, sets };
             });
-        }),
-    })),
+        });
+
+        const selectedSets = computed(() => {
+            const selected = store.selectedCollections();
+            const seen = new Set<number>();
+            const sets: OsuBeatmapSet[] = [];
+            for (const col of collectionsWithBeatmaps()) {
+                if (!selected.includes(col.name)) continue;
+                for (const set of col.sets) {
+                    if (seen.has(set.beatmapsetId)) continue;
+                    seen.add(set.beatmapsetId);
+                    sets.push(set);
+                }
+            }
+            return sets;
+        });
+
+        return {
+            collectionsWithBeatmaps,
+            selectedSets,
+            selectedCount: computed(() => store.selectedCollections().length),
+            totalSelectedSets: computed(() => selectedSets().length),
+            allSelected: computed(() => {
+                const cols = collectionsWithBeatmaps();
+                return cols.length > 0 && cols.length === store.selectedCollections().length;
+            }),
+        };
+    }),
 
     withMethods((store, osuPath = inject(OsuPathService)) => ({
 
@@ -66,10 +90,8 @@ export const CollectionStore = signalStore(
 
         toggleSelection(name: string) {
             const selected = store.selectedCollections();
-            const isSelected = selected.includes(name);
-
             patchState(store, {
-                selectedCollections: isSelected
+                selectedCollections: selected.includes(name)
                     ? selected.filter(c => c !== name)
                     : [...selected, name]
             });

@@ -2,7 +2,7 @@
   <div class="list-header">
     <span class="section-label">Collections</span>
     <label class="select-all">
-      <input type="checkbox" [checked]="allSelected()" (change)="toggleAll()" />
+      <input type="checkbox" [checked]="store.allSelected()" (change)="store.allSelected() ? store.clearSelection() : store.selectAll()" />
       Select all
     </label>
   </div>
@@ -18,12 +18,12 @@
       @for (col of store.collectionsWithBeatmaps(); track col.name) {
         <li
           class="collection-item"
-          [class.selected]="isSelected(col.name)"
+          [class.selected]="store.selectedCollections().includes(col.name)"
           (click)="store.toggleSelection(col.name)"
         >
           <input
             type="checkbox"
-            [checked]="isSelected(col.name)"
+            [checked]="store.selectedCollections().includes(col.name)"
             (click)="$event.stopPropagation()"
             (change)="store.toggleSelection(col.name)"
           />

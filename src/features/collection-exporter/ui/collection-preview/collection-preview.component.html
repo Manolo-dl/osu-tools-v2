@@ -1,7 +1,7 @@
 <div class="preview">
   <span class="section-title">Preview</span>
   <app-beatmap-set-list
-    [sets]="previewSets()"
+    [sets]="store.selectedSets()"
     emptyText="Select a collection to preview"
     listHeight="400px"
   />

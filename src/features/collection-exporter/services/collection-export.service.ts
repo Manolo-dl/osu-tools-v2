@@ -7,31 +7,26 @@ import { save } from '@tauri-apps/plugin-dialog';
   providedIn: 'root',
 })
 export class CollectionExportService {
-  private collectionStore = inject(CollectionStore);
+  private store = inject(CollectionStore);
 
   exportToTxt(format: 'urls' | 'ids' | 'with-headers'): string {
-    const selected = this.collectionStore.selectedCollections();
-    const collections = this.collectionStore.collectionsWithBeatmaps()
+    const selected = this.store.selectedCollections();
+    const collections = this.store.collectionsWithBeatmaps()
       .filter(c => selected.includes(c.name));
 
     const lines: string[] = [];
 
-    for (const collection of collections) {
+    for (const col of collections) {
       if (format === 'with-headers') {
-        lines.push(`----------------- ${collection.name} -----------------`);
+        lines.push(`----------------- ${col.name} -----------------`);
       }
-
-      for (const set of collection.sets) {
-        if (format === 'ids') {
-          lines.push(`${set.beatmapsetId}`);
-        } else {
-          lines.push(`https://osu.ppy.sh/beatmapsets/${set.beatmapsetId}`);
-        }
+      for (const set of col.sets) {
+        lines.push(format === 'ids'
+          ? `${set.beatmapsetId}`
+          : `https://osu.ppy.sh/beatmapsets/${set.beatmapsetId}`
+        );
       }
-
-      if (format === 'with-headers') {
-        lines.push('');
-      }
+      if (format === 'with-headers') lines.push('');
     }
 
     return lines.join('\n');
@@ -39,15 +34,13 @@ export class CollectionExportService {
 
   async exportToFile(format: 'urls' | 'ids' | 'with-headers') {
     const content = this.exportToTxt(format);
-
     const path = await save({
       filters: [{ name: 'Text', extensions: ['txt'] }],
       defaultPath: 'collections.txt',
     });
-
     if (path) {
       await invoke('write_text_file', { path, content });
-      this.collectionStore.clearSelection();
+      this.store.clearSelection();
     }
   }
 }
