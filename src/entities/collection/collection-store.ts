@@ -2,6 +2,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from "@
 import { OsuCollection } from "./collection-model";
 import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
+import { OsuBeatmapSet } from "@entities/osu-db/osu-db-model";
 import { OsuPathService } from "@shared/services";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -26,26 +27,20 @@ export const CollectionStore = signalStore(
 
     withComputed((store, osuDb = inject(OsuDbStore)) => ({
         collectionsWithBeatmaps: computed(() => {
-            const diffsByMd5 = osuDb.diffsByMd5();
-            const beatmapSetIdByMd5 = osuDb.beatmapSetIdByMd5();
+            const setsByMd5 = osuDb.beatmapSetsByMd5();
 
             return store.collections().map(col => {
-                const seenSets = new Set<number>();
-                const beatmaps = col.md5s
-                    .map(md5 => {
-                        const diff = diffsByMd5.get(md5);
-                        const setId = beatmapSetIdByMd5.get(md5);
-                        return diff && setId !== undefined ? { diff, setId } : null;
-                    })
-                    .filter(b => b !== null)
-                    .filter(b => {
-                        if (seenSets.has(b!.setId)) return false;
-                        seenSets.add(b!.setId);
+                const seenIds = new Set<number>();
+                const sets = col.md5s
+                    .map(md5 => setsByMd5.get(md5))
+                    .filter((set): set is OsuBeatmapSet => set !== undefined)
+                    .filter(set => {
+                        if (seenIds.has(set.beatmapsetId)) return false;
+                        seenIds.add(set.beatmapsetId);
                         return true;
-                    })
-                    .map(b => b!.diff);
+                    });
 
-                return { name: col.name, beatmaps };
+                return { name: col.name, sets };
             });
         }),
     })),

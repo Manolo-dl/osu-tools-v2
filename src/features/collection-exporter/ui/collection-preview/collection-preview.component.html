@@ -4,10 +4,32 @@
     <div class="empty">Select a collection to preview</div>
   } @else {
     <div class="preview-list">
-      @for (item of previewItems(); track $index) {
-        <div class="preview-item" (click)="openMap(item.beatmapsetId!)">
-          <span class="badge">{{ item.collectionName }}</span>
-          <span class="title">{{ item.title }}</span>
+      @for (item of previewItems(); track item.set.beatmapsetId) {
+        <div class="set-card" [attr.data-status]="item.set.status" (click)="openSet(item.set.beatmapsetId)">
+          <div class="status-bar"></div>
+          <div class="card-body">
+            <div class="card-titles">
+              <span class="set-title">{{ item.set.title }}</span>
+              <span class="set-artist">{{ item.set.artist }}</span>
+            </div>
+            <div class="card-footer">
+              <span class="status-badge" [attr.data-status]="item.set.status">{{ item.set.status }}</span>
+              <div class="diff-pips">
+                @for (mode of uniqueModes(item.set.diffs); track mode) {
+                  <span class="diff-pip-mode" [style.color]="modeColor(mode)">{{ modeChar(mode) }}</span>
+                  @for (diff of visibleDiffs(item.set.diffs, mode); track diff.md5) {
+                    <span class="diff-pip" [style.background]="diffBg(diff.stars)"></span>
+                  }
+                  @if (extraDiffs(item.set.diffs, mode) > 0) {
+                    <span class="diff-pip-extra">+{{ extraDiffs(item.set.diffs, mode) }}</span>
+                  }
+                }
+              </div>
+              @if (multipleSelected()) {
+                <span class="collection-badge">{{ item.collectionName }}</span>
+              }
+            </div>
+          </div>
         </div>
       }
     </div>

@@ -10,16 +10,19 @@ import { CollectionExportService } from '@features/collection-exporter/services/
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CollectionExportControlsComponent {
-  readonly exportService = inject(CollectionExportService)
-  readonly collectionStore = inject(CollectionStore);
+  readonly exportService = inject(CollectionExportService);
+  readonly store = inject(CollectionStore);
 
   readonly format = signal<'urls' | 'ids' | 'with-headers'>('urls');
 
-  readonly totalBeatmaps = computed(() => {
-    const selected = this.collectionStore.selectedCollections();
-    return this.collectionStore.collections()
-      .filter(c => selected.includes(c.name))
-      .reduce((sum, c) => sum + c.beatmaps.length, 0);
+  readonly totalSets = computed(() => {
+    const selected = this.store.selectedCollections();
+    const seen = new Set<number>();
+    for (const col of this.store.collectionsWithBeatmaps()) {
+      if (!selected.includes(col.name)) continue;
+      for (const set of col.sets) seen.add(set.beatmapsetId);
+    }
+    return seen.size;
   });
 
   setFormat(format: 'urls' | 'ids' | 'with-headers') {

@@ -41,6 +41,16 @@ export const OsuDbStore = signalStore(
             return map;
         }),
 
+        beatmapSetsByMd5: computed(() => {
+            const map = new Map<string, OsuBeatmapSet>();
+            for (const set of store.beatmapSets()) {
+                for (const diff of set.diffs) {
+                    map.set(diff.md5, set);
+                }
+            }
+            return map;
+        }),
+
         totalSets: computed(() => store.beatmapSets().length),
 
         totalDiffs: computed(() =>

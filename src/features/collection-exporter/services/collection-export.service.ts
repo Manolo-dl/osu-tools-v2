@@ -1,28 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { CollectionStore } from '@entities/collection';
-import { OsuDbStore } from '@entities/osu-db';
 import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
-
-interface RustCollection {
-  name: string;
-  md5s: string[];
-}
-
-interface RustBeatmap {
-  md5: string;
-  beatmapset_id: number;
-  title: string;
-  artist: string;
-}
 
 @Injectable({
   providedIn: 'root',
 })
 export class CollectionExportService {
-
   private collectionStore = inject(CollectionStore);
-  private osuDbStore = inject(OsuDbStore);
 
   exportToTxt(format: 'urls' | 'ids' | 'with-headers'): string {
     const selected = this.collectionStore.selectedCollections();
@@ -33,18 +18,14 @@ export class CollectionExportService {
 
     for (const collection of collections) {
       if (format === 'with-headers') {
-        lines.push(`----------------- ${collection.name}-----------------`);
+        lines.push(`----------------- ${collection.name} -----------------`);
       }
 
-      for (const beatmap of collection.beatmaps) {
-
-        const setId = this.osuDbStore.beatmapSetIdByMd5().get(beatmap.md5);
-        if (!setId) continue;
-
+      for (const set of collection.sets) {
         if (format === 'ids') {
-          lines.push(`${setId}`);
+          lines.push(`${set.beatmapsetId}`);
         } else {
-          lines.push(`https://osu.ppy.sh/beatmapsets/${setId}`);
+          lines.push(`https://osu.ppy.sh/beatmapsets/${set.beatmapsetId}`);
         }
       }
 
