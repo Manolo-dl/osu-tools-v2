@@ -100,10 +100,39 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
 pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
 
-    sqlx::query("DELETE FROM diffs").execute(&mut *tx).await?;
-    sqlx::query("DELETE FROM beatmapsets").execute(&mut *tx).await?;
+    let existing_ids: Vec<i64> = sqlx::query_as::<_, (i64,)>(
+        "SELECT beatmapset_id FROM beatmapsets"
+    )
+    .fetch_all(&mut *tx)
+    .await?
+    .into_iter()
+    .map(|(id,)| id)
+    .collect();
+
+    let existing_set: std::collections::HashSet<i64> = existing_ids.into_iter().collect();
+
+    let new_ids: std::collections::HashSet<i64> = sets.iter()
+        .map(|s| s.beatmapset_id as i64)
+        .collect();
+
+    for id in existing_set.difference(&new_ids) {
+        sqlx::query("DELETE FROM diffs WHERE beatmapset_id = $1")
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
+
+        sqlx::query("DELETE FROM beatmapsets WHERE beatmapset_id = $1")
+            .bind(id)
+            .execute(&mut *tx)
+            .await?;
+    }
 
     for set in sets {
+
+        if existing_set.contains(&(set.beatmapset_id as i64)) {
+            continue;
+        }
+        
         sqlx::query(
             "INSERT INTO beatmapsets (beatmapset_id, title, artist, status)
              VALUES ($1, $2, $3, $4)"
