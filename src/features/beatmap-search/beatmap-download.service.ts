@@ -1,4 +1,4 @@
-import { inject, Injectable, OnDestroy } from '@angular/core';
+import { inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { BeatmapStore } from '@entities/beatmap';
 import { UserStore } from '@entities/user';
 import { OsuPathService } from '@shared/services';
@@ -21,6 +21,8 @@ export class BeatmapDownloadService implements OnDestroy {
   private userStore = inject(UserStore);
   private unlisten?: UnlistenFn;
 
+  readonly error = signal<string | null>(null);
+
   async startDownload() {
     if (this.beatmapStore.isDownloading()) return;
 
@@ -30,6 +32,7 @@ export class BeatmapDownloadService implements OnDestroy {
     const osuSession = this.userStore.user()?.osuSession;
     if (!osuSession) return;
 
+    this.error.set(null);
     this.beatmapStore.setDownloading(true);
 
     this.unlisten = await listen<DownloadProgress>('download:progress', (event) => {
@@ -54,6 +57,14 @@ export class BeatmapDownloadService implements OnDestroy {
         beatmapSetIds: pending.map(i => i.beatmapSetId),
         osuSession,
       });
+    } catch (e) {
+      this.error.set(typeof e === 'string' ? e : 'Download failed');
+      for (const item of pending) {
+        const q = this.beatmapStore.queue().find(q => q.beatmapSetId === item.beatmapSetId);
+        if (q?.status === 'pending') {
+          this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
+        }
+      }
     } finally {
       this.beatmapStore.setDownloading(false);
       this.unlisten?.();
@@ -70,7 +81,7 @@ export class BeatmapDownloadService implements OnDestroy {
     });
   }
 
-  private async notifyCompleted() {
+  private notifyCompleted() {
     const failed = this.beatmapStore.queue().filter(i => i.status === 'failed');
     if (failed.length > 0) {
       sendNotification({

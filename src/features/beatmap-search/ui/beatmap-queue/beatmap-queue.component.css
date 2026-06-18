@@ -137,6 +137,15 @@
   color: var(--warning);
 }
 
+.note-error {
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.note-error .note-icon {
+  color: var(--danger);
+}
+
 .controls {
   display: flex;
   gap: 8px;

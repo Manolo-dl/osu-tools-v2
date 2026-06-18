@@ -16,6 +16,15 @@
       }
     </div>
 
+    @if (downloader.error()) {
+      <div class="note note-error">
+        <svg class="note-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ downloader.error() }}
+      </div>
+    }
+
     @if (beatmapStore.queue().length > 0) {
       <div class="queue-list">
         @for (item of beatmapStore.queue(); track item.beatmapSetId) {
@@ -48,7 +57,7 @@
       @if (beatmapStore.isDownloading()) {
         <button class="btn-pause" (click)="downloader.pause()">Pause</button>
       } @else {
-        <button class="btn-start" [disabled]="pending() === 0" (click)="downloader.startDownload()">
+        <button class="btn-start" [disabled]="pending() === 0" (click)="startDownload()">
           Start download
         </button>
       }

@@ -17,4 +17,8 @@ export class BeatmapQueueComponent {
   readonly pending = computed(() => this.beatmapStore.queue().filter(i => i.status === 'pending').length);
   readonly done    = computed(() => this.beatmapStore.queue().filter(i => i.status === 'done').length);
   readonly failed  = computed(() => this.beatmapStore.queue().filter(i => i.status === 'failed').length);
+
+  async startDownload() {
+    await this.downloader.startDownload();
+  }
 }

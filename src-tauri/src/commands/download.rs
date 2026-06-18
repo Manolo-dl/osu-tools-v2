@@ -6,7 +6,7 @@ use crate::OsuState;
 #[derive(serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DownloadProgress {
-    pub beatmap_set_id: u32,
+    pub beatmap_set_id: u64,
     pub progress: f64,
     pub status: String,
 }
@@ -15,16 +15,19 @@ pub struct DownloadProgress {
 pub async fn start_downloads(
     app: tauri::AppHandle,
     osu_state: tauri::State<'_, OsuState>,
-    beatmap_set_ids: Vec<u32>,
+    beatmap_set_ids: Vec<u64>,
     osu_session: String,
 ) -> Result<(), String> {
-    
+
     let osu_path = {
         let path = osu_state.path.lock().unwrap();
         path.as_ref().ok_or("osu! path not set")?.clone()
     };
 
     let songs_folder = format!("{}/Songs", osu_path);
+    if !std::path::Path::new(&songs_folder).exists() {
+        return Err(format!("Songs folder not found: {}", songs_folder));
+    }
     let client = Client::new();
 
     for id in beatmap_set_ids {
@@ -42,7 +45,6 @@ pub async fn start_downloads(
                     status: "done".to_string(),
                 }).ok();
             }
-
             Err(e) => {
                 log::error!("Failed to download {}: {}", id, e);
                 app.emit("download:progress", DownloadProgress {
@@ -62,7 +64,7 @@ pub async fn start_downloads(
 async fn download_beatmap(
     app: &tauri::AppHandle,
     client: &Client,
-    beatmap_set_id: u32,
+    beatmap_set_id: u64,
     osu_session: &str,
     songs_folder: &str,
 ) -> Result<(), String> {
@@ -109,7 +111,6 @@ async fn download_beatmap(
     }
 
     const MAX_SIZE: usize = 200 * 1024 * 1024;
-
     if bytes.len() > MAX_SIZE {
         return Err(format!("Beatmap set {} is too large", beatmap_set_id));
     }
@@ -119,7 +120,7 @@ async fn download_beatmap(
     Ok(())
 }
 
-fn extract_filename(disposition: &str, beatmap_set_id: u32) -> String {
+fn extract_filename(disposition: &str, beatmap_set_id: u64) -> String {
     let re = regex::Regex::new(r#"filename="?([^";\n]+)"?"#).unwrap();
     if let Some(cap) = re.captures(disposition) {
         let name = cap[1].to_string();
