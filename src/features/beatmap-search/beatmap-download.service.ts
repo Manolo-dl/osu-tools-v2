@@ -16,13 +16,12 @@ interface DownloadProgress {
   providedIn: 'root',
 })
 export class BeatmapDownloadService implements OnDestroy {
-  private osuPath = inject(OsuPathStore);
   private beatmapStore = inject(BeatmapStore);
   private userStore = inject(UserStore);
+  private osuPath = inject(OsuPathStore);
   private unlisten?: UnlistenFn;
 
   readonly error = signal<string | null>(null);
-  readonly isCancelling = signal(false);
 
   async startDownload() {
     if (this.beatmapStore.isDownloading()) return;
@@ -34,7 +33,6 @@ export class BeatmapDownloadService implements OnDestroy {
     if (!osuSession) return;
 
     this.error.set(null);
-    this.isCancelling.set(false);
     this.beatmapStore.setDownloading(true);
 
     this.unlisten = await listen<DownloadProgress>('download:progress', (event) => {
@@ -53,27 +51,19 @@ export class BeatmapDownloadService implements OnDestroy {
       });
     } catch (e) {
       const msg = typeof e === 'string' ? e : 'Download failed';
-      if (msg !== 'cancelled') {
-        this.error.set(msg);
-        for (const item of pending) {
-          const q = this.beatmapStore.queue().find(q => q.beatmapSetId === item.beatmapSetId);
-          if (q?.status === 'pending') {
-            this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
-          }
+      this.error.set(msg);
+      for (const item of pending) {
+        const q = this.beatmapStore.queue().find(q => q.beatmapSetId === item.beatmapSetId);
+        if (q?.status === 'pending') {
+          this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
         }
       }
     } finally {
       this.beatmapStore.setDownloading(false);
-      this.isCancelling.set(false);
       this.unlisten?.();
       this.unlisten = undefined;
       this.notifyCompleted();
     }
-  }
-
-  async cancel() {
-    this.isCancelling.set(true);
-    await invoke('cancel_downloads');
   }
 
   private async appendFailedToFile(beatmapSetId: number) {

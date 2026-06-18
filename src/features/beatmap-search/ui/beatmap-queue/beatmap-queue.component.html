@@ -53,16 +53,10 @@
     </div>
 
     <div class="controls">
-      <button class="btn-clear" (click)="beatmapStore.clearQueue()">Clear queue</button>
-      @if (beatmapStore.isDownloading()) {
-        <button class="btn-pause" [disabled]="downloader.isCancelling()" (click)="downloader.cancel()">
-          {{ downloader.isCancelling() ? 'Cancelling…' : 'Cancel' }}
-        </button>
-      } @else {
-        <button class="btn-start" [disabled]="pending() === 0" (click)="startDownload()">
-          Start download
-        </button>
-      }
+      <button class="btn-clear" [disabled]="beatmapStore.isDownloading()" (click)="beatmapStore.clearQueue()">Clear queue</button>
+      <button class="btn-start" [disabled]="pending() === 0 || beatmapStore.isDownloading()" (click)="startDownload()">
+        {{ beatmapStore.isDownloading() ? 'Downloading…' : 'Start download' }}
+      </button>
     </div>
   </div>
 }

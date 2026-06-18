@@ -167,20 +167,16 @@
   border: 1px solid var(--border);
 }
 
-.btn-clear:hover {
+.btn-clear:hover:not(:disabled) {
   color: var(--danger);
   border-color: var(--danger);
 }
 
-.btn-pause {
-  background: var(--bg-overlay);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
+.btn-clear:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.btn-pause:hover {
-  color: var(--text-primary);
-}
 
 .btn-start {
   background: var(--accent);

@@ -1,9 +1,7 @@
 use reqwest::Client;
-use std::sync::atomic::AtomicBool;
 use futures_util::StreamExt;
 use tauri::Emitter;
-use std::sync::atomic::Ordering;
-use crate::{OsuState, DownloadState};
+use crate::OsuState;
 
 #[derive(serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -17,7 +15,6 @@ pub struct DownloadProgress {
 pub async fn start_downloads(
     app: tauri::AppHandle,
     osu_state: tauri::State<'_, OsuState>,
-    dl_state: tauri::State<'_, DownloadState>,
     beatmap_set_ids: Vec<u64>,
     osu_session: String,
 ) -> Result<(), String> {
@@ -32,21 +29,16 @@ pub async fn start_downloads(
         return Err(format!("Songs folder not found: {}", songs_folder));
     }
 
-    dl_state.cancelled.store(false, Ordering::Relaxed);
     let client = Client::new();
 
     for id in beatmap_set_ids {
-        if dl_state.cancelled.load(Ordering::Relaxed) {
-            break;
-        }
-
         app.emit("download:progress", DownloadProgress {
             beatmap_set_id: id,
             progress: 0.0,
             status: "downloading".to_string(),
         }).ok();
 
-        match download_beatmap(&app, &client, id, &osu_session, &songs_folder, &dl_state.cancelled).await {
+        match download_beatmap(&app, &client, id, &osu_session, &songs_folder).await {
             Ok(_) => {
                 app.emit("download:progress", DownloadProgress {
                     beatmap_set_id: id,
@@ -70,19 +62,12 @@ pub async fn start_downloads(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn cancel_downloads(dl_state: tauri::State<'_, DownloadState>) -> Result<(), String> {
-    dl_state.cancelled.store(true, Ordering::Relaxed);
-    Ok(())
-}
-
 async fn download_beatmap(
     app: &tauri::AppHandle,
     client: &Client,
     beatmap_set_id: u64,
     osu_session: &str,
     songs_folder: &str,
-    cancelled: &AtomicBool,
 ) -> Result<(), String> {
 
     let response = client
@@ -112,9 +97,6 @@ async fn download_beatmap(
     let mut stream = response.bytes_stream();
 
     while let Some(chunk) = stream.next().await {
-        if cancelled.load(Ordering::Relaxed) {
-            return Err("cancelled".to_string());
-        }
         let chunk = chunk.map_err(|e| e.to_string())?;
         downloaded += chunk.len() as u64;
         bytes.extend_from_slice(&chunk);
