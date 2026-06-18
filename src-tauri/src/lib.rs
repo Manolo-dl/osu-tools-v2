@@ -1,6 +1,8 @@
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_updater::UpdaterExt;
 use std::sync::Mutex;
+use sqlx::SqlitePool;
+use tauri::Manager;
 
 mod commands;
 
@@ -8,10 +10,30 @@ pub struct OsuState {
     pub path: Mutex<Option<String>>,
 }
 
+pub struct DbState {
+    pub pool: SqlitePool,
+}
+
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+
+            let app_dir = app.path().app_data_dir().unwrap();
+            std::fs::create_dir_all(&app_dir).unwrap();
+            let db_path = app_dir.join("osu_cache.db");
+
+            let pool = tauri::async_runtime::block_on(async {
+                SqlitePool::connect(&format!("sqlite://{}?mode=rwc", db_path.display()))
+                    .await
+                    .expect("failed to connect to sqlite")
+            });
+
+            tauri::async_runtime::block_on(async {
+                commands::osu_db_cache::init_schema(&pool).await.expect("failed to init schema");
+            });
+
+            app.manage(DbState { pool });
 
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {

@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use osynic_osudb::entity::osu::osudb::OsuDB;
 use crate::OsuState;
+use crate::DbState;
+use crate::commands::osu_db_cache;
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,15 +27,50 @@ pub struct OsuBeatmapSet {
     pub title: String,
     pub artist: String,
     pub status: String,
-    pub diffs: Vec<OsuDiff>
+    pub diffs: Vec<OsuDiff>,
 }
 
 #[tauri::command]
-pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeatmapSet>, String> {
+pub async fn read_osu_db_full(
+    osu_state: tauri::State<'_, OsuState>,
+    db_state: tauri::State<'_, DbState>,
+) -> Result<Vec<OsuBeatmapSet>, String> {
 
-    let path = state.path.lock().unwrap();
-    let osu_path = path.as_ref().ok_or("osu! path not set")?;
+    let osu_path = {
+        let path = osu_state.path.lock().unwrap();
+        path.as_ref().ok_or("osu! path not set")?.clone()
+    };
 
+    let db_path = std::path::Path::new(&osu_path).join("osu!.db");
+
+    let metadata = std::fs::metadata(&db_path).map_err(|e| e.to_string())?;
+    let file_size = metadata.len() as i64;
+    let last_modified = metadata
+        .modified()
+        .map_err(|e| e.to_string())?
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|e| e.to_string())?
+        .as_secs() as i64;
+
+    let pool = &db_state.pool;
+
+    if let Some(meta) = osu_db_cache::get_meta(pool).await {
+        if meta.last_modified == last_modified && meta.file_size == file_size {
+            log::info!("loading osu!.db from cache");
+            return osu_db_cache::get_beatmapsets(pool).await.map_err(|e| e.to_string());
+        }
+    }
+
+    log::info!("cache miss, reading osu!.db");
+    let sets = read_from_osudb(&osu_path)?;
+
+    osu_db_cache::save_beatmapsets(pool, &sets).await.map_err(|e| e.to_string())?;
+    osu_db_cache::set_meta(pool, last_modified, file_size).await.map_err(|e| e.to_string())?;
+
+    Ok(sets)
+}
+
+fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
     use osynic_osudb::entity::osu::field::mode::Mode;
     use osynic_osudb::entity::osu::field::rank::RankedStatus;
 
@@ -43,10 +80,9 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
     let mut sets: HashMap<u32, OsuBeatmapSet> = HashMap::new();
 
     for b in db.beatmaps {
-
         let md5 = match b.hash {
             Some(h) => h,
-            None => continue
+            None => continue,
         };
 
         if b.beatmapset_id < 0 { continue; }
@@ -59,8 +95,8 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
             Mode::CatchTheBeat => &b.ctb_ratings,
             Mode::Mania => &b.mania_ratings,
         }.iter().next()
-            .map(|(_, s)| *s)
-            .unwrap_or(0.0);
+        .map(|(_, s)| *s)
+        .unwrap_or(0.0);
 
         let bpm = b.timing_points.iter()
             .find(|tp| !tp.inherits)
@@ -99,7 +135,6 @@ pub fn read_osu_db_full(state: tauri::State<'_, OsuState>) -> Result<Vec<OsuBeat
                 diffs: Vec::new(),
             })
             .diffs.push(diff);
-
     }
 
     Ok(sets.into_values().collect())
