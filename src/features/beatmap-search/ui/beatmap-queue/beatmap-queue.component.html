@@ -55,7 +55,9 @@
     <div class="controls">
       <button class="btn-clear" (click)="beatmapStore.clearQueue()">Clear queue</button>
       @if (beatmapStore.isDownloading()) {
-        <button class="btn-pause" (click)="downloader.pause()">Pause</button>
+        <button class="btn-pause" [disabled]="downloader.isCancelling()" (click)="downloader.cancel()">
+          {{ downloader.isCancelling() ? 'Cancelling…' : 'Cancel' }}
+        </button>
       } @else {
         <button class="btn-start" [disabled]="pending() === 0" (click)="startDownload()">
           Start download

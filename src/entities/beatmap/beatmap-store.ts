@@ -39,8 +39,24 @@ export const BeatmapStore = signalStore(
 
         addToQueue(ids: number[]) {
             const existing = new Set(store.rawQueue());
-            const newIds = ids.filter(id => !existing.has(id));
-            patchState(store, { rawQueue: [...store.rawQueue(), ...newIds] });
+            const statusMap = { ...store.statusMap() };
+
+            const newIds: number[] = [];
+            for (const id of ids) {
+                if (!existing.has(id)) {
+                    newIds.push(id);
+                } else {
+                    const s = statusMap[id]?.status;
+                    if (s === 'done' || s === 'failed') {
+                        delete statusMap[id];
+                    }
+                }
+            }
+
+            patchState(store, {
+                rawQueue: [...store.rawQueue(), ...newIds],
+                statusMap,
+            });
         },
 
         updateStatus(beatmapSetId: number, status: DownloadStatus, progress = 0) {

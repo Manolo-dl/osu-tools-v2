@@ -1,6 +1,7 @@
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_updater::UpdaterExt;
 use std::sync::Mutex;
+use std::sync::atomic::AtomicBool;
 use sqlx::SqlitePool;
 use tauri::Manager;
 
@@ -8,6 +9,10 @@ mod commands;
 
 pub struct OsuState {
     pub path: Mutex<Option<String>>,
+}
+
+pub struct DownloadState {
+    pub cancelled: AtomicBool,
 }
 
 pub struct DbState {
@@ -71,9 +76,11 @@ pub fn run() {
             commands::collections::write_text_file,
             commands::osu_db::read_osu_db_full,
             commands::download::start_downloads,
+            commands::download::cancel_downloads,
             commands::download::append_text_file,
         ])
         .manage(OsuState { path: Mutex::new(None) })
+        .manage(DownloadState { cancelled: AtomicBool::new(false) })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

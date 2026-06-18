@@ -1,7 +1,7 @@
 import { inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { BeatmapStore } from '@entities/beatmap';
 import { UserStore } from '@entities/user';
-import { OsuPathStore } from '@shared/stores'; 
+import { OsuPathStore } from '@shared/stores';
 import { invoke } from '@tauri-apps/api/core';
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
@@ -22,6 +22,7 @@ export class BeatmapDownloadService implements OnDestroy {
   private unlisten?: UnlistenFn;
 
   readonly error = signal<string | null>(null);
+  readonly isCancelling = signal(false);
 
   async startDownload() {
     if (this.beatmapStore.isDownloading()) return;
@@ -33,6 +34,7 @@ export class BeatmapDownloadService implements OnDestroy {
     if (!osuSession) return;
 
     this.error.set(null);
+    this.isCancelling.set(false);
     this.beatmapStore.setDownloading(true);
 
     this.unlisten = await listen<DownloadProgress>('download:progress', (event) => {
@@ -42,14 +44,6 @@ export class BeatmapDownloadService implements OnDestroy {
       if (status === 'failed') {
         this.appendFailedToFile(beatmapSetId);
       }
-
-      if (status === 'done' || status === 'failed') {
-        const remaining = this.beatmapStore.queue().filter(i => i.status === 'pending');
-        if (remaining.length === 0) {
-          this.beatmapStore.setDownloading(false);
-          this.notifyCompleted();
-        }
-      }
     });
 
     try {
@@ -58,18 +52,28 @@ export class BeatmapDownloadService implements OnDestroy {
         osuSession,
       });
     } catch (e) {
-      this.error.set(typeof e === 'string' ? e : 'Download failed');
-      for (const item of pending) {
-        const q = this.beatmapStore.queue().find(q => q.beatmapSetId === item.beatmapSetId);
-        if (q?.status === 'pending') {
-          this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
+      const msg = typeof e === 'string' ? e : 'Download failed';
+      if (msg !== 'cancelled') {
+        this.error.set(msg);
+        for (const item of pending) {
+          const q = this.beatmapStore.queue().find(q => q.beatmapSetId === item.beatmapSetId);
+          if (q?.status === 'pending') {
+            this.beatmapStore.updateStatus(item.beatmapSetId, 'failed');
+          }
         }
       }
     } finally {
       this.beatmapStore.setDownloading(false);
+      this.isCancelling.set(false);
       this.unlisten?.();
       this.unlisten = undefined;
+      this.notifyCompleted();
     }
+  }
+
+  async cancel() {
+    this.isCancelling.set(true);
+    await invoke('cancel_downloads');
   }
 
   private async appendFailedToFile(beatmapSetId: number) {
@@ -89,10 +93,6 @@ export class BeatmapDownloadService implements OnDestroy {
         body: `${failed.length} maps failed. Saved to failed_downloads.txt`,
       });
     }
-  }
-
-  pause() {
-    this.beatmapStore.setDownloading(false);
   }
 
   ngOnDestroy() {
