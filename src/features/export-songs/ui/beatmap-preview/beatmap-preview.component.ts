@@ -43,6 +43,14 @@ export class BeatmapPreviewComponent {
     return [...new Set(diffs.map(d => d.mode))].sort();
   }
 
+  visibleDiffsForMode(diffs: OsuDiff[], mode: number): OsuDiff[] {
+    return diffs.filter(d => d.mode === mode).sort((a, b) => a.stars - b.stars).slice(0, 6);
+  }
+
+  extraDiffsForMode(diffs: OsuDiff[], mode: number): number {
+    return Math.max(0, diffs.filter(d => d.mode === mode).length - 6);
+  }
+
   diffBg(stars: number): string {
     if (stars < 2)   return '#8bc9ff';
     if (stars < 2.5) return '#89e066';

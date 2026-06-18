@@ -158,17 +158,33 @@
 .song-card.qualified .status-badge { color: #aaaaff; background: rgba(170,170,255,0.12); }
 .song-card.unranked  .status-badge { color: #ffaa44; background: rgba(255,170,68,0.12); }
 
-.mode-pips {
+.diff-pips {
   display: flex;
-  gap: 3px;
   align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
 }
 
-.mode-pip {
-  width: 7px;
-  height: 7px;
+.diff-pip-mode {
+  font-size: 10px;
+  line-height: 1;
+  margin-right: 1px;
+  flex-shrink: 0;
+}
+
+.diff-pip {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  opacity: 0.75;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.diff-pip-extra {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-left: 1px;
+  flex-shrink: 0;
 }
 
 .expand-chevron {

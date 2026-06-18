@@ -21,9 +21,15 @@
               <div class="card-side">
                 <span class="status-badge">{{ set.status }}</span>
                 <div class="card-side-bottom">
-                  <div class="mode-pips">
+                  <div class="diff-pips">
                     @for (mode of uniqueModes(set.diffs); track mode) {
-                      <span class="mode-pip" [style.background]="modeColor(mode)"></span>
+                      <span class="diff-pip-mode" [style.color]="modeColor(mode)">{{ modeChar(mode) }}</span>
+                      @for (diff of visibleDiffsForMode(set.diffs, mode); track diff.md5) {
+                        <span class="diff-pip" [style.background]="diffBg(diff.stars)"></span>
+                      }
+                      @if (extraDiffsForMode(set.diffs, mode) > 0) {
+                        <span class="diff-pip-extra">+{{ extraDiffsForMode(set.diffs, mode) }}</span>
+                      }
                     }
                   </div>
                   <span class="expand-chevron" [class.open]="isExpanded(set.beatmapsetId)">▾</span>
