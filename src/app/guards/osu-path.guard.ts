@@ -1,10 +1,10 @@
 import { inject } from '@angular/core';
 import type { CanActivateFn } from '@angular/router';
 import { Router } from '@angular/router';
-import { OsuPathService } from '@shared/services';
+import { OsuPathStore } from '@shared/services';
 
 export const osuPathGuard: CanActivateFn = async () => {
-  const osuPath = inject(OsuPathService);
+  const osuPath = inject(OsuPathStore);
   const router = inject(Router);
 
   await osuPath.detect();

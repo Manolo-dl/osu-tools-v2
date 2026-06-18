@@ -1,6 +1,6 @@
 import { computed, inject } from "@angular/core";
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
-import { OsuPathService } from "@shared/services";
+import { OsuPathStore } from "@shared/services";
 import { invoke } from "@tauri-apps/api/core";
 import { OsuBeatmapSet, OsuDiff } from "./osu-db-model";
 
@@ -78,7 +78,7 @@ export const OsuDbStore = signalStore(
         localBeatmapSetIds: computed(() => new Set(store.beatmapSets().map(s => s.beatmapsetId))),
     })),
 
-    withMethods((store, osuPath = inject(OsuPathService)) => ({
+    withMethods((store, osuPath = inject(OsuPathStore)) => ({
         setBeatmapSets(beatmapSets: OsuBeatmapSet[]) {
             patchState(store, { beatmapSets, isLoaded: true, isLoading: false });
         },

@@ -1,7 +1,7 @@
 import { inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { BeatmapStore } from '@entities/beatmap';
 import { UserStore } from '@entities/user';
-import { OsuPathService } from '@shared/services';
+import { OsuPathStore } from '@shared/services';
 import { invoke } from '@tauri-apps/api/core';
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
@@ -16,7 +16,7 @@ interface DownloadProgress {
   providedIn: 'root',
 })
 export class BeatmapDownloadService implements OnDestroy {
-  private osuPath = inject(OsuPathService);
+  private osuPath = inject(OsuPathStore);
   private beatmapStore = inject(BeatmapStore);
   private userStore = inject(UserStore);
   private unlisten?: UnlistenFn;
