@@ -14,51 +14,63 @@
 
 .queue-stats {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
   font-size: 12px;
-  color: var(--text-muted);
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
 
-.queue-stats span:first-child {
+.stat-total {
+  font-weight: 600;
   color: var(--text-secondary);
+}
+
+.stat {
+  padding: 1px 8px;
+  border-radius: 999px;
   font-weight: 600;
 }
+
+.stat.done      { background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success); }
+.stat.pending   { background: var(--bg-overlay); color: var(--text-muted); }
+.stat.failed    { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
+.stat.skipped   { background: var(--bg-overlay); color: var(--text-muted); font-style: italic; }
 
 .queue-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 400px;
+  gap: 4px;
+  max-height: 360px;
   overflow-y: auto;
 }
+
+.queue-list::-webkit-scrollbar { width: 4px; }
+.queue-list::-webkit-scrollbar-track { background: transparent; }
+.queue-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .queue-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: 10px;
+  padding: 7px 10px;
   background: var(--bg-base);
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) - 2px);
+  font-size: 12px;
 }
 
-.queue-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
-}
+.queue-item.done     { border-color: color-mix(in srgb, var(--success) 20%, transparent); }
+.queue-item.failed   { border-color: color-mix(in srgb, var(--danger) 20%, transparent); }
+.queue-item.downloading { border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
 
 .id {
-  font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
   font-family: monospace;
   flex-shrink: 0;
+  min-width: 70px;
 }
 
 .progress-bar {
@@ -76,18 +88,54 @@
   transition: width 0.2s ease;
 }
 
-.status {
+.progress-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: right;
+}
+
+.status-label {
+  margin-left: auto;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  flex-shrink: 0;
 }
 
-.status.pending    { color: var(--text-muted); }
-.status.downloading { color: var(--accent); }
-.status.done       { color: var(--success); }
-.status.failed     { color: var(--danger); }
+.queue-item.pending    .status-label { color: var(--text-muted); }
+.queue-item.done       .status-label { color: var(--success); }
+.queue-item.failed     .status-label { color: var(--danger); }
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.note-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--text-muted);
+}
+
+.note-warning {
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+  background: color-mix(in srgb, var(--warning) 8%, transparent);
+}
+
+.note-warning .note-icon {
+  color: var(--warning);
+}
 
 .controls {
   display: flex;
@@ -101,26 +149,41 @@
   border-radius: var(--radius);
   font-size: 13px;
   font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.controls button:first-child {
+.btn-clear {
   background: var(--bg-overlay);
   color: var(--text-secondary);
   border: 1px solid var(--border);
 }
 
-.controls button:first-child:hover {
+.btn-clear:hover {
   color: var(--danger);
   border-color: var(--danger);
 }
 
-.controls button:last-child {
+.btn-pause {
+  background: var(--bg-overlay);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-pause:hover {
+  color: var(--text-primary);
+}
+
+.btn-start {
   background: var(--accent);
   color: #fff;
   border: 1px solid transparent;
 }
 
-.controls button:last-child:hover {
+.btn-start:hover:not(:disabled) {
   background: var(--accent-hover);
+}
+
+.btn-start:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

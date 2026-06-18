@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { BeatmapStore } from '@entities/beatmap';
 import { BeatmapDownloadService } from '@features/beatmap-search';
 
 @Component({
   selector: 'app-beatmap-queue',
-  imports: [],
+  imports: [DecimalPipe],
   templateUrl: './beatmap-queue.component.html',
   styleUrl: './beatmap-queue.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,27 +14,7 @@ export class BeatmapQueueComponent {
   readonly beatmapStore = inject(BeatmapStore);
   readonly downloader = inject(BeatmapDownloadService);
 
-  get pending() {
-    return this.beatmapStore.queue().filter(i => i.status === 'pending').length;
-  }
-
-  get done() {
-    return this.beatmapStore.queue().filter(i => i.status === 'done').length;
-  }
- 
-  get failed() {
-    return this.beatmapStore.queue().filter(i => i.status === 'failed').length;
-  }
-
-  startDownload() {
-    this.downloader.startDownload();
-  }
-
-  pause() {
-    this.beatmapStore.setDownloading(false);
-  }
-
-  clearQueue() {
-    this.beatmapStore.clearQueue();
-  }
+  readonly pending = computed(() => this.beatmapStore.queue().filter(i => i.status === 'pending').length);
+  readonly done    = computed(() => this.beatmapStore.queue().filter(i => i.status === 'done').length);
+  readonly failed  = computed(() => this.beatmapStore.queue().filter(i => i.status === 'failed').length);
 }

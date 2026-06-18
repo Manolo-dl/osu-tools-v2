@@ -1,8 +1,7 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
-import { BeatmapStore, DownloadItem } from '@entities/beatmap';
+import { BeatmapStore } from '@entities/beatmap';
 import { UserStore } from '@entities/user';
 import { OsuPathService } from '@shared/services';
-import { fetch } from '@tauri-apps/plugin-http';
 import { invoke } from '@tauri-apps/api/core';
 import { sendNotification } from '@tauri-apps/plugin-notification';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
@@ -25,9 +24,7 @@ export class BeatmapDownloadService implements OnDestroy {
   async startDownload() {
     if (this.beatmapStore.isDownloading()) return;
 
-    const pending = this.beatmapStore.queue()
-      .filter(i => i.status === 'pending');
-
+    const pending = this.beatmapStore.queue().filter(i => i.status === 'pending');
     if (pending.length === 0) return;
 
     const osuSession = this.userStore.user()?.osuSession;
@@ -35,7 +32,7 @@ export class BeatmapDownloadService implements OnDestroy {
 
     this.beatmapStore.setDownloading(true);
 
-    this.unlisten = await listen<DownloadProgress>( 'download:progress', (event) => {
+    this.unlisten = await listen<DownloadProgress>('download:progress', (event) => {
       const { beatmapSetId, progress, status } = event.payload;
       this.beatmapStore.updateStatus(beatmapSetId, status, progress);
 
@@ -43,7 +40,7 @@ export class BeatmapDownloadService implements OnDestroy {
         this.appendFailedToFile(beatmapSetId);
       }
 
-      if (status == 'done' || status === 'failed') {
+      if (status === 'done' || status === 'failed') {
         const remaining = this.beatmapStore.queue().filter(i => i.status === 'pending');
         if (remaining.length === 0) {
           this.beatmapStore.setDownloading(false);
@@ -53,7 +50,7 @@ export class BeatmapDownloadService implements OnDestroy {
     });
 
     try {
-      await invoke('start_download', {
+      await invoke('start_downloads', {
         beatmapSetIds: pending.map(i => i.beatmapSetId),
         osuSession,
       });
@@ -67,17 +64,16 @@ export class BeatmapDownloadService implements OnDestroy {
   private async appendFailedToFile(beatmapSetId: number) {
     const osuPath = this.osuPath.path();
     if (!osuPath) return;
-
-    const path = `${osuPath}/failed_downloads.txt`;
-    const url = `https://osu.ppy.sh/beatmapsets/${beatmapSetId}\n`;
-
-    await invoke('append_text_file', { path, content: url });
+    await invoke('append_text_file', {
+      path: `${osuPath}/failed_downloads.txt`,
+      content: `https://osu.ppy.sh/beatmapsets/${beatmapSetId}\n`,
+    });
   }
 
   private async notifyCompleted() {
     const failed = this.beatmapStore.queue().filter(i => i.status === 'failed');
     if (failed.length > 0) {
-      await sendNotification({
+      sendNotification({
         title: 'Downloads completed',
         body: `${failed.length} maps failed. Saved to failed_downloads.txt`,
       });

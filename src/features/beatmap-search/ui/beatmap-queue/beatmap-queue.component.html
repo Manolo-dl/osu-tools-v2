@@ -1,27 +1,38 @@
-@if (beatmapStore.queue().length > 0) {
+@if (beatmapStore.queue().length > 0 || beatmapStore.skippedCount() > 0) {
   <div class="queue">
     <div class="queue-stats">
-      <span>{{ beatmapStore.queue().length }} total</span>
-      <span>{{ done }} done</span>
-      <span>{{ pending }} pending</span>
-      <span>{{ failed }} failed</span>
+      <span class="stat-total">{{ beatmapStore.queue().length }} queued</span>
+      @if (done() > 0) {
+        <span class="stat done">{{ done() }} done</span>
+      }
+      @if (pending() > 0) {
+        <span class="stat pending">{{ pending() }} pending</span>
+      }
+      @if (failed() > 0) {
+        <span class="stat failed">{{ failed() }} failed</span>
+      }
+      @if (beatmapStore.skippedCount() > 0) {
+        <span class="stat skipped">{{ beatmapStore.skippedCount() }} already owned</span>
+      }
     </div>
 
-    <div class="queue-list">
-      @for (item of beatmapStore.queue(); track item.beatmapSetId) {
-        <div class="queue-item">
-          <div class="queue-info">
+    @if (beatmapStore.queue().length > 0) {
+      <div class="queue-list">
+        @for (item of beatmapStore.queue(); track item.beatmapSetId) {
+          <div class="queue-item" [class]="item.status">
             <span class="id">#{{ item.beatmapSetId }}</span>
             @if (item.status === 'downloading') {
               <div class="progress-bar">
                 <div class="progress-fill" [style.width.%]="item.progress"></div>
               </div>
+              <span class="progress-pct">{{ item.progress | number:'1.0-0' }}%</span>
+            } @else {
+              <span class="status-label">{{ item.status }}</span>
             }
           </div>
-          <span class="status {{ item.status }}">{{ item.status }}</span>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
 
     <div class="note note-warning">
       <svg class="note-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -29,15 +40,17 @@
         <line x1="12" y1="9" x2="12" y2="13"/>
         <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
-      If any maps fail, you'll get a notification and they'll be saved to <strong>failed_downloads.txt</strong> in your osu! folder.
+      Failed maps are saved to <strong>failed_downloads.txt</strong> in your osu! folder.
     </div>
 
     <div class="controls">
-      <button (click)="clearQueue()">Clear queue</button>
+      <button class="btn-clear" (click)="beatmapStore.clearQueue()">Clear queue</button>
       @if (beatmapStore.isDownloading()) {
-        <button (click)="pause()">Pause</button>
+        <button class="btn-pause" (click)="downloader.pause()">Pause</button>
       } @else {
-        <button (click)="startDownload()">Start download</button>
+        <button class="btn-start" [disabled]="pending() === 0" (click)="downloader.startDownload()">
+          Start download
+        </button>
       }
     </div>
   </div>
