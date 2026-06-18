@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { DownloadItem } from '@entities/beatmap';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TxtParserService {
 
-  parse(content: string): DownloadItem[] {
-    const items: DownloadItem[] = [];
+  parse(content: string): number[] {
+
+    const ids: number[] = [];
 
     for (const line of content.split('\n')) {
       const trimmed = line.trim();
@@ -15,17 +15,10 @@ export class TxtParserService {
       if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('//') || trimmed.startsWith('---')) continue;
 
       const id = this.extractBeatmapSetId(trimmed);
-      if (id) {
-        items.push({
-          beatmapSetId: id,
-          title: '',
-          artist: '',
-          status: 'pending',
-          progress: 0,
-        });
-      }
+      if (id) ids.push(id);
     }
-    return items;
+
+    return ids;
   }
 
   private extractBeatmapSetId(url: string): number | null {

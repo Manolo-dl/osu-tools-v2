@@ -35,6 +35,8 @@
     "fs:default",
     "fs:allow-read-file",
     "fs:allow-home-read-recursive",
-    "notification:default"
+    "notification:default",
+    "sql:default",
+    "sql:allow-execute"
   ]
 }

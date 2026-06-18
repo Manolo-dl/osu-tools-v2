@@ -1,6 +1,9 @@
+use crate::OsuState;
+
 #[tauri::command]
 pub async fn get_osu_path(
-    #[allow(unused_variables)] app: tauri::AppHandle,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, OsuState>,
 ) -> Result<String, String> {
     log::info!("Getting osu! path");
 
@@ -21,6 +24,7 @@ pub async fn get_osu_path(
             if let Ok(path) = std::fs::read_to_string(&cosu_file) {
                 let path = path.trim().to_string();
                 if !path.is_empty() {
+                    *state.path.lock().unwrap() = Some(path.clone());
                     return Ok(path);
                 }
             }
@@ -32,6 +36,7 @@ pub async fn get_osu_path(
     log::info!("checking OSU_SONG_FOLDER env variable");
     if let Ok(path) = std::env::var("OSU_SONG_FOLDER") {
         if !path.is_empty() {
+            *state.path.lock().unwrap() = Some(path.clone());
             return Ok(path);
         }
     }
@@ -41,6 +46,7 @@ pub async fn get_osu_path(
     if let Some(local) = dirs::data_local_dir() {
         let osu_dir = local.join("osu!");
         if osu_dir.join("Songs").exists() {
+            *state.path.lock().unwrap() = Some(osu_dir.to_string_lossy().to_string());
             return Ok(osu_dir.to_string_lossy().to_string());
         }
     }
@@ -56,6 +62,7 @@ pub async fn get_osu_path(
         for path in &candidates {
             log::info!("checking path: {:?}", path);
             if path.join("Songs").exists() {
+                *state.path.lock().unwrap() = Some(path.to_string_lossy().to_string());
                 return Ok(path.to_string_lossy().to_string());
             }
         }
@@ -101,7 +108,10 @@ pub async fn get_osu_path(
         let _ = child.kill();
 
         match found {
-            Ok(Some(path)) if !path.is_empty() => return Ok(path),
+            Ok(Some(path)) if !path.is_empty() => {
+                *state.path.lock().unwrap() = Some(path.clone());
+                return Ok(path);  
+            },
             Ok(_) => log::warn!("osumem did not output a song folder path"),
             Err(_) => log::warn!("osumem timed out after 10s"),
         }
@@ -112,7 +122,10 @@ pub async fn get_osu_path(
 }
 
 #[tauri::command]
-pub fn save_osu_path(path: String) -> Result<(), String> {
+pub fn save_osu_path(path: String, state: tauri::State<'_, OsuState>) -> Result<(), String> {
+
+    *state.path.lock().unwrap() = Some(path.clone());
+
     #[cfg(target_os = "windows")]
     let cosu_file = dirs::data_dir()
         .ok_or("could not find data dir")?

@@ -36,6 +36,31 @@
   line-height: 1.6;
 }
 
+/* Path warning */
+
+.path-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--warning) 8%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.path-warning svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--warning);
+}
+
+.path-warning strong {
+  color: var(--text-primary);
+}
+
 /* Section titles */
 
 .section-title {

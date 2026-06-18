@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { OsuPathService } from '@shared/services';
+import { OsuPathStore } from '@shared/stores'; 
 
 @Component({
   selector: 'app-osu-path',
@@ -10,7 +10,7 @@ import { OsuPathService } from '@shared/services';
 })
 export class OsuPathComponent implements OnInit {
 
-  osuPath = inject(OsuPathService);
+  osuPath = inject(OsuPathStore);
 
   ngOnInit(): void {
     this.osuPath.detect();

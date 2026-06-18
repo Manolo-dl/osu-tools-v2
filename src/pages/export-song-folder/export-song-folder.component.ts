@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NotImplementedComponent } from '@shared/ui/not-implemented';
+import { BeatmapFiltersComponent, BeatmapSummaryComponent, BeatmapPreviewComponent, BeatmapExportControlsComponent } from '@features/export-songs'; 
 
 @Component({
   selector: 'app-export-song-folder',
-  imports: [NotImplementedComponent],
+  imports: [BeatmapFiltersComponent, BeatmapSummaryComponent, BeatmapPreviewComponent, BeatmapExportControlsComponent],
   templateUrl: './export-song-folder.component.html',
   styleUrl: './export-song-folder.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
