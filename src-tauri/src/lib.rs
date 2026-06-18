@@ -30,7 +30,8 @@ pub fn run() {
             });
 
             tauri::async_runtime::block_on(async {
-                commands::osu_db_cache::init_schema(&pool).await.expect("failed to init schema");
+                commands::osu_db_cache::init_schema(&pool).await.expect("failed to init osudb schema");
+                commands::collection_cache::init_schema(&pool).await.expect("failed to init collection schema")
             });
 
             app.manage(DbState { pool });
