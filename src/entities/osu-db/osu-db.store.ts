@@ -74,6 +74,8 @@ export const OsuDbStore = signalStore(
             }
             return counts;
         }),
+
+        localBeatmapSetIds: computed(() => new Set(store.beatmapSets().map(s => s.beatmapsetId))),
     })),
 
     withMethods((store, osuPath = inject(OsuPathService)) => ({
