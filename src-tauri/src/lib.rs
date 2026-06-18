@@ -67,10 +67,10 @@ pub fn run() {
             commands::osu_path::save_osu_path,
             commands::auth::start_oauth,
             commands::auth::refresh_oauth_token,
-            commands::download::write_beatmap_file,
             commands::collections::read_osu_collections,
             commands::collections::write_text_file,
             commands::osu_db::read_osu_db_full,
+            commands::download::start_downloads,
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
