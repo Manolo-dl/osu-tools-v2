@@ -28,6 +28,7 @@ export class OsuPathService {
       await invoke('save_osu_path', { path });
     } catch (error) {
       this.error.set(error as string);
+      this.detectPromise = undefined;
     } finally {
       this.isLoading.set(false);
     }
