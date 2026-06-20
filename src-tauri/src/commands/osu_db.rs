@@ -20,6 +20,7 @@ pub struct OsuDiff {
     pub overall_difficulty: f32,
     pub file_name: String,
     pub audio: String,
+    pub creator: String,
 }
 
 #[derive(serde::Serialize)]
@@ -82,6 +83,10 @@ fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
     let mut sets: HashMap<u32, OsuBeatmapSet> = HashMap::new();
 
     for b in db.beatmaps {
+
+        log::info!("file_name: {}", b.file_name.as_deref().unwrap_or("unknown"));
+        log::info!("audio: {}", b.audio.as_deref().unwrap_or("unknown"));
+
         let md5 = match b.hash {
             Some(h) => h,
             None => continue,
@@ -128,6 +133,7 @@ fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
             overall_difficulty: b.overall_difficulty,
             file_name: b.file_name.unwrap_or_default(),
             audio: b.audio.unwrap_or_default(),
+            creator: b.creator.unwrap_or_default(),
         };
 
         sets.entry(b.beatmapset_id as u32)

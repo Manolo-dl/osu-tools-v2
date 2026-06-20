@@ -49,15 +49,21 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(
-            tauri_plugin_log::Builder::new()
-                .targets([
-                    Target::new(TargetKind::Stdout),
-                    #[cfg(debug_assertions)]
-                    Target::new(TargetKind::Webview),
-                ])
-                .build(),
-        )
+        .plugin(tauri_plugin_log::Builder::new()
+        .max_file_size(50_000)
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{} {}] {}",
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        .targets([
+            Target::new(TargetKind::LogDir { file_name: None }),
+            Target::new(TargetKind::Stdout),
+        ])
+        .build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::new().build())

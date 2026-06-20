@@ -31,6 +31,7 @@ struct DiffRow {
     pub overall_difficulty: f64,
     pub file_name: String,
     pub audio: String,
+    pub creator: String,
 }
 
 pub async fn get_meta(pool: &SqlitePool) -> Option<OsuDbMeta> {
@@ -66,7 +67,7 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
 
     let all_diffs = sqlx::query_as::<_, DiffRow>(
         "SELECT beatmapset_id, md5, diff_name, mode, length, stars, last_played,
-         circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio FROM diffs"
+         circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator FROM diffs"
     )
     .fetch_all(pool)
     .await?;
@@ -87,6 +88,7 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
             overall_difficulty: d.overall_difficulty as f32,
             file_name: d.file_name,
             audio: d.audio,
+            creator: d.creator,
         });
     }
 
@@ -151,8 +153,8 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
         for diff in &set.diffs {
             sqlx::query(
                 "INSERT INTO diffs (md5, beatmapset_id, diff_name, mode, length, stars,
-                 last_played, circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
+                 last_played, circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
             )
             .bind(&diff.md5)
             .bind(set.beatmapset_id as i64)
@@ -167,6 +169,7 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
             .bind(diff.overall_difficulty as f64)
             .bind(&diff.file_name)
             .bind(&diff.audio)
+            .bind(&diff.creator)
             .execute(&mut *tx)
             .await?;
         }
@@ -243,6 +246,7 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
             overall_difficulty REAL NOT NULL,
             file_name TEXT NOT NULL,
             audio TEXT NOT NULL,
+            creator TEXT NOT NULL,
             FOREIGN KEY (beatmapset_id) REFERENCES beatmapsets(beatmapset_id)
         )"
     )
@@ -253,6 +257,32 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
         "INSERT INTO schema_version (id, version) VALUES (1, $1)
             ON CONFLICT(id) DO UPDATE SET version = $1"
     ).bind(CURRENT_VERSION)
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn get_folder_path(pool: &SqlitePool, beatmapset_id: i64) -> Option<String> {
+    sqlx::query_as::<_, (String,)>(
+        "SELECT folder_path FROM beatmapset_folders WHERE beatmapset_id = $1"
+    )
+    .bind(beatmapset_id)
+    .fetch_optional(pool)
+    .await
+    .ok()
+    .flatten()
+    .map(|(p,)| p)
+}
+
+pub async fn save_folder_path(pool: &SqlitePool, beatmapset_id: i64, folder_path: &str) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "INSERT INTO beatmapset_folders (beatmapset_id, folder_path)
+            VALUES ($1, $2)
+            ON CONFLICT(beatmapset_id) DO UPDATE SET folder_path = $2"
+    )
+    .bind(beatmapset_id)
+    .bind(folder_path)
     .execute(pool)
     .await?;
 
