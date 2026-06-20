@@ -18,6 +18,8 @@ pub struct OsuDiff {
     pub approach_rate: f32,
     pub hp_drain: f32,
     pub overall_difficulty: f32,
+    pub file_name: String,
+    pub audio: String,
 }
 
 #[derive(serde::Serialize)]
@@ -124,6 +126,8 @@ fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
             approach_rate: b.approach_rate,
             hp_drain: b.hp_drain,
             overall_difficulty: b.overall_difficulty,
+            file_name: b.file_name.unwrap_or_default(),
+            audio: b.audio.unwrap_or_default(),
         };
 
         sets.entry(b.beatmapset_id as u32)

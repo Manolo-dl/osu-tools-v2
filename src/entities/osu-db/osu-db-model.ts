@@ -10,6 +10,8 @@ export interface OsuDiff {
     approachRate: number;
     hpDrain: number;
     overallDifficulty: number;
+    fileName: string;
+    audio: string;
 }
 
 export interface OsuBeatmapSet {
