@@ -26,6 +26,12 @@ export const routes: Routes = [
         resolve: { osuDb: osuDbResolver }
     },
     {
+        path: 'create-packs',
+        canActivate: [osuPathGuard],
+        loadComponent: () => import('@pages/create-packs').then(m => m.CreatePacksComponent),
+        resolve: { osuDb: osuDbResolver }
+    },
+    {
         path: '**',
         redirectTo: '',
     }
