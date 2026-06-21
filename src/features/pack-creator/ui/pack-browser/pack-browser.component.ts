@@ -1,12 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
-import { OsuBeatmapSet, OsuDiff } from '@entities/osu-db';
+import { Component, inject } from '@angular/core';
+import type { OsuBeatmapSet } from '@entities/osu-db';
 import { PackStore } from '@entities/pack';
-import { CdkFixedSizeVirtualScroll, CdkVirtualForOf } from "@angular/cdk/scrolling";
-import { PackBrowserCardComponent } from '../pack-browser-card/pack-browser-card.component'; 
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { PackBrowserCardComponent } from '../pack-browser-card/pack-browser-card.component';
 
 @Component({
   selector: 'app-pack-browser',
-  imports: [CdkFixedSizeVirtualScroll, CdkVirtualForOf, PackBrowserCardComponent],
+  imports: [ScrollingModule, PackBrowserCardComponent],
   templateUrl: './pack-browser.component.html',
   styleUrl: './pack-browser.component.css',
 })
