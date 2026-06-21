@@ -12,6 +12,7 @@ export interface OsuDiff {
     overallDifficulty: number;
     fileName: string;
     audio: string;
+    creator: string;
 }
 
 export interface OsuBeatmapSet {

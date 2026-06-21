@@ -1,12 +1,15 @@
-import { patchState, signalStore, withMethods, withState } from "@ngrx/signals";
+import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
 import { PackRequest, SelectedDiff } from "./pack-model";
 import { invoke } from "@tauri-apps/api/core";
+import { computed, inject } from "@angular/core";
+import { OsuDbStore } from "@entities/osu-db";
 
 interface PackStoreState {
     selectedDiffs: SelectedDiff[];
     title: string;
     finalCreator: string;
     isCreating: boolean;
+    searchQuery: string;
 }
 
 const initialState: PackStoreState = {
@@ -14,10 +17,30 @@ const initialState: PackStoreState = {
     title: '',
     finalCreator: '',
     isCreating: false,
+    searchQuery: '',
 }
 export const PackStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
+
+    withComputed((store, osuDbStore = inject(OsuDbStore)) => ({
+        filteredSets: computed(() => {
+            const query = store.searchQuery().toLowerCase().trim();
+            const sets = osuDbStore.beatmapSets();
+
+            if (!query) return sets;
+
+            return sets.filter(set =>
+                set.title.toLowerCase().includes(query) ||
+                set.artist.toLowerCase().includes(query) ||
+                set.diffs.some(diff => diff.fileName.toLowerCase().includes(query))
+            );
+        }),
+
+        addedMd5s: computed(() =>
+            new Set(store.selectedDiffs().map(diff => diff.md5))
+        ),
+    })),
 
     withMethods((store) => ({
         toggleDiff(diff: SelectedDiff) {
@@ -67,6 +90,10 @@ export const PackStore = signalStore(
                 patchState(store, { isCreating: false });
                 throw error;
             }
+        },
+
+        setSearchQuery(query: string) {
+            patchState(store, { searchQuery: query });
         }
     })),
 )
