@@ -23,7 +23,7 @@ async fn resolve_cached_beatmapset_folder(pool: &SqlitePool, beatmapset_id: u32)
     )
 }
 
-async fn resolve_beatmapset_folder(osu_path: String, file_name: String, beatmapset_id: u32) -> Result<BeatmapsetFolder, String> {
+async fn resolve_beatmapset_folder(osu_path: &str, file_name: &str, beatmapset_id: u32) -> Result<BeatmapsetFolder, String> {
 
     let songs_folder = format!("{}/Songs", osu_path);
 
@@ -63,26 +63,23 @@ async fn save_beatmapset_folder(pool: &SqlitePool, beatmapset_id: u32, folder_pa
 }
 
 pub async fn get_beatmapset_folder(
-    db_state: tauri::State<'_, DbState>,
-    osu_state: tauri::State<'_, OsuState>,
+    pool: &SqlitePool,
+    osu_path: &str,
     beatmapset_id: u32,
-    file_name: String,
+    file_name: &str,
 ) -> Result<BeatmapsetFolder, String> {
-
-    let pool = &db_state.pool;
     
     let cached = resolve_cached_beatmapset_folder(pool, beatmapset_id)
     .await
     .map_err(|e| e.to_string())?;
 
     if let Some(folder) = cached {
-        return Ok(folder);
+        if check_beatmapset_folder_exists(&folder.folder_path)
+        .await?
+        {
+            return Ok(folder);
+        }
     }
-
-    let osu_path = {
-        let path = osu_state.path.lock().unwrap();
-        path.as_ref().ok_or("Osu! path not set")?.clone()
-    };
 
     let folder = resolve_beatmapset_folder(osu_path, file_name, beatmapset_id)
         .await?;
@@ -92,4 +89,23 @@ pub async fn get_beatmapset_folder(
         .map_err(|e| e.to_string())?;
 
     Ok(folder)
+}
+
+pub async fn check_beatmapset_folder_exists(folder_path: &str) -> Result<bool, String> {
+    Ok(std::path::Path::new(folder_path).exists())
+}
+
+#[tauri::command]
+pub async fn validate_pack_folder(folder_name: String, osu_state: tauri::State<'_, OsuState>) -> Result<bool, String> {
+    
+    let osu_path = {
+        let path = osu_state.path.lock().unwrap();
+        path.as_ref().ok_or("Osu path not set")?.clone()
+    };
+
+    let target_path = format!("{}/Songs/{}", osu_path, folder_name);
+
+    let exist = check_beatmapset_folder_exists(&target_path).await?;
+
+    Ok(!exist)
 }

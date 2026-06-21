@@ -78,6 +78,8 @@ pub fn run() {
             commands::osu_db::read_osu_db_full,
             commands::download::start_downloads,
             commands::download::append_text_file,
+            commands::manage_folders::validate_pack_folder,
+            commands::pack_creator::create_pack,
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
