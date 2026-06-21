@@ -3,6 +3,7 @@ import { PackRequest, SelectedDiff } from "./pack-model";
 import { invoke } from "@tauri-apps/api/core";
 import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
+import { ToastStore } from "@shared/stores";
 
 interface PackStoreState {
     selectedDiffs: SelectedDiff[];
@@ -42,7 +43,7 @@ export const PackStore = signalStore(
         ),
     })),
 
-    withMethods((store) => ({
+    withMethods((store, toastStore = inject(ToastStore)) => ({
         toggleDiff(diff: SelectedDiff) {
             const diffs = store.selectedDiffs();
             const index = diffs.findIndex(d => d.md5 === diff.md5);
@@ -86,8 +87,11 @@ export const PackStore = signalStore(
                     }
                 });
                 patchState(store, { isCreating: false });
+                toastStore.show('success', `Pack ${store.title()} created successfully!`);
+                patchState(store, initialState);
             } catch (error) {
                 patchState(store, { isCreating: false });
+                toastStore.show('error', `Failed to create pack: ${error}`);
                 throw error;
             }
         },
