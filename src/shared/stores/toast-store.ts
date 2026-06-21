@@ -20,7 +20,7 @@ export const ToastStore = signalStore(
     withState(initialState),
 
     withMethods((store) => ({
-        show(type: Toast['type'], message: string, duration: 4000) {
+        show(type: Toast['type'], message: string, duration: number = 4000) {
             const id = crypto.randomUUID();
             const toast: Toast = { id, type, message, duration };
 
