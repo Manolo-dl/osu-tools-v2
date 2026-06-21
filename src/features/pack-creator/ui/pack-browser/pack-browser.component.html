@@ -1,1 +1,15 @@
-<p>pack-browser.component works!</p>,
+<div class="browser-panel">
+  <div class="panel-header">
+    <span class="section-title">Browse Maps</span>
+  </div>
+
+  @if (store.filteredSets().length === 0) {
+    <div class="empty">No maps found</div>
+  } @else {
+    <cdk-virtual-scroll-viewport itemSize="56" class="set-list">
+      <div *cdkVirtualFor="let set of store.filteredSets(); trackBy: trackSet" class="card-wrapper">
+        <app-pack-browser-card [set]="set" />
+      </div>
+    </cdk-virtual-scroll-viewport>
+  }
+</div>

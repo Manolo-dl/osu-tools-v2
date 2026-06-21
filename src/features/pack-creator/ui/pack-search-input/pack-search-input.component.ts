@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject } from '@angular/core';
-import { PackStore } from '@entities/pack/pack-store';
+import { PackStore } from '@entities/pack'; 
 import { debounceTime, Subject } from 'rxjs';
 
 @Component({
