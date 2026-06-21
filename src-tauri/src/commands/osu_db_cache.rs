@@ -260,6 +260,16 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .execute(pool)
     .await?;
 
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS beatmapset_folders (
+            beatmapset_id INTEGER PRIMARY KEY,
+            folder_path TEXT NOT NULL,
+            FOREIGN KEY (beatmapset_id) REFERENCES beatmapsets(beatmapset_id)
+        )"
+    )
+    .execute(pool)
+    .await?;
+
     Ok(())
 }
 

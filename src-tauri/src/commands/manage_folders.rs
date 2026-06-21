@@ -1,7 +1,6 @@
 use sqlx::{SqlitePool, prelude::FromRow};
 use walkdir::WalkDir;
 use crate::OsuState;
-use crate::DbState;
 
 #[derive(serde::Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
