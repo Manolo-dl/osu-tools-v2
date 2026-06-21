@@ -1,0 +1,11 @@
+<button
+  class="create-pack-btn"
+  [disabled]="store.isCreating() || store.selectedDiffs().length === 0 || !store.title() || !store.finalCreator()"
+  (click)="onCreate()"
+>
+  @if (store.isCreating()) {
+    Creating...
+  } @else {
+    Create Pack ({{ store.selectedDiffs().length }} diffs)
+  }
+</button>
