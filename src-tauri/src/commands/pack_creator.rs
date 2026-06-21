@@ -62,8 +62,6 @@ pub async fn create_pack(
         map.creator = request.final_creator.clone();
         map.version = diff.new_diff_name.clone();
         map.audio_file = new_audio_file_name;
-        //map.beatmap_id = -1;
-        //map.beatmap_set_id = -1;
 
         let new_osu_name = format!("{}.osu", sanitize(&diff.new_diff_name));
         map.encode_to_path(Path::new(&new_folder).join(&new_osu_name))
