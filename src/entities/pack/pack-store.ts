@@ -94,6 +94,10 @@ export const PackStore = signalStore(
 
         setSearchQuery(query: string) {
             patchState(store, { searchQuery: query });
+        },
+
+        setFinalCreator(finalCreator: string) {
+            patchState(store, { finalCreator });
         }
     })),
 )
