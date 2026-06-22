@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { collectionResolver } from "@entities/collection";
 import { osuDbResolver } from "@entities/osu-db/osu-db-resolver";
+import { logResolver } from "@entities/log";
 import { osuPathGuard } from "./guards/osu-path.guard";
 
 export const routes: Routes = [
@@ -38,7 +39,8 @@ export const routes: Routes = [
         children: [
             {
                 path: 'logs',
-                loadComponent: () => import('@pages/logs').then(m => m.LogsComponent)
+                loadComponent: () => import('@pages/logs').then(m => m.LogsComponent),
+                resolve: { logs: logResolver }
             },
             {
                 path: 'database',
