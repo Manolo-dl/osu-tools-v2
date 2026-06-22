@@ -109,7 +109,7 @@ export const PackStore = signalStore(
                 patchState(store, initialState);
             } catch (error) {
                 patchState(store, { isCreating: false });
-                toastStore.show('error', `Failed to create pack: ${error}`);
+                toastStore.show('error', 'Failed to create pack');
                 throw error;
             }
         },

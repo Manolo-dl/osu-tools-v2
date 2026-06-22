@@ -1,6 +1,6 @@
 import { computed, inject } from "@angular/core";
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
-import { OsuPathStore } from "@shared/stores"; 
+import { OsuPathStore, ToastStore } from "@shared/stores"; 
 import { invoke } from "@tauri-apps/api/core";
 import { OsuBeatmapSet, OsuDiff } from "./osu-db-model";
 
@@ -78,7 +78,7 @@ export const OsuDbStore = signalStore(
         localBeatmapSetIds: computed(() => new Set(store.beatmapSets().map(s => s.beatmapsetId))),
     })),
 
-    withMethods((store, osuPath = inject(OsuPathStore)) => ({
+    withMethods((store, osuPath = inject(OsuPathStore), toast = inject(ToastStore)) => ({
         setBeatmapSets(beatmapSets: OsuBeatmapSet[]) {
             patchState(store, { beatmapSets, isLoaded: true, isLoading: false });
         },
@@ -93,13 +93,22 @@ export const OsuDbStore = signalStore(
 
         async load() {
             const path = osuPath.path();
-            if (!path) throw new Error("Osu! path not set");
+            if (!path) {
+                toast.show('error', 'Osu! path not set');
+                throw new Error("Osu! path not set");
+            } 
 
             patchState(store, { isLoading: true });
 
-            const beatmapSets = await invoke<OsuBeatmapSet[]>('read_osu_db_full');
-
-            patchState(store, { beatmapSets, isLoaded: true, isLoading: false });
+            try {
+                const beatmapSets = await invoke<OsuBeatmapSet[]>('read_osu_db_full');
+                toast.show('success', `Loaded ${beatmapSets.length} beatmap sets from osu!.db`);
+                patchState(store, { beatmapSets, isLoaded: true, isLoading: false });
+            } catch (error) {
+                patchState(store, { isLoading: false });
+                toast.show('error', `Failed to load osu!.db`);
+                throw error;
+            }
         }
     })),
 )
