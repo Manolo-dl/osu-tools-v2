@@ -1,19 +1,7 @@
 <div class="logs-page">
   <header class="page-header">
-    <div class="header-left">
-      <h1 class="page-title">Logs</h1>
-      <span class="total-badge">{{ store.totalLogs() }} entries</span>
-    </div>
-    <button class="btn-reload" (click)="reload()">Reload</button>
+    <h1 class="page-title">Logs</h1>
   </header>
 
-  <div class="columns">
-    @for (level of ['INFO', 'DEBUG', 'WARN', 'ERROR']; track level) {
-      <app-log-column
-        [level]="level"
-        [groups]="store.groupedLogs()[level]"
-      />
-    }
-  </div>
+  <app-log-viewer />
 </div>
-
