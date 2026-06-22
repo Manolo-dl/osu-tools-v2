@@ -2,10 +2,8 @@ use sqlx::{SqlitePool, prelude::FromRow};
 use walkdir::WalkDir;
 use crate::OsuState;
 
-#[derive(serde::Deserialize, FromRow)]
-#[serde(rename_all = "camelCase")]
+#[derive(FromRow)]
 pub struct BeatmapsetFolder {
-    pub beatmapset_id: u32,
     pub folder_path: String,
 }
 
@@ -14,7 +12,7 @@ async fn resolve_cached_beatmapset_folder(pool: &SqlitePool, beatmapset_id: u32)
     // check if the beatmapset folder is already cached
     Ok(
         sqlx::query_as::<_, BeatmapsetFolder>(
-            "SELECT beatmapset_id, folder_path FROM beatmapset_folders WHERE beatmapset_id = $1"
+            "SELECT folder_path FROM beatmapset_folders WHERE beatmapset_id = $1"
         )
         .bind(beatmapset_id)
         .fetch_optional(pool)
@@ -38,7 +36,6 @@ async fn resolve_beatmapset_folder(osu_path: &str, file_name: &str, beatmapset_i
                 .to_string();
 
             return Ok(BeatmapsetFolder {
-                beatmapset_id,
                 folder_path,
             })
         }

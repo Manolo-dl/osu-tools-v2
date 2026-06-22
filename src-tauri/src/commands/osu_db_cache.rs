@@ -272,29 +272,3 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
     Ok(())
 }
-
-pub async fn get_folder_path(pool: &SqlitePool, beatmapset_id: i64) -> Option<String> {
-    sqlx::query_as::<_, (String,)>(
-        "SELECT folder_path FROM beatmapset_folders WHERE beatmapset_id = $1"
-    )
-    .bind(beatmapset_id)
-    .fetch_optional(pool)
-    .await
-    .ok()
-    .flatten()
-    .map(|(p,)| p)
-}
-
-pub async fn save_folder_path(pool: &SqlitePool, beatmapset_id: i64, folder_path: &str) -> Result<(), sqlx::Error> {
-    sqlx::query(
-        "INSERT INTO beatmapset_folders (beatmapset_id, folder_path)
-            VALUES ($1, $2)
-            ON CONFLICT(beatmapset_id) DO UPDATE SET folder_path = $2"
-    )
-    .bind(beatmapset_id)
-    .bind(folder_path)
-    .execute(pool)
-    .await?;
-
-    Ok(())
-}
