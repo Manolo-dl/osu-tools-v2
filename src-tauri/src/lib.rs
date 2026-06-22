@@ -59,6 +59,13 @@ pub fn run() {
                 message
             ))
         })
+        .level(log::LevelFilter::Info)
+        .level_for("h2", log::LevelFilter::Off)
+        .level_for("hyper", log::LevelFilter::Off)
+        .level_for("reqwest", log::LevelFilter::Off)
+        .level_for("tracing", log::LevelFilter::Off)
+        .level_for("tao", log::LevelFilter::Off)
+        .level_for("wry", log::LevelFilter::Off)
         .targets([
             Target::new(TargetKind::LogDir { file_name: None }),
             Target::new(TargetKind::Stdout),
