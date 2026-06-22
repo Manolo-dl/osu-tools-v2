@@ -29,6 +29,9 @@ struct DiffRow {
     pub approach_rate: f64,
     pub hp_drain: f64,
     pub overall_difficulty: f64,
+    pub file_name: String,
+    pub audio: String,
+    pub creator: String,
 }
 
 pub async fn get_meta(pool: &SqlitePool) -> Option<OsuDbMeta> {
@@ -64,7 +67,7 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
 
     let all_diffs = sqlx::query_as::<_, DiffRow>(
         "SELECT beatmapset_id, md5, diff_name, mode, length, stars, last_played,
-         circle_size, approach_rate, hp_drain, overall_difficulty FROM diffs"
+         circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator FROM diffs"
     )
     .fetch_all(pool)
     .await?;
@@ -83,6 +86,9 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
             approach_rate: d.approach_rate as f32,
             hp_drain: d.hp_drain as f32,
             overall_difficulty: d.overall_difficulty as f32,
+            file_name: d.file_name,
+            audio: d.audio,
+            creator: d.creator,
         });
     }
 
@@ -147,8 +153,8 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
         for diff in &set.diffs {
             sqlx::query(
                 "INSERT INTO diffs (md5, beatmapset_id, diff_name, mode, length, stars,
-                 last_played, circle_size, approach_rate, hp_drain, overall_difficulty)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
+                 last_played, circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
             )
             .bind(&diff.md5)
             .bind(set.beatmapset_id as i64)
@@ -161,6 +167,9 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
             .bind(diff.approach_rate as f64)
             .bind(diff.hp_drain as f64)
             .bind(diff.overall_difficulty as f64)
+            .bind(&diff.file_name)
+            .bind(&diff.audio)
+            .bind(&diff.creator)
             .execute(&mut *tx)
             .await?;
         }
@@ -171,6 +180,36 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
 }
 
 pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
+
+    const CURRENT_VERSION: i64 = 2;
+
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS schema_version (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            version INTEGER NOT NULL
+        )"
+    )
+    .execute(pool)
+    .await?;
+
+    let current: Option<(i64,)> = sqlx::query_as(
+        "SELECT version FROM schema_version WHERE id = 1"
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    let needs_migration = match current {
+        Some((v,)) => v < CURRENT_VERSION,
+        None => true,
+    };
+
+    if needs_migration {
+        log::info!("migrating osu_db schema, dropping old tables");
+        sqlx::query("DROP TABLE IF EXISTS diffs").execute(pool).await?;
+        sqlx::query("DROP TABLE IF EXISTS beatmapsets").execute(pool).await?;
+        sqlx::query("DROP TABLE IF EXISTS osudb_meta").execute(pool).await?;
+    }
+
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS osudb_meta (
             id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -205,6 +244,26 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
             approach_rate REAL NOT NULL,
             hp_drain REAL NOT NULL,
             overall_difficulty REAL NOT NULL,
+            file_name TEXT NOT NULL,
+            audio TEXT NOT NULL,
+            creator TEXT NOT NULL,
+            FOREIGN KEY (beatmapset_id) REFERENCES beatmapsets(beatmapset_id)
+        )"
+    )
+    .execute(pool)
+    .await?;
+
+    sqlx::query(
+        "INSERT INTO schema_version (id, version) VALUES (1, $1)
+            ON CONFLICT(id) DO UPDATE SET version = $1"
+    ).bind(CURRENT_VERSION)
+    .execute(pool)
+    .await?;
+
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS beatmapset_folders (
+            beatmapset_id INTEGER PRIMARY KEY,
+            folder_path TEXT NOT NULL,
             FOREIGN KEY (beatmapset_id) REFERENCES beatmapsets(beatmapset_id)
         )"
     )

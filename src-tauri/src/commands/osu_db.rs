@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::panic;
 use osynic_osudb::entity::osu::osudb::OsuDB;
 use crate::OsuState;
 use crate::DbState;
@@ -18,6 +19,9 @@ pub struct OsuDiff {
     pub approach_rate: f32,
     pub hp_drain: f32,
     pub overall_difficulty: f32,
+    pub file_name: String,
+    pub audio: String,
+    pub creator: String,
 }
 
 #[derive(serde::Serialize)]
@@ -43,7 +47,11 @@ pub async fn read_osu_db_full(
 
     let db_path = std::path::Path::new(&osu_path).join("osu!.db");
 
-    let metadata = std::fs::metadata(&db_path).map_err(|e| e.to_string())?;
+    let metadata = std::fs::metadata(&db_path).map_err(|e| {
+        log::error!("Failed to read osu!.db metadata: {:?}: {}", db_path, e);
+        e.to_string()
+    })?;
+
     let file_size = metadata.len() as i64;
     let last_modified = metadata
         .modified()
@@ -57,29 +65,54 @@ pub async fn read_osu_db_full(
     if let Some(meta) = osu_db_cache::get_meta(pool).await {
         if meta.last_modified == last_modified && meta.file_size == file_size {
             log::info!("loading osu!.db from cache");
-            return osu_db_cache::get_beatmapsets(pool).await.map_err(|e| e.to_string());
+            return osu_db_cache::get_beatmapsets(pool).await.map_err(|e| {
+                log::error!("Failed to read osu!.db from cache: {}", e);
+                e.to_string()
+            });
         }
     }
 
-    log::info!("cache miss, reading osu!.db");
+    log::info!("cache miss, reading osu!.db at {:?}", db_path);
     let sets = read_from_osudb(&osu_path)?;
+    log::info!("successfully parsed {} beatmap sets from osu!.db, saving to cache", sets.len());
 
-    osu_db_cache::save_beatmapsets(pool, &sets).await.map_err(|e| e.to_string())?;
-    osu_db_cache::set_meta(pool, last_modified, file_size).await.map_err(|e| e.to_string())?;
+    osu_db_cache::save_beatmapsets(pool, &sets).await.map_err(|e| {
+        log::error!("Failed to save osu!.db to cache: {}", e);
+        e.to_string()
+    })?;
+
+    osu_db_cache::set_meta(pool, last_modified, file_size).await.map_err(|e| {
+        log::error!("Failed to save osu!.db metadata to cache: {}", e);
+        e.to_string()
+    })?;
 
     Ok(sets)
 }
 
 fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
+
     use osynic_osudb::entity::osu::field::mode::Mode;
     use osynic_osudb::entity::osu::field::rank::RankedStatus;
 
     let db_path = std::path::Path::new(osu_path).join("osu!.db");
-    let db = OsuDB::from_file(&db_path).map_err(|e| e.to_string())?;
+
+    log::info!("Attempting to read osu!.db from {:?}", db_path);
+
+    let db_path_clone = db_path.clone();
+    let db = panic::catch_unwind(move || OsuDB::from_file(&db_path_clone))
+        .map_err(|e| {
+            log::error!("osu!.db parsing panicked unexpectedly: {:?}", e);
+            format!("osu!.db appears to be corrupted at {:?} and could not be parsed", db_path)
+        })?
+        .map_err(|e| {
+            log::error!("Failed to parse osu!.db at {:?}: {}", db_path, e);
+            e.to_string()
+        })?;
 
     let mut sets: HashMap<u32, OsuBeatmapSet> = HashMap::new();
 
     for b in db.beatmaps {
+
         let md5 = match b.hash {
             Some(h) => h,
             None => continue,
@@ -124,6 +157,9 @@ fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
             approach_rate: b.approach_rate,
             hp_drain: b.hp_drain,
             overall_difficulty: b.overall_difficulty,
+            file_name: b.file_name.unwrap_or_default(),
+            audio: b.audio.unwrap_or_default(),
+            creator: b.creator.unwrap_or_default(),
         };
 
         sets.entry(b.beatmapset_id as u32)

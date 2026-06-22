@@ -37,6 +37,7 @@
     "fs:allow-home-read-recursive",
     "notification:default",
     "sql:default",
-    "sql:allow-execute"
+    "sql:allow-execute",
+    "log:default"
   ]
 }

@@ -3248,6 +3248,7 @@ dependencies = [
  "rand 0.10.1",
  "regex",
  "reqwest 0.13.4",
+ "rosu-map",
  "serde",
  "serde_json",
  "sha2 0.11.0",
@@ -3269,6 +3270,7 @@ dependencies = [
  "tokio",
  "url",
  "urlencoding",
+ "walkdir",
  "webkit2gtk",
 ]
 
@@ -4077,6 +4079,12 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
+
+[[package]]
+name = "rosu-map"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b92ea634d8b3eaa4d7fba7bd12045dda1a50ce81401c96af0d9c851b0737544"
 
 [[package]]
 name = "rsa"

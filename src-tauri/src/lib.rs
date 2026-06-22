@@ -49,15 +49,28 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(
-            tauri_plugin_log::Builder::new()
-                .targets([
-                    Target::new(TargetKind::Stdout),
-                    #[cfg(debug_assertions)]
-                    Target::new(TargetKind::Webview),
-                ])
-                .build(),
-        )
+        .plugin(tauri_plugin_log::Builder::new()
+        .max_file_size(50_000)
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{} {}] {}",
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        .level(log::LevelFilter::Info)
+        .level_for("h2", log::LevelFilter::Off)
+        .level_for("hyper", log::LevelFilter::Off)
+        .level_for("reqwest", log::LevelFilter::Off)
+        .level_for("tracing", log::LevelFilter::Off)
+        .level_for("tao", log::LevelFilter::Off)
+        .level_for("wry", log::LevelFilter::Off)
+        .targets([
+            Target::new(TargetKind::LogDir { file_name: None }),
+            Target::new(TargetKind::Stdout),
+        ])
+        .build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -72,6 +85,8 @@ pub fn run() {
             commands::osu_db::read_osu_db_full,
             commands::download::start_downloads,
             commands::download::append_text_file,
+            commands::manage_folders::validate_pack_folder,
+            commands::pack_creator::create_pack,
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
