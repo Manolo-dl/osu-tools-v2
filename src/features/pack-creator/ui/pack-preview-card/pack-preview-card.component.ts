@@ -19,19 +19,6 @@ export class PackPreviewCardComponent {
     this.model,
     (schemaPath) => {
       required(schemaPath.newDiffName, { message: 'Difficulty name is required' });
-
-      validate(schemaPath.newDiffName, ({ value }) => {
-        const currentMd5 = this.diff().md5;
-        const duplicate = this.store.selectedDiffs().some(
-          d => d.md5 !== currentMd5 && d.newDiffName === value()
-        );
-
-        if (duplicate) {
-          return { kind: 'duplicatedName', message: 'Difficulty name must be unique' };
-        }
-
-        return null;
-      });
     }
   );
 
@@ -41,13 +28,16 @@ export class PackPreviewCardComponent {
     });
 
     effect(() => {
-      if (this.nameForm.newDiffName().touched() && this.nameForm.newDiffName().valid()) {
-        this.store.updateDiffName(this.diff(), this.nameForm.newDiffName().value());
-      }
-    })
+      this.store.updateDiffName(this.diff(), this.nameForm.newDiffName().value());
+    });
   }
 
   onRemove() {
     this.store.toggleDiff(this.diff());
   }
+
+  isDuplicate(): boolean {
+    const result = this.store.duplicateNames().has(this.diff().md5);
+    return result;
+}
 }

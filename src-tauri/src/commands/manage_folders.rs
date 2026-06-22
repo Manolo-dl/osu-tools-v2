@@ -102,9 +102,15 @@ pub async fn validate_pack_folder(folder_name: String, osu_state: tauri::State<'
         path.as_ref().ok_or("Osu path not set")?.clone()
     };
 
-    let target_path = format!("{}/Songs/{}", osu_path, folder_name);
+    let target_path = format!("{}/Songs/Custom-pack_{}", osu_path, sanitize(&folder_name));
 
     let exist = check_beatmapset_folder_exists(&target_path).await?;
 
     Ok(!exist)
+}
+
+fn sanitize(name: &str) -> String {
+    name.chars()
+        .map(|c| if "/\\:*?\"<>|".contains(c) { '_' } else { c })
+        .collect()
 }

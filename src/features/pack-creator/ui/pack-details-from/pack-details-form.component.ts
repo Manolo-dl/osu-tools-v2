@@ -40,14 +40,22 @@ export class PackDetailsFormComponent {
 
   constructor() {
     effect(() => {
-      if (this.detailsForm.title().valid()) {
-        this.store.setTitle(this.detailsForm.title().value());
+      const titleField = this.detailsForm.title();
+      if (titleField.valid()) {
+        this.store.setTitle(titleField.value());
       }
+      this.store.setTitleValid(titleField.valid() && !titleField.pending());
     });
 
     effect(() => {
       if (this.detailsForm.finalCreator().valid()) {
         this.store.setFinalCreator(this.detailsForm.finalCreator().value());
+      }
+    });
+
+    effect(() => {
+      if (this.store.title() === '' && this.store.finalCreator() === '') {
+        this.detailsForm().reset({ title: '', finalCreator: '' });
       }
     });
   }

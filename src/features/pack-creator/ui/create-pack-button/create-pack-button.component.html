@@ -1,6 +1,9 @@
 <button
   class="create-pack-btn"
-  [disabled]="store.isCreating() || store.selectedDiffs().length === 0 || !store.title() || !store.finalCreator()"
+  [disabled]="store.isCreating() || store.selectedDiffs().length === 0 || !store.titleValid()
+  || !store.finalCreator() || store.duplicateNames().size > 0
+  || store.hasEmptyNames()
+  "
   (click)="onCreate()"
 >
   @if (store.isCreating()) {

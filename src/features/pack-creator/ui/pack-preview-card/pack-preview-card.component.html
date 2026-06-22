@@ -5,6 +5,9 @@
       [label]="''"
       [placeholder]="'Difficulty name'"
     />
+    @if (isDuplicate()) {
+      <span class="error-text">this name is used by another difficulty</span>
+    }
     <button class="remove-btn" (click)="onRemove()">✕</button>
   </div>
 </div>

@@ -11,6 +11,7 @@ interface PackStoreState {
     finalCreator: string;
     isCreating: boolean;
     searchQuery: string;
+    titleValid: boolean;
 }
 
 const initialState: PackStoreState = {
@@ -19,6 +20,7 @@ const initialState: PackStoreState = {
     finalCreator: '',
     isCreating: false,
     searchQuery: '',
+    titleValid: false,
 }
 export const PackStore = signalStore(
     { providedIn: 'root' },
@@ -41,6 +43,22 @@ export const PackStore = signalStore(
         addedMd5s: computed(() =>
             new Set(store.selectedDiffs().map(diff => diff.md5))
         ),
+
+        duplicateNames: computed(() => {
+            const diffs = store.selectedDiffs();
+            const nameCount = new Map<string, number>();
+            diffs.forEach(d => {
+                if (d.newDiffName.trim() === '') return;
+                nameCount.set(d.newDiffName, (nameCount.get(d.newDiffName) ?? 0) + 1);
+            });
+            return new Set(
+                diffs.filter(d => (nameCount.get(d.newDiffName) ?? 0) > 1).map(d => d.md5)
+            );
+        }),
+
+        hasEmptyNames: computed(() =>
+            store.selectedDiffs().some(d => d.newDiffName.trim() === '')
+        ),
     })),
 
     withMethods((store, toastStore = inject(ToastStore)) => ({
@@ -61,7 +79,7 @@ export const PackStore = signalStore(
             const diffs = store.selectedDiffs();
             const index = diffs.findIndex(d => d.md5 === diff.md5);
 
-            if (index >= 0) {
+            if (index >= 0 && diffs[index].newDiffName !== newDiffName) {
                 const newDiffs = [...diffs];
                 newDiffs[index] = { ...newDiffs[index], newDiffName };
                 patchState(store, { selectedDiffs: newDiffs });
@@ -102,6 +120,10 @@ export const PackStore = signalStore(
 
         setFinalCreator(finalCreator: string) {
             patchState(store, { finalCreator });
+        },
+
+        setTitleValid(titleValid: boolean) {
+            patchState(store, { titleValid });
         }
     })),
 )
