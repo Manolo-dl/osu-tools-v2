@@ -26,6 +26,7 @@ pub async fn start_downloads(
 
     let songs_folder = format!("{}/Songs", osu_path);
     if !std::path::Path::new(&songs_folder).exists() {
+        log::error!("Songs folder not found: {}", songs_folder);
         return Err(format!("Songs folder not found: {}", songs_folder));
     }
 
@@ -47,7 +48,7 @@ pub async fn start_downloads(
                 }).ok();
             }
             Err(e) => {
-                log::error!("Failed to download {}: {}", id, e);
+                log::warn!("Beatmap {} marked as failed: {}", id, e);
                 app.emit("download:progress", DownloadProgress {
                     beatmap_set_id: id,
                     progress: 0.0,
@@ -76,9 +77,13 @@ async fn download_beatmap(
         .header("Referer", format!("https://osu.ppy.sh/beatmapsets/{}", beatmap_set_id))
         .send()
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            log::error!("HTTP request failed for {}: {}", beatmap_set_id, e);
+            e.to_string()
+        })?;
 
     if !response.status().is_success() {
+        log::error!("Failed to download {}: HTTP {}", beatmap_set_id, response.status());
         return Err(format!("HTTP {}", response.status()));
     }
 
@@ -97,7 +102,11 @@ async fn download_beatmap(
     let mut stream = response.bytes_stream();
 
     while let Some(chunk) = stream.next().await {
-        let chunk = chunk.map_err(|e| e.to_string())?;
+        let chunk = chunk.map_err(|e| {
+            log::error!("Stream interrupted for {}: {}", beatmap_set_id, e);
+            e.to_string()
+        })?;
+
         downloaded += chunk.len() as u64;
         bytes.extend_from_slice(&chunk);
 
@@ -113,10 +122,14 @@ async fn download_beatmap(
 
     const MAX_SIZE: usize = 200 * 1024 * 1024;
     if bytes.len() > MAX_SIZE {
+        log::error!("Beatmap set {} is too large: {} bytes", beatmap_set_id, bytes.len());
         return Err(format!("Beatmap set {} is too large", beatmap_set_id));
     }
 
-    std::fs::write(&path, &bytes).map_err(|e| e.to_string())?;
+    std::fs::write(&path, &bytes).map_err(|e| {
+        log::error!("Failed to write file {}: {}", path, e);
+        e.to_string()
+    })?;
 
     Ok(())
 }
@@ -139,5 +152,8 @@ pub async fn append_text_file(path: String, content: String) -> Result<(), Strin
         .open(&path)
         .map_err(|e| e.to_string())?;
 
-    file.write_all(content.as_bytes()).map_err(|e| e.to_string())
+    file.write_all(content.as_bytes()).map_err(|e| {
+        log::error!("Failed to write file {}: {}", path, e);
+        e.to_string()
+    })
 }
