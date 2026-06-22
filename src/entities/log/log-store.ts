@@ -42,7 +42,10 @@ export const LogStore = signalStore(
         async load() {
             try {
                 const logs = await invoke<LogEntry[]>('read_logs');
-                patchState(store, { logs, isLoaded: true });
+                const sorted = [...logs].sort((a, b) =>
+                    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                );
+                patchState(store, { logs: sorted, isLoaded: true });
             } catch (error) {
                 toast.show('error', 'Failed to load logs');
                 patchState(store, { isLoaded: false });

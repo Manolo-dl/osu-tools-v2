@@ -6,13 +6,14 @@ use tauri::Manager;
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LogEntry {
+    timestamp: String,
     level: String,
     target: String,
     message: String,
 }
 
 static LOG_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^\[(\w+)\s+([\w:]+)\]\s+(.*)$").expect("invalid log regex")
+    Regex::new(r"^\[(\S+\s+\S+)\s+(\w+)\s+([\w:]+)\]\s+(.*)$").expect("invalid log regex")
 });
 
 #[tauri::command]
@@ -56,8 +57,9 @@ fn parse_log_line(line: &str) -> Option<LogEntry> {
     let caps = LOG_REGEX.captures(line)?;
 
     Some(LogEntry {
-        level: caps.get(1)?.as_str().to_string(),
-        target: caps.get(2)?.as_str().to_string(),
-        message: caps.get(3)?.as_str().to_string(),
+        timestamp: caps.get(1)?.as_str().to_string(),
+        level: caps.get(2)?.as_str().to_string(),
+        target: caps.get(3)?.as_str().to_string(),
+        message: caps.get(4)?.as_str().to_string(),
     })
 }
