@@ -22,7 +22,7 @@ pub async fn read_osu_collections(
 
     let collection_path = std::path::Path::new(&osu_path).join("collection.db");
 
-    log::warn!("Attempting to read collection.db from {:?}", collection_path);
+    log::debug!("Attempting to read collection.db from {:?}", collection_path);
 
     let metadata = std::fs::metadata(&collection_path).map_err(|e| e.to_string())?;
     let file_size = metadata.len() as i64;
@@ -37,12 +37,12 @@ pub async fn read_osu_collections(
 
     if let Some(meta) = collection_cache::get_meta(pool).await {
         if meta.last_modified == last_modified && meta.file_size == file_size {
-            log::info!("loading collection.db from cache");
+            log::debug!("loading collection.db from cache");
             return collection_cache::get_collections(pool).await.map_err(|e| e.to_string());
         }
     }
 
-    log::info!("cache miss, reading collection.db");
+    log::debug!("cache miss, reading collection.db");
     let db = CollectionDB::from_file(&collection_path).map_err(|e| e.to_string())?;
 
     let collections: Vec<OsuCollection> = db.collections
@@ -53,6 +53,8 @@ pub async fn read_osu_collections(
         })
         .collect();
 
+    log::info!("successfully parsed {} collections from collection.db", collections.len());
+    log::debug!("saving collections to cache");
     collection_cache::save_collections(pool, &collections).await.map_err(|e| e.to_string())?;
     collection_cache::set_meta(pool, last_modified, file_size).await.map_err(|e| e.to_string())?;
 

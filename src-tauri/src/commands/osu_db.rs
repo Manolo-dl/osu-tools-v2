@@ -47,7 +47,7 @@ pub async fn read_osu_db_full(
 
     let db_path = std::path::Path::new(&osu_path).join("osu!.db");
 
-    log::warn!("Attempting to read osu!.db from {:?}", db_path);
+    log::debug!("Attempting to read osu!.db from {:?}", db_path);
 
     let metadata = std::fs::metadata(&db_path).map_err(|e| {
         log::error!("Failed to read osu!.db metadata: {:?}: {}", db_path, e);
@@ -76,7 +76,8 @@ pub async fn read_osu_db_full(
 
     log::info!("cache miss, reading osu!.db at {:?}", db_path);
     let sets = read_from_osudb(&osu_path)?;
-    log::info!("successfully parsed {} beatmap sets from osu!.db, saving to cache", sets.len());
+    log::info!("successfully parsed {} beatmap sets from osu!.db", sets.len());
+    log::debug!("saving osu!.db to cache");
 
     osu_db_cache::save_beatmapsets(pool, &sets).await.map_err(|e| {
         log::error!("Failed to save osu!.db to cache: {}", e);
@@ -98,7 +99,7 @@ fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
 
     let db_path = std::path::Path::new(osu_path).join("osu!.db");
 
-    log::info!("Attempting to read osu!.db from {:?}", db_path);
+    log::debug!("Attempting to read osu!.db from {:?}", db_path);
 
     let db_path_clone = db_path.clone();
     let db = panic::catch_unwind(move || OsuDB::from_file(&db_path_clone))

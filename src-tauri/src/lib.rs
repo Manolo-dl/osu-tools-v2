@@ -60,7 +60,7 @@ pub fn run() {
                 message
             ))
         })
-        .level(log::LevelFilter::Info)
+        .level(log::LevelFilter::Debug)
         .level_for("h2", log::LevelFilter::Off)
         .level_for("hyper", log::LevelFilter::Off)
         .level_for("reqwest", log::LevelFilter::Off)
