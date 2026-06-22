@@ -2,13 +2,14 @@ import { Component, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { HeaderComponent } from "@widgets/header"; 
 import { SidebarComponent } from "@widgets/sidebar";
-import { OsuPathComponent } from "@widgets/osu-path"; 
+import { OsuPathComponent } from "@widgets/osu-path";
+import { ToastComponent } from "@widgets/toast";
 import { AuthService, ThemeService } from "@shared/services";
 import { PlatformStore } from "@shared/stores";
 
 @Component({
   selector: "app-root",
-  imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent],
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent, ToastComponent],
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
 })

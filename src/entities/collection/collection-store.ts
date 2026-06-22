@@ -3,7 +3,7 @@ import { OsuCollection } from "./collection-model";
 import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
 import { OsuBeatmapSet } from "@entities/osu-db/osu-db-model";
-import { OsuPathStore } from "@shared/stores"; 
+import { OsuPathStore, ToastStore } from "@shared/stores"; 
 import { invoke } from "@tauri-apps/api/core";
 
 
@@ -69,15 +69,26 @@ export const CollectionStore = signalStore(
         };
     }),
 
-    withMethods((store, osuPath = inject(OsuPathStore)) => ({
+    withMethods((store, osuPath = inject(OsuPathStore), toast = inject(ToastStore)) => ({
 
         async load() {
             const path = osuPath.path();
-            if (!path) throw new Error("Osu! path not set");
+            if (!path) {
+                toast.show('error', 'Osu! path not set');
+                throw new Error("Osu! path not set");
+            }
 
             patchState(store, { isLoading: true });
-            const collections = await invoke<OsuCollection[]>("read_osu_collections");
-            patchState(store, { collections, isLoaded: true, isLoading: false });
+
+            try {
+                const collections = await invoke<OsuCollection[]>("read_osu_collections");
+                toast.show('success', `Loaded ${collections.length} collections`);
+                patchState(store, { collections, isLoaded: true, isLoading: false });
+            } catch (error) {
+                patchState(store, { isLoading: false });
+                toast.show('error', `Failed to load collections`);
+                throw error;
+            }
         },
 
         setCollections(collections: OsuCollection[]) {

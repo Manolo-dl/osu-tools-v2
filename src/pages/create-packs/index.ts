@@ -1,0 +1,1 @@
+export { CreatePacksComponent } from './create-packs.component';

@@ -3,6 +3,7 @@ import { phosphorSignIn, phosphorSun, phosphorMoon, phosphorDesktop } from '@ng-
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { UserStore } from '@entities/user';
 import { AuthService, ThemeService, Theme } from '@shared/services';
+import { NavStore } from '@entities/nav-item';
 
 const THEME_ICON: Record<Theme, string> = {
   dark:   'phosphorMoon',
@@ -28,6 +29,7 @@ export class HeaderComponent {
   readonly userStore = inject(UserStore);
   readonly authService = inject(AuthService);
   readonly themeService = inject(ThemeService);
+  readonly navStore = inject(NavStore);
 
   get themeIcon() { return THEME_ICON[this.themeService.theme()]; }
   get themeLabel() { return THEME_LABEL[this.themeService.theme()]; }

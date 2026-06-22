@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+
+.create-pack-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.create-pack-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.create-pack-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

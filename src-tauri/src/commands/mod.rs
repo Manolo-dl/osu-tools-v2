@@ -5,3 +5,6 @@ pub mod osu_path;
 pub mod osu_db;
 pub mod osu_db_cache;
 pub mod collection_cache;
+pub mod pack_creator;
+pub mod manage_folders;
+pub mod logs;
