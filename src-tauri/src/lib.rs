@@ -87,6 +87,7 @@ pub fn run() {
             commands::download::append_text_file,
             commands::manage_folders::validate_pack_folder,
             commands::pack_creator::create_pack,
+            commands::logs::read_logs,
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
