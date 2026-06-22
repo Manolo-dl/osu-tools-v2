@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { NotImplementedComponent } from "@shared/ui";
 
 @Component({
   selector: 'app-database',
-  imports: [],
+  imports: [NotImplementedComponent],
   templateUrl: './database.component.html',
   styleUrl: './database.component.css',
 })
