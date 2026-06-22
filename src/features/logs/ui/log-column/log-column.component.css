@@ -41,6 +41,7 @@
 .level-error { --level-color: var(--danger); }
 .level-warn  { --level-color: var(--warning); }
 .level-info  { --level-color: var(--accent); }
+.level-debug { --level-color: #5b9cf6; }
 
 .empty {
   padding: 32px 14px;

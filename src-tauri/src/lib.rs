@@ -67,6 +67,10 @@ pub fn run() {
         .level_for("tracing", log::LevelFilter::Off)
         .level_for("tao", log::LevelFilter::Off)
         .level_for("wry", log::LevelFilter::Off)
+        .level_for("rustls", log::LevelFilter::Off)
+        .level_for("rustsl_platform_verifier", log::LevelFilter::Off)
+        .level_for("sqlx", log::LevelFilter::Off)
+        .level_for("tauri_plugin_updater", log::LevelFilter::Off)
         .targets([
             Target::new(TargetKind::LogDir { file_name: None }),
             Target::new(TargetKind::Stdout),

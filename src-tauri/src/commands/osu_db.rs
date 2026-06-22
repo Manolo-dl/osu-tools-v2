@@ -66,7 +66,7 @@ pub async fn read_osu_db_full(
 
     if let Some(meta) = osu_db_cache::get_meta(pool).await {
         if meta.last_modified == last_modified && meta.file_size == file_size {
-            log::info!("loading osu!.db from cache");
+            log::debug!("loading osu!.db from cache");
             return osu_db_cache::get_beatmapsets(pool).await.map_err(|e| {
                 log::error!("Failed to read osu!.db from cache: {}", e);
                 e.to_string()
@@ -74,7 +74,7 @@ pub async fn read_osu_db_full(
         }
     }
 
-    log::info!("cache miss, reading osu!.db at {:?}", db_path);
+    log::debug!("cache miss, reading osu!.db at {:?}", db_path);
     let sets = read_from_osudb(&osu_path)?;
     log::info!("successfully parsed {} beatmap sets from osu!.db", sets.len());
     log::debug!("saving osu!.db to cache");

@@ -22,9 +22,10 @@ export const LogStore = signalStore(
         totalLogs: computed(() => store.logs().length),
         groupedLogs: computed(() => {
             const result: Record<string, Record<string, LogEntry[]>> = {
-                ERROR: {},
-                WARN: {},
+                DEBUG: {},
                 INFO: {},
+                WARN: {},
+                ERROR: {},
             };
 
             for (const entry of store.logs()) {

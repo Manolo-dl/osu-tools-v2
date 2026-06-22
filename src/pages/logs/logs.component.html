@@ -8,7 +8,7 @@
   </header>
 
   <div class="columns">
-    @for (level of ['INFO', 'WARN', 'ERROR']; track level) {
+    @for (level of ['INFO', 'DEBUG', 'WARN', 'ERROR']; track level) {
       <app-log-column
         [level]="level"
         [groups]="store.groupedLogs()[level]"
