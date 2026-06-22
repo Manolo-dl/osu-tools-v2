@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { phosphorHouse, phosphorDownloadSimple, phosphorFolder, phosphorMusicNote } from '@ng-icons/phosphor-icons/regular';
 import { provideIcons, NgIcon } from '@ng-icons/core';
-import { NAV_ITEMS, NavItem } from '@entities/nav-item';
+import { DEV_ITEMS, NavItem, NavStore, USER_ITEMS } from '@entities/nav-item';
 import { RouterLink, RouterLinkActive } from "@angular/router";
 
 @Component({
@@ -19,5 +19,8 @@ import { RouterLink, RouterLinkActive } from "@angular/router";
 })
 export class SidebarComponent {
 
-  readonly navItems: NavItem[] = NAV_ITEMS;
+  readonly navStore = inject(NavStore);
+
+  readonly userItems: NavItem[] = USER_ITEMS;
+  readonly devItems: NavItem[] = DEV_ITEMS;
 }

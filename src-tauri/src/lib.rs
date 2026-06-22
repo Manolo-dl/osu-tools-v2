@@ -53,19 +53,24 @@ pub fn run() {
         .max_file_size(50_000)
         .format(|out, message, record| {
             out.finish(format_args!(
-                "[{} {}] {}",
+                "[{} {} {}] {}",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
                 record.level(),
                 record.target(),
                 message
             ))
         })
-        .level(log::LevelFilter::Info)
+        .level(log::LevelFilter::Debug)
         .level_for("h2", log::LevelFilter::Off)
         .level_for("hyper", log::LevelFilter::Off)
         .level_for("reqwest", log::LevelFilter::Off)
         .level_for("tracing", log::LevelFilter::Off)
         .level_for("tao", log::LevelFilter::Off)
         .level_for("wry", log::LevelFilter::Off)
+        .level_for("rustls", log::LevelFilter::Off)
+        .level_for("rustsl_platform_verifier", log::LevelFilter::Off)
+        .level_for("sqlx", log::LevelFilter::Off)
+        .level_for("tauri_plugin_updater", log::LevelFilter::Off)
         .targets([
             Target::new(TargetKind::LogDir { file_name: None }),
             Target::new(TargetKind::Stdout),
@@ -87,6 +92,7 @@ pub fn run() {
             commands::download::append_text_file,
             commands::manage_folders::validate_pack_folder,
             commands::pack_creator::create_pack,
+            commands::logs::read_logs,
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
