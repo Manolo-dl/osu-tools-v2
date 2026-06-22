@@ -15,5 +15,12 @@
     } @else {
       <button class="btn-primary" (click)="login()">Login with osu!</button>
     }
+    <button class="btn-ghost" (click)="navStore.toggleMode()">
+      @if (navStore.isUserMode()) {
+        Dev Mode
+      } @else {
+        User Mode
+      }
+    </button>
   </div>
 </header>
