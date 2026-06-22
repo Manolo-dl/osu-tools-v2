@@ -47,6 +47,8 @@ pub async fn read_osu_db_full(
 
     let db_path = std::path::Path::new(&osu_path).join("osu!.db");
 
+    log::warn!("Attempting to read osu!.db from {:?}", db_path);
+
     let metadata = std::fs::metadata(&db_path).map_err(|e| {
         log::error!("Failed to read osu!.db metadata: {:?}: {}", db_path, e);
         e.to_string()

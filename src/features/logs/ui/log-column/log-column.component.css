@@ -119,12 +119,22 @@
 .entries::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .entry {
+  display: flex;
+  gap: 10px;
   padding: 5px 14px 5px 28px;
   font-size: 11px;
   font-family: monospace;
   color: var(--text-secondary);
   line-height: 1.5;
   border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+.timestamp {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.message {
   word-break: break-all;
 }
 

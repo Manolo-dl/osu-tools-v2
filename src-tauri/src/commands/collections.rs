@@ -22,6 +22,8 @@ pub async fn read_osu_collections(
 
     let collection_path = std::path::Path::new(&osu_path).join("collection.db");
 
+    log::warn!("Attempting to read collection.db from {:?}", collection_path);
+
     let metadata = std::fs::metadata(&collection_path).map_err(|e| e.to_string())?;
     let file_size = metadata.len() as i64;
     let last_modified = metadata
