@@ -9,7 +9,7 @@ export const logResolver:ResolveFn<void> = async () => {
   const toast = inject(ToastStore);
 
   if (!store.isLoaded()) {
-    toast.show('warning', 'Loading logs, please wait...');
+    toast.show('info', 'Loading logs, please wait...');
     await store.load();
   }
 };

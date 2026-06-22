@@ -9,7 +9,7 @@ export const osuDbResolver: ResolveFn<void> = async () => {
   const toast = inject(ToastStore);
 
   if (!store.isLoaded()) {
-    toast.show('warning', 'Loading osu!.db, please wait...');
+    toast.show('info', 'Loading osu!.db, please wait...');
     await store.load();
   }
 };
