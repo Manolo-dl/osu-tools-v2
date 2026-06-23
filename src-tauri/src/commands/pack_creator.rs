@@ -25,23 +25,37 @@ pub async fn create_pack(
     osu_state: tauri::State<'_, OsuState>,
 ) -> Result<(), String> {
 
+    log::debug!("create_pack called with title={}, creator={}, {} diffs", request.title, request.final_creator, request.diffs.len());
+
     let pool = &db_state.pool;
 
     let osu_path = {
         let path = osu_state.path.lock().unwrap();
-        path.as_ref().ok_or("Osu path not set")?.clone()
+        path.as_ref().ok_or_else(|| {
+            log::error!("create_pack failed: osu! path not set");
+            "Osu path not set".to_string()
+        })?.clone()
     };
 
     let safe_title = sanitize(&request.title);
     let temp_dir = std::env::temp_dir().join(format!("osu-pack-{}", safe_title));
-    fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+
+    log::debug!("creating temp directory at {:?}", temp_dir);
+    fs::create_dir_all(&temp_dir).map_err(|e| {
+        log::error!("failed to create temp directory {:?}: {}", temp_dir, e);
+        e.to_string()
+    })?;
 
     for (index, diff) in request.diffs.iter().enumerate() {
+        log::debug!("processing diff {}/{}: beatmapset_id={}, file_name={}", index + 1, request.diffs.len(), diff.beatmapset_id, diff.file_name);
+
         let folder = get_beatmapset_folder(pool, &osu_path, diff.beatmapset_id, &diff.file_name).await?;
         let osu_file_path = Path::new(&folder.folder_path).join(&diff.file_name);
 
-        let content = fs::read_to_string(&osu_file_path)
-            .map_err(|e| format!("Failed to read {}: {}", diff.file_name, e))?;
+        let content = fs::read_to_string(&osu_file_path).map_err(|e| {
+            log::error!("failed to read {:?}: {}", osu_file_path, e);
+            format!("Failed to read {}: {}", diff.file_name, e)
+        })?;
 
         let audio_extension = diff.audio.rsplit('.').next().unwrap_or("mp3");
         let new_audio_file_name = format!("audio-{}.{}", index + 1, audio_extension);
@@ -49,7 +63,13 @@ pub async fn create_pack(
         let audio_destination = temp_dir.join(&new_audio_file_name);
 
         if audio_source.exists() {
-            fs::copy(&audio_source, &audio_destination).map_err(|e| e.to_string())?;
+            fs::copy(&audio_source, &audio_destination).map_err(|e| {
+                log::error!("failed to copy audio {:?} -> {:?}: {}", audio_source, audio_destination, e);
+                e.to_string()
+            })?;
+            log::debug!("copied audio {:?} to {:?}", audio_source, audio_destination);
+        } else {
+            log::warn!("audio file not found for diff {}: {:?}", diff.file_name, audio_source);
         }
 
         let modified_content = modify_osu_metadata(
@@ -61,16 +81,53 @@ pub async fn create_pack(
         );
 
         let new_osu_name = format!("{}.osu", sanitize(&diff.new_diff_name));
-        fs::write(temp_dir.join(&new_osu_name), modified_content)
-            .map_err(|e| e.to_string())?;
+        fs::write(temp_dir.join(&new_osu_name), modified_content).map_err(|e| {
+            log::error!("failed to write {:?}: {}", temp_dir.join(&new_osu_name), e);
+            e.to_string()
+        })?;
+
+        log::debug!("wrote modified .osu file: {}", new_osu_name);
     }
 
     let osz_path = std::env::temp_dir().join(format!("{}.osz", safe_title));
-    create_osz(&temp_dir, &osz_path)?;
+    log::debug!("creating osz archive at {:?}", osz_path);
 
-    open::that(&osz_path).map_err(|e| format!("Failed to open .osz: {}", e))?;
+    create_osz(&temp_dir, &osz_path).map_err(|e| {
+        log::error!("failed to create osz archive {:?}: {}", osz_path, e);
+        e
+    })?;
 
-    let _ = fs::remove_dir_all(&temp_dir);
+    log::debug!("opening osz with default handler: {:?}", osz_path);
+
+    if let Err(e) = open::that(&osz_path) {
+        log::warn!("default handler failed to open .osz ({}), trying osu-wine --osuhandler", e);
+
+        let osu_wine_result = std::process::Command::new("osu-wine")
+            .arg("--osuhandler")
+            .arg(&osz_path)
+            .spawn();
+
+        match osu_wine_result {
+            Ok(_) => {
+                log::debug!("opened .osz via osu-wine --osuhandler");
+            }
+            Err(wine_err) => {
+                log::error!("failed to open .osz with both default handler and osu-wine: {} / {}", e, wine_err);
+                return Err(format!("Failed to open .osz: {}", e));
+            }
+        }
+    } else {
+        log::debug!("opened .osz with default handler");
+    }
+
+    if let Err(e) = fs::remove_dir_all(&temp_dir) {
+        log::warn!("failed to clean up temp directory {:?}: {}", temp_dir, e);
+    } else {
+        log::debug!("cleaned up temp directory {:?}", temp_dir);
+    }
+
+    log::info!("successfully created pack '{}' with {} diffs", request.title, request.diffs.len());
+
     Ok(())
 }
 
