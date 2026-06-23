@@ -1,6 +1,6 @@
 [package]
 name = "osu-tools"
-version = "0.4.0"
+version = "0.4.1"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -47,8 +47,9 @@ sqlx = { version = "0.9", features = ["sqlite", "runtime-tokio"] }
 futures-util = "0.3.32"
 regex = "1.12.4"
 walkdir = "2.5.0"
-rosu-map = "0.2.1"
 chrono = "0.4.45"
+zip = "8.6.0"
+open = "5.3.5"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0.2" }
