@@ -42,6 +42,14 @@ export const DatabaseStore = signalStore(
 
             return `SELECT ${includedColumns.join(', ')} FROM ${table}`;
         }),
+
+        currentColumns: computed(() => {
+            const tableName = store.selectedTable();
+            if (!tableName) return [];
+
+            const table = store.tables().find(t => t.name === tableName);
+            return table?.columns ?? [];
+        }),
     })),
 
     withMethods((store, toast = inject(ToastStore)) => ({
