@@ -181,7 +181,7 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
 
 pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
-    const CURRENT_VERSION: i64 = 2;
+    const CURRENT_VERSION: i64 = 3;
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS schema_version (

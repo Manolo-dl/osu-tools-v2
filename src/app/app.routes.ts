@@ -3,6 +3,7 @@ import { collectionResolver } from "@entities/collection";
 import { osuDbResolver } from "@entities/osu-db/osu-db-resolver";
 import { logResolver } from "@entities/log";
 import { osuPathGuard } from "./guards/osu-path.guard";
+import { databaseResolver } from "@entities/database";
 
 export const routes: Routes = [
     {
@@ -44,7 +45,8 @@ export const routes: Routes = [
             },
             {
                 path: 'database',
-                loadComponent: () => import('@pages/database').then(m => m.DatabaseComponent)
+                loadComponent: () => import('@pages/database').then(m => m.DatabaseComponent),
+                resolve: { tables: databaseResolver }
             }
         ]
     },
