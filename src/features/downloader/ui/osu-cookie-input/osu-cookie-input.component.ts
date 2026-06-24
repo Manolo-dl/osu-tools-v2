@@ -7,11 +7,11 @@ import { StatefulInputComponent } from "@shared/ui";
 @Component({
   selector: 'app-osu-cookie-input',
   imports: [FormRoot, StatefulInputComponent, FormField],
-  templateUrl: './osu-cookie-input.html',
-  styleUrl: './osu-cookie-input.css',
+  templateUrl: './osu-cookie-input.component.html',
+  styleUrl: './osu-cookie-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OsuCookieInput {
+export class OsuCookieInputComponent {
   readonly userStore = inject(UserStore);
 
   readonly osuCookieForm = form(

@@ -8,7 +8,7 @@ import { databaseResolver } from "@entities/database";
 export const routes: Routes = [
     {
         path: '',
-        loadComponent: () => import('@pages/home').then(m => m.HomeComponent)
+        loadComponent: () => import('@pages/home').then(m => m.HomePageComponent)
     },
     {
         path: 'user',
@@ -16,21 +16,21 @@ export const routes: Routes = [
         children: [
             {
                 path: 'downloader',
-                loadComponent: () => import('@pages/downloader').then(m => m.DownloaderComponent)
+                loadComponent: () => import('@pages/downloader').then(m => m.DownloaderPageComponent)
             },
             {
                 path: 'export-collections',
-                loadComponent: () => import('@pages/export-collections').then(m => m.ExportCollectionsComponent),
+                loadComponent: () => import('@pages/export-collections').then(m => m.ExportCollectionsPageComponent),
                 resolve: { osuDb: osuDbResolver, collections: collectionResolver }
             },
             {
                 path: 'export-song-folder',
-                loadComponent: () => import('@pages/export-song-folder').then(m => m.ExportSongFolderComponent),
+                loadComponent: () => import('@pages/export-song-folder').then(m => m.ExportSongFolderPageComponent),
                 resolve: { osuDb: osuDbResolver }
             },
             {
                 path: 'create-packs',
-                loadComponent: () => import('@pages/create-packs').then(m => m.CreatePacksComponent),
+                loadComponent: () => import('@pages/create-packs').then(m => m.CreatePacksPageComponent),
                 resolve: { osuDb: osuDbResolver }
             }
         ]
@@ -40,12 +40,12 @@ export const routes: Routes = [
         children: [
             {
                 path: 'logs',
-                loadComponent: () => import('@pages/logs').then(m => m.LogsComponent),
+                loadComponent: () => import('@pages/logs').then(m => m.LogsPageComponent),
                 resolve: { logs: logResolver }
             },
             {
                 path: 'database',
-                loadComponent: () => import('@pages/database').then(m => m.DatabaseComponent),
+                loadComponent: () => import('@pages/database').then(m => m.DatabasePageComponent),
                 resolve: { tables: databaseResolver }
             }
         ]

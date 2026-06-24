@@ -1,1 +1,1 @@
-export { ExportSongFolderComponent } from './export-song-folder.component';
+export { ExportSongFolderPageComponent } from './export-song-folder-page.component';

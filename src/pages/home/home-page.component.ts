@@ -7,11 +7,11 @@ import { OsuPathStore } from '@shared/stores';
 @Component({
   selector: 'app-home',
   imports: [RouterLink, NgIcon],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  templateUrl: './home-page.component.html',
+  styleUrl: './home-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideIcons({ phosphorDownloadSimple, phosphorFolder, phosphorMusicNote })],
 })
-export class HomeComponent {
+export class HomePageComponent {
   readonly osuPath = inject(OsuPathStore);
 }

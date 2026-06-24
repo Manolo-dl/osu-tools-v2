@@ -1,5 +1,5 @@
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
-import { DownloadItem, DownloadStatus } from "./beatmap-model";
+import { DownloadItem, DownloadStatus } from "./beatmap.model";
 import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
 

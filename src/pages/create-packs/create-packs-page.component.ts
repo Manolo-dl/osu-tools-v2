@@ -4,7 +4,7 @@ import { PackSearchInputComponent, PackBrowserComponent, PackPreviewComponent, P
 @Component({
   selector: 'app-create-packs',
   imports: [PackSearchInputComponent, PackBrowserComponent, PackPreviewComponent, PackDetailsFormComponent, CreatePackButtonComponent],
-  templateUrl: './create-packs.component.html',
-  styleUrl: './create-packs.component.css',
+  templateUrl: './create-packs-page.component.html',
+  styleUrl: './create-packs-page.component.css',
 })
-export class CreatePacksComponent {}
+export class CreatePacksPageComponent {}

@@ -1,8 +1,8 @@
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
-import { OsuCollection } from "./collection-model";
+import { OsuCollection } from "./collection.model";
 import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
-import { OsuBeatmapSet } from "@entities/osu-db/osu-db-model";
+import { OsuBeatmapSet } from "@entities/osu-db/osu-db.model";
 import { OsuPathStore, ToastStore } from "@shared/stores"; 
 import { invoke } from "@tauri-apps/api/core";
 

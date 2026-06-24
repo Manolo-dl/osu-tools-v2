@@ -1,1 +1,1 @@
-export { DownloaderComponent } from './downloader.component';
+export { DownloaderPageComponent } from './downloader-page.component';
