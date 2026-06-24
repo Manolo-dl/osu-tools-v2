@@ -93,6 +93,9 @@ pub fn run() {
             commands::manage_folders::validate_pack_folder,
             commands::pack_creator::create_pack,
             commands::logs::read_logs,
+            commands::database::get_database_tables,
+            commands::database::get_table_columns,
+            commands::database::execute_query,
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())

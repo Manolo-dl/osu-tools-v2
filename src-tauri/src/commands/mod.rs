@@ -8,3 +8,4 @@ pub mod collection_cache;
 pub mod pack_creator;
 pub mod manage_folders;
 pub mod logs;
+pub mod database;
