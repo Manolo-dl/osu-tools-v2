@@ -2,7 +2,7 @@ import { Routes } from "@angular/router";
 import { collectionResolver } from "@entities/collection";
 import { osuDbResolver } from "@entities/osu-db/osu-db-resolver";
 import { logResolver } from "@entities/log";
-import { osuPathGuard } from "./guards/osu-path.guard";
+import { osuPathGuard } from "@shared/guards";
 import { databaseResolver } from "@entities/database";
 
 export const routes: Routes = [
