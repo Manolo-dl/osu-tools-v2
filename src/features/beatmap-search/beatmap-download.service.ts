@@ -29,7 +29,7 @@ export class BeatmapDownloadService implements OnDestroy {
     const pending = this.beatmapStore.queue().filter(i => i.status === 'pending');
     if (pending.length === 0) return;
 
-    const osuSession = this.userStore.user()?.osuSession;
+    const osuSession = this.userStore.user()?.osuSession ?? null;
     if (!osuSession) return;
 
     this.error.set(null);

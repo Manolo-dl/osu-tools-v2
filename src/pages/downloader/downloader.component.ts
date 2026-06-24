@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { BeatmapImportComponent, BeatmapQueueComponent } from "@features/beatmap-search";
 import { OsuCookieInput } from '@features/downloader';
-import { UserStore } from '@entities/user';
 import { OsuDbStore } from '@entities/osu-db';
 
 @Component({
@@ -12,7 +11,6 @@ import { OsuDbStore } from '@entities/osu-db';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloaderComponent {
-  readonly userStore = inject(UserStore);
   readonly osuDb = inject(OsuDbStore);
 
   async loadLibrary() {

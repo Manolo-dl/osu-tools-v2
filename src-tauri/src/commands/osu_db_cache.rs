@@ -205,6 +205,7 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
     if needs_migration {
         log::info!("migrating osu_db schema, dropping old tables");
+        sqlx::query("DROP TABLE IF EXISTS beatmapset_folders").execute(pool).await?;
         sqlx::query("DROP TABLE IF EXISTS diffs").execute(pool).await?;
         sqlx::query("DROP TABLE IF EXISTS beatmapsets").execute(pool).await?;
         sqlx::query("DROP TABLE IF EXISTS osudb_meta").execute(pool).await?;

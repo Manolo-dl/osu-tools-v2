@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { form, maxLength, minLength, required, FormRoot, FormField } from '@angular/forms/signals';
+import { signal } from '@angular/core';
 import { UserStore } from '@entities/user';
 import { StatefulInputComponent } from "@shared/ui";
-import { PlatformStore } from '@shared/stores';
 
 @Component({
   selector: 'app-osu-cookie-input',
@@ -12,12 +12,10 @@ import { PlatformStore } from '@shared/stores';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OsuCookieInput {
-
   readonly userStore = inject(UserStore);
-  readonly platformStore = inject(PlatformStore);
 
   readonly osuCookieForm = form(
-    signal({ osuSession: '', osuSessionExpiry: '' }),
+    signal({ osuSession: '' }),
     (schemaPath) => {
       required(schemaPath.osuSession, { message: 'Osu! cookie is required' });
       minLength(schemaPath.osuSession, 300, { message: 'Cookie is too short' });
@@ -27,23 +25,13 @@ export class OsuCookieInput {
       submission: {
         action: async (field) => {
           const previous = this.userStore.user()?.osuSession ?? '';
-          const previousExpiry = this.userStore.user()?.osuSessionExpiry ?? '';
           try {
-            const expiryText = field().value().osuSessionExpiry.trim();
-            let expiry: string | undefined;
-            if (expiryText) {
-              const parsed = new Date(expiryText);
-              if (isNaN(parsed.getTime())) {
-                return { kind: 'error', message: 'Invalid expiry date format' };
-              }
-              expiry = parsed.toISOString();
-            }
-            this.userStore.updateUser({ osuSession: field().value().osuSession, osuSessionExpiry: expiry });
-            field().value.set({ osuSession: '', osuSessionExpiry: '' });
+            this.userStore.updateUser({ osuSession: field().value().osuSession });
+            field().value.set({ osuSession: '' });
             field().reset();
             return null;
           } catch {
-            if (previous) field().value.set({ osuSession: previous, osuSessionExpiry: previousExpiry });
+            if (previous) field().value.set({ osuSession: previous });
             return { kind: 'error', message: 'Failed to update cookie' };
           }
         },
@@ -53,12 +41,6 @@ export class OsuCookieInput {
   );
 
   clearSession() {
-    this.userStore.updateUser({ osuSession: undefined, osuSessionExpiry: undefined });
-  }
-
-  formatExpiry(iso?: string): string {
-    if (!iso) return '';
-    const d = new Date(iso);
-    return isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+    this.userStore.clearSession();
   }
 }
