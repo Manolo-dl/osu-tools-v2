@@ -50,6 +50,22 @@ export const DatabaseStore = signalStore(
             const table = store.tables().find(t => t.name === tableName);
             return table?.columns ?? [];
         }),
+
+        currentRows: computed((): Record<string, unknown>[] => {
+            const tableName = store.selectedTable();
+            if (!tableName) return [];
+            return (store.results()[tableName] ?? []) as Record<string, unknown>[];
+        }),
+
+        columnHeaders: computed(() => {
+            const tableName = store.selectedTable();
+            if (!tableName) return [];
+
+            const rows = store.results()[tableName] ?? [];
+
+            if (rows.length === 0) return [];
+            return Object.keys(rows[0] as Record<string, unknown>);
+        })
     })),
 
     withMethods((store, toast = inject(ToastStore)) => ({
