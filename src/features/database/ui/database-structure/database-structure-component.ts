@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { DatabaseStore } from '@entities/database';
 
 @Component({
@@ -6,6 +6,7 @@ import { DatabaseStore } from '@entities/database';
   imports: [],
   templateUrl: './database-structure-component.html',
   styleUrl: './database-structure-component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatabaseStructureComponent {
   readonly store = inject(DatabaseStore);

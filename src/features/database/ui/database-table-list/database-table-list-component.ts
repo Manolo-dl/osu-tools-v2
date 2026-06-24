@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { DatabaseStore } from '@entities/database';
 
 @Component({
@@ -6,6 +6,7 @@ import { DatabaseStore } from '@entities/database';
   imports: [],
   templateUrl: './database-table-list-component.html',
   styleUrl: './database-table-list-component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatabaseTableListComponent {
   readonly store = inject(DatabaseStore);

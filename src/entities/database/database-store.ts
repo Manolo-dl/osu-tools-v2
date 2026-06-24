@@ -113,7 +113,6 @@ export const DatabaseStore = signalStore(
 
             try {
                 const results = await invoke<Record<string, unknown>[]>('execute_query', { query });
-                toast.show('success', 'Query executed successfully');
                 patchState(store, { results: { [store.selectedTable()!]: results }, isQuerying: false });
             } catch (error) {
                 toast.show('error', 'Failed to execute query');
