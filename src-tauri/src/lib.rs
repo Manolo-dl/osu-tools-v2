@@ -83,8 +83,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::osu_path::get_osu_path,
             commands::osu_path::save_osu_path,
-            commands::auth::start_oauth,
-            commands::auth::refresh_oauth_token,
             commands::collections::read_osu_collections,
             commands::collections::write_text_file,
             commands::osu_db::read_osu_db_full,
