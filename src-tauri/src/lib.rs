@@ -44,10 +44,8 @@ pub fn run() {
             });
             Ok(())
         })
-        .plugin(tauri_plugin_sql::Builder::default().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_log::Builder::new()
         .max_file_size(50_000)

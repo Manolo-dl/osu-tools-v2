@@ -30,14 +30,10 @@ log = "0.4.30"
 tauri-plugin-log = "2"
 tokio = { version = "1", features = ["full", "time"] }
 reqwest = { version = "0.13.4", features = ["cookies", "json"] }
-url = "2.5.8"
 tauri-plugin-os = "2"
-tauri-plugin-http = { version = "2", features = ["unsafe-headers"] }
 tauri-plugin-fs = "2"
-byteorder = "1.5.0"
 osynic_osudb = "0.1.5"
 tauri-plugin-notification = "2"
-tauri-plugin-sql = "2"
 sqlx = { version = "0.9", features = ["sqlite", "runtime-tokio"] }
 futures-util = "0.3.32"
 regex = "1.12.4"
