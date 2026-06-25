@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ScrollingModule } from '@angular/cdk/scrolling';
-import { OsuBeatmapSet } from '@entities/osu-db/osu-db-model';
+import { OsuBeatmapSet } from '@entities/osu-db/osu-db.model';
 import { BeatmapSetCardComponent } from '../beatmap-set-card/beatmap-set-card.component';
 
 @Component({

@@ -1,1 +1,1 @@
-export { ExportCollectionsComponent } from './export-collections.component';
+export { ExportCollectionsPageComponent } from './export-collections-page.component';

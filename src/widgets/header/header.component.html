@@ -6,15 +6,6 @@
     <button class="btn-theme" (click)="themeService.toggle()" [title]="themeLabel">
       <ng-icon [name]="themeIcon" size="18" />
     </button>
-    @if (userStore.isLoggedIn()) {
-      <div class="user-badge">
-        <img [src]="userStore.user()?.avatarUrl" alt="avatar" />
-        <span>{{ userStore.user()?.username }}</span>
-        <button class="btn-ghost" (click)="logout()">Logout</button>
-      </div>
-    } @else {
-      <button class="btn-primary" (click)="login()">Login with osu!</button>
-    }
     <button class="btn-ghost" (click)="navStore.toggleMode()">
       @if (navStore.isUserMode()) {
         Dev Mode

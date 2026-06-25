@@ -4,8 +4,8 @@ import { BeatmapFiltersComponent, BeatmapSummaryComponent, BeatmapPreviewCompone
 @Component({
   selector: 'app-export-song-folder',
   imports: [BeatmapFiltersComponent, BeatmapSummaryComponent, BeatmapPreviewComponent, BeatmapExportControlsComponent],
-  templateUrl: './export-song-folder.component.html',
-  styleUrl: './export-song-folder.component.css',
+  templateUrl: './export-song-folder-page.component.html',
+  styleUrl: './export-song-folder-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExportSongFolderComponent {}
+export class ExportSongFolderPageComponent {}

@@ -1,6 +1,6 @@
 import { DecimalPipe, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core';
-import { OsuBeatmapSet, OsuDiff } from '@entities/osu-db/osu-db-model';
+import { OsuBeatmapSet, OsuDiff } from '@entities/osu-db/osu-db.model';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
 @Component({

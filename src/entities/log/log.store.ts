@@ -1,5 +1,5 @@
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
-import { LogEntry } from "./log-model";
+import { LogEntry } from "./log.model";
 import { computed, inject } from "@angular/core";
 import { ToastStore } from "@shared/stores";
 import { invoke } from "@tauri-apps/api/core";

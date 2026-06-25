@@ -1,2 +1,2 @@
-export type { SelectedDiff, PackRequest } from './pack-model';
-export { PackStore } from './pack-store';
+export type { SelectedDiff, PackRequest } from './pack.model';
+export { PackStore } from './pack.store';

@@ -1,5 +1,5 @@
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from "@ngrx/signals";
-import { DatabaseColumn, DatabaseTable } from "./database-model";
+import { DatabaseColumn, DatabaseTable } from "./database.model";
 import { computed, effect, inject } from "@angular/core";
 import { ToastStore } from "@shared/stores";
 import { invoke } from "@tauri-apps/api/core";

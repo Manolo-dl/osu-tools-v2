@@ -44,10 +44,8 @@ pub fn run() {
             });
             Ok(())
         })
-        .plugin(tauri_plugin_sql::Builder::default().build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_log::Builder::new()
         .max_file_size(50_000)
@@ -83,8 +81,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::osu_path::get_osu_path,
             commands::osu_path::save_osu_path,
-            commands::auth::start_oauth,
-            commands::auth::refresh_oauth_token,
             commands::collections::read_osu_collections,
             commands::collections::write_text_file,
             commands::osu_db::read_osu_db_full,

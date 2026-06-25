@@ -1,1 +1,1 @@
-export { LogsComponent } from './logs.component';
+export { LogsPageComponent } from './logs-page.component';
