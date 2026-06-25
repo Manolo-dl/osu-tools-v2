@@ -4,8 +4,8 @@ import { DatabaseStore } from '@entities/database';
 @Component({
   selector: 'app-database-structure',
   imports: [],
-  templateUrl: './database-structure-component.html',
-  styleUrl: './database-structure-component.css',
+  templateUrl: './database-structure.component.html',
+  styleUrl: './database-structure.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatabaseStructureComponent {

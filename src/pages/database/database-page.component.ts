@@ -4,7 +4,7 @@ import { DatabaseTableListComponent, DatabaseStructureComponent, DatabaseResults
 @Component({
   selector: 'app-database',
   imports: [DatabaseTableListComponent, DatabaseStructureComponent, DatabaseResultsComponent],
-  templateUrl: './database.component.html',
-  styleUrl: './database.component.css',
+  templateUrl: './database-page.component.html',
+  styleUrl: './database-page.component.css',
 })
-export class DatabaseComponent {}
+export class DatabasePageComponent {}

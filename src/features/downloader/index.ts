@@ -1,1 +1,1 @@
-export { OsuCookieInput } from './ui/osu-cookie-input/osu-cookie-input';
+export { OsuCookieInputComponent } from './ui/osu-cookie-input/osu-cookie-input.component';

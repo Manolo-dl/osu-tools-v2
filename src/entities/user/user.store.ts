@@ -5,59 +5,49 @@ import { Store } from '@tauri-apps/plugin-store';
 
 interface UserState {
     user: User | null;
-    isLoggedIn: boolean;
-    isLoading: boolean;
 }
 
 const initialState: UserState = {
     user: null,
-    isLoggedIn: false,
-    isLoading: false,
-}
+};
 
 export const UserStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
 
     withMethods((store) => ({
-        setUser(user: User) {
-            patchState(store, { user, isLoggedIn: true });
+        updateUser(partial: Partial<User>) {
+            const current = store.user();
+            patchState(store, { user: current ? { ...current, ...partial } : partial as User });
         },
 
-        setLoading(isLoading: boolean) {
-            patchState(store, { isLoading });
+        clearSession() {
+            patchState(store, { user: null });
         },
-        
-        logout() {
-            patchState(store, { user: null, isLoggedIn: false });
-        },
-
-        updateUser(user: Partial<User>) {
-            const currentUser = store.user();
-            if (!currentUser) return;
-
-            patchState(store, {
-                user: { ...currentUser, ...user }
-            });
-        }
     })),
 
     withHooks({
         onInit(store) {
+            (async () => {
+                try {
+                    const tauriStore = await Store.load('auth.json');
+                    const user = await tauriStore.get<User>('user');
+                    if (user) patchState(store, { user });
+                } catch {}
+            })();
+
             effect(async () => {
                 const user = store.user();
-                if (!user?.osuSessionExpiry) return;
-
-                const expiryDate = new Date(user.osuSessionExpiry);
-                if (expiryDate < new Date()) {
-                    patchState(store, { user: { ...user, osuSession: undefined, osuSessionExpiry: undefined }});
-
+                try {
                     const tauriStore = await Store.load('auth.json');
-                    await tauriStore.set('user', store.user());
+                    if (user) {
+                        await tauriStore.set('user', user);
+                    } else {
+                        await tauriStore.delete('user');
+                    }
                     await tauriStore.save();
-                }
+                } catch {}
             });
         }
     })
-
-)
+);

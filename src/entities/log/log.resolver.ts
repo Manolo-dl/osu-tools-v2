@@ -1,15 +1,15 @@
 import { inject } from '@angular/core';
 import type { ResolveFn } from '@angular/router';
-import { CollectionStore } from './collection-store';
+import { LogStore } from './log.store';
 import { ToastStore } from '@shared/stores';
 
-export const collectionResolver: ResolveFn<void> = async () => {
+export const logResolver:ResolveFn<void> = async () => {
 
-  const store = inject(CollectionStore);
+  const store = inject(LogStore);
   const toast = inject(ToastStore);
 
   if (!store.isLoaded()) {
-    toast.show('info', 'Loading collections, please wait...');
+    toast.show('info', 'Loading logs, please wait...');
     await store.load();
   }
 };

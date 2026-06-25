@@ -1,1 +1,1 @@
-export { DatabaseComponent } from './database.component';
+export { DatabasePageComponent } from './database-page.component';
