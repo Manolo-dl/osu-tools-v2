@@ -5,7 +5,6 @@ import { ExportControlsComponent, ExportFormat } from '@shared/ui';
 
 const FORMATS: ExportFormat[] = [
   { value: 'urls', label: 'URLs' },
-  { value: 'ids',  label: 'IDs' },
 ];
 
 @Component({
@@ -21,9 +20,9 @@ export class BeatmapExportControlsComponent {
 
   readonly formats = FORMATS;
 
-  async export(format: string) {
+  async export() {
     const lines = this.store.filteredBeatmaps()
-      .map(s => this.exportService.formatLine(s.beatmapsetId, format as 'urls' | 'ids'));
+      .map(s => this.exportService.formatLine(s.beatmapsetId, 'urls'));
     await this.exportService.saveToFile(lines.join('\n'), 'beatmaps.txt');
   }
 }

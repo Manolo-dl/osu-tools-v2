@@ -1,6 +1,6 @@
 use sqlx::SqlitePool;
 use sqlx::FromRow;
-use crate::commands::collections::OsuCollection;
+use super::reader::OsuCollection;
 
 #[derive(FromRow)]
 pub struct CollectionMeta {

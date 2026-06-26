@@ -76,6 +76,8 @@ export const OsuDbStore = signalStore(
         }),
 
         localBeatmapSetIds: computed(() => new Set(store.beatmapSets().map(s => s.beatmapsetId))),
+
+        beatmapSetsBySetId: computed(() => new Map(store.beatmapSets().map(s => [s.beatmapsetId, s]))),
     })),
 
     withMethods((store, osuPath = inject(OsuPathStore), toast = inject(ToastStore)) => ({

@@ -4,9 +4,8 @@ import { CollectionExportService } from '@features/collection-exporter/services/
 import { ExportControlsComponent, ExportFormat } from '@shared/ui';
 
 const FORMATS: ExportFormat[] = [
-  { value: 'urls',         label: 'URLs' },
-  { value: 'ids',          label: 'IDs only' },
-  { value: 'with-headers', label: 'With headers' },
+  { value: 'urls',   label: 'Download links' },
+  { value: 'import', label: 'Import format' },
 ];
 
 @Component({
@@ -19,10 +18,9 @@ const FORMATS: ExportFormat[] = [
 export class CollectionExportControlsComponent {
   readonly exportService = inject(CollectionExportService);
   readonly store = inject(CollectionStore);
-
   readonly formats = FORMATS;
 
   async export(format: string) {
-    await this.exportService.exportToFile(format as 'urls' | 'ids' | 'with-headers');
+    await this.exportService.exportToFile(format as 'urls' | 'import');
   }
 }

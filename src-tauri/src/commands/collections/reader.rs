@@ -1,7 +1,7 @@
 use osynic_osudb::entity::collection::collectiondb::CollectionDB;
 use crate::OsuState;
 use crate::DbState;
-use crate::commands::collection_cache;
+use super::cache as collection_cache;
 
 #[derive(serde::Serialize)]
 pub struct OsuCollection {
