@@ -20,36 +20,55 @@ export const ImportCollectionStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
 
-    withComputed((store, collectionStore = inject(CollectionStore), osuDB = inject(OsuDbStore)) => ({
-        existingNames: computed(() => new Set(collectionStore.collections().map(c => c.name))),
+    withComputed((store, collectionStore = inject(CollectionStore), osuDB = inject(OsuDbStore)) => {
+        const existingMd5sByName = computed(() =>
+            new Map(collectionStore.collections().map(c => [c.name, new Set(c.md5s)]))
+        );
 
-        totalMaps: computed(() => store.parsedCollections().reduce((sum, c) => sum + c.md5s.length, 0)),
+        const collectionsToImport = computed(() =>
+            store.parsedCollections()
+                .map(col => {
+                    const existing = existingMd5sByName().get(col.name);
+                    const md5s = existing
+                        ? col.md5s.filter(md5 => !existing.has(md5))
+                        : col.md5s;
+                    return { ...col, md5s };
+                })
+                .filter(col => col.md5s.length > 0)
+        );
 
-        previewSets: computed(() => {
-            const beatmapSetsByMd5 = osuDB.beatmapSetsByMd5();
-            const importedMd5s = new Set(
-                store.parsedCollections().flatMap(c => c.md5s)
-            );
-            const seen = new Set<number>();
-            const sets = [];
+        return {
+            collectionsToImport,
 
-            for (const md5 of importedMd5s) {
-                const set = beatmapSetsByMd5.get(md5);
-                if (!set) continue;
-                if (seen.has(set.beatmapsetId)) continue;
-                seen.add(set.beatmapsetId);
-                sets.push({
-                    ...set,
-                    diffs: set.diffs.filter(d => importedMd5s.has(d.md5)),
+            totalMaps: computed(() =>
+                collectionsToImport().reduce((sum, c) => sum + c.md5s.length, 0)
+            ),
+
+            previewGroups: computed(() => {
+                const beatmapSetsByMd5 = osuDB.beatmapSetsByMd5();
+
+                return collectionsToImport().map(col => {
+                    const md5s = new Set(col.md5s);
+                    const seen = new Set<number>();
+                    const sets = [];
+
+                    for (const md5 of md5s) {
+                        const set = beatmapSetsByMd5.get(md5);
+                        if (!set || seen.has(set.beatmapsetId)) continue;
+                        seen.add(set.beatmapsetId);
+                        sets.push({ ...set, diffs: set.diffs.filter(d => md5s.has(d.md5)) });
+                    }
+
+                    const isExisting = existingMd5sByName().has(col.name);
+                    return { name: col.name, sets, isExisting };
                 });
-            }
-            return sets;
-        }),
-    })),
+            }),
+        };
+    }),
 
     withMethods((store, toast = inject(ToastStore)) => ({
         setParsedCollections(parsedCollections: OsuCollection[]) {
-            patchState(store, { parsedCollections })
+            patchState(store, { parsedCollections });
         },
 
         clear() {
@@ -57,7 +76,7 @@ export const ImportCollectionStore = signalStore(
         },
 
         async importCollections() {
-            const collections = store.parsedCollections();
+            const collections = store.collectionsToImport();
             if (collections.length === 0) return;
 
             patchState(store, { isImporting: true });

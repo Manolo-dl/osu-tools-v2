@@ -1,45 +1,29 @@
 <div class="preview-panel">
   <div class="panel-header">
-    <span class="section-title">Import Preview</span>
-    @if (store.totalMaps() > 0) {
-      <span class="map-count">{{ store.totalMaps() }} maps</span>
-    }
+    <span class="section-title">Preview</span>
   </div>
 
-  @if (store.preview().length === 0) {
+  @if (store.previewGroups().length === 0) {
     <div class="empty">Upload a .txt file to preview collections to import</div>
   } @else {
-    <div class="collection-list">
-      @for (col of store.preview(); track col.name) {
-        <div class="collection-card">
-          <div class="collection-header">
-            <span class="collection-name">{{ col.name }}</span>
-            @if (isExisting(col.name)) {
-              <span class="badge merge">Will merge</span>
-            } @else {
-              <span class="badge new">New collection</span>
-            }
+    <div class="groups-scroll">
+      @for (group of store.previewGroups(); track group.name) {
+        <div class="collection-group">
+          <div class="group-header">
+            <span class="group-name">{{ group.name }}</span>
+            <div class="group-meta">
+              <span class="badge" [class.merge]="group.isExisting" [class.new]="!group.isExisting">
+                {{ group.isExisting ? 'Will merge' : 'New' }}
+              </span>
+              <span class="group-count">{{ group.sets.length }} sets</span>
+            </div>
           </div>
-
-          <div class="collection-stats">
-            <span class="found">{{ col.foundCount }} found</span>
-            @if (col.missingCount > 0) {
-              <span class="missing">{{ col.missingCount }} not installed</span>
-            }
-          </div>
-
-          <div class="map-list">
-            @for (map of col.maps; track map.md5) {
-              <div class="map-row" [class.missing]="!map.found">
-                <span class="map-title">{{ map.title }}</span>
-                <span class="map-artist">{{ map.artist }}</span>
-                <span class="map-diff">{{ map.diffName }}</span>
-                @if (!map.found) {
-                  <span class="not-found-tag">Not installed</span>
-                }
-              </div>
-            }
-          </div>
+          @for (set of group.sets; track set.beatmapsetId) {
+            <app-beatmap-set-card [set]="set" />
+          }
+          @if (group.sets.length === 0) {
+            <div class="group-empty">No installed beatmaps found</div>
+          }
         </div>
       }
     </div>
