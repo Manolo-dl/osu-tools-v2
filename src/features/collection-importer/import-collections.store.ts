@@ -25,33 +25,25 @@ export const ImportCollectionStore = signalStore(
 
         totalMaps: computed(() => store.parsedCollections().reduce((sum, c) => sum + c.md5s.length, 0)),
 
-        preview: computed(() => {
-            const diffsByMd5 = osuDB.diffsByMd5();
+        previewSets: computed(() => {
             const beatmapSetsByMd5 = osuDB.beatmapSetsByMd5();
+            const importedMd5s = new Set(
+                store.parsedCollections().flatMap(c => c.md5s)
+            );
+            const seen = new Set<number>();
+            const sets = [];
 
-            return store.parsedCollections().map(col => {
-                const maps = col.md5s.map(md5 => {
-                    const diff = diffsByMd5.get(md5);
-                    const set = beatmapSetsByMd5.get(md5);
-
-                    return {
-                        md5,
-                        found: !!diff,
-                        title: set?.title ?? 'Unknown',
-                        artist: set?.artist ?? 'Unknown',
-                        diffName: diff?.diffName ?? 'Unknown',
-                    };
+            for (const md5 of importedMd5s) {
+                const set = beatmapSetsByMd5.get(md5);
+                if (!set) continue;
+                if (seen.has(set.beatmapsetId)) continue;
+                seen.add(set.beatmapsetId);
+                sets.push({
+                    ...set,
+                    diffs: set.diffs.filter(d => importedMd5s.has(d.md5)),
                 });
-
-                const foundCount = maps.filter(m => m.found).length;
-
-                return {
-                    name: col.name,
-                    maps,
-                    foundCount,
-                    missingCount: maps.length - foundCount,
-                };
-            });
+            }
+            return sets;
         }),
     })),
 
