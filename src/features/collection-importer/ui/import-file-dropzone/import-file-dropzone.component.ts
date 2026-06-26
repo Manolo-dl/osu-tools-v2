@@ -30,7 +30,7 @@ export class ImportFileDropzoneComponent implements OnDestroy {
           if (path.endsWith('.txt')) {
             const content = await readTextFile(path);
             const parsed = this.parser.parse(content);
-            this.store.setParsedCollections(parsed);
+            this.store.setParsed(parsed);
           }
         }
       }
@@ -54,7 +54,7 @@ export class ImportFileDropzoneComponent implements OnDestroy {
     reader.onload = (e) => {
       const content = e.target?.result as string;
       const parsed = this.parser.parse(content);
-      this.store.setParsedCollections(parsed);
+      this.store.setParsed(parsed);
     };
     reader.readAsText(file);
   }

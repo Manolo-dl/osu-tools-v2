@@ -1,18 +1,19 @@
 import { computed, inject } from "@angular/core";
-import { CollectionStore, OsuCollection } from "@entities/collection";
+import { CollectionStore } from "@entities/collection";
 import { OsuDbStore } from "@entities/osu-db";
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
 import { ToastStore } from "@shared/stores";
 import { invoke } from "@tauri-apps/api/core";
+import { ParsedImport } from "./import-collection-parser.service";
 
 
 interface ImportCollectionState {
-    parsedCollections: OsuCollection[];
+    parsedImports: ParsedImport[];
     isImporting: boolean;
 }
 
 const initialState: ImportCollectionState = {
-    parsedCollections: [],
+    parsedImports: [],
     isImporting: false,
 };
 
@@ -25,8 +26,20 @@ export const ImportCollectionStore = signalStore(
             new Map(collectionStore.collections().map(c => [c.name, new Set(c.md5s)]))
         );
 
+        // Resolve beatmapsetIds from URL-format imports to all their diffs' md5s
+        const resolved = computed(() => {
+            const bySetId = osuDB.beatmapSetsBySetId();
+            return store.parsedImports().map(imp => {
+                const urlMd5s = imp.beatmapsetIds.flatMap(id => {
+                    const set = bySetId.get(id);
+                    return set ? set.diffs.map(d => d.md5) : [];
+                });
+                return { name: imp.name, md5s: [...imp.md5s, ...urlMd5s] };
+            });
+        });
+
         const collectionsToImport = computed(() =>
-            store.parsedCollections()
+            resolved()
                 .map(col => {
                     const existing = existingMd5sByName().get(col.name);
                     const md5s = existing
@@ -67,8 +80,8 @@ export const ImportCollectionStore = signalStore(
     }),
 
     withMethods((store, toast = inject(ToastStore)) => ({
-        setParsedCollections(parsedCollections: OsuCollection[]) {
-            patchState(store, { parsedCollections });
+        setParsed(parsedImports: ParsedImport[]) {
+            patchState(store, { parsedImports });
         },
 
         clear() {
