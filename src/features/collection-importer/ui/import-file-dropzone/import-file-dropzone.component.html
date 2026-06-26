@@ -1,6 +1,9 @@
 <div
+  appTxtFileDrop
+  (fileContent)="onFileContent($event)"
+  #dropzone="appTxtFileDrop"
   class="dropzone"
-  [class.drag-over]="isDragOver()"
+  [class.drag-over]="dropzone.isDragOver()"
 >
   <span class="dropzone-icon">↓</span>
   <span class="dropzone-label">Drop a <code>.txt</code> file with collections here</span>
