@@ -3,7 +3,7 @@ use std::panic;
 use osynic_osudb::entity::osu::osudb::OsuDB;
 use crate::OsuState;
 use crate::DbState;
-use crate::commands::osu_db_cache;
+use super::cache;
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -64,10 +64,10 @@ pub async fn read_osu_db_full(
 
     let pool = &db_state.pool;
 
-    if let Some(meta) = osu_db_cache::get_meta(pool).await {
+    if let Some(meta) = cache::get_meta(pool).await {
         if meta.last_modified == last_modified && meta.file_size == file_size {
             log::debug!("loading osu!.db from cache");
-            return osu_db_cache::get_beatmapsets(pool).await.map_err(|e| {
+            return cache::get_beatmapsets(pool).await.map_err(|e| {
                 log::error!("Failed to read osu!.db from cache: {}", e);
                 e.to_string()
             });
@@ -79,12 +79,12 @@ pub async fn read_osu_db_full(
     log::info!("successfully parsed {} beatmap sets from osu!.db", sets.len());
     log::debug!("saving osu!.db to cache");
 
-    osu_db_cache::save_beatmapsets(pool, &sets).await.map_err(|e| {
+    cache::save_beatmapsets(pool, &sets).await.map_err(|e| {
         log::error!("Failed to save osu!.db to cache: {}", e);
         e.to_string()
     })?;
 
-    osu_db_cache::set_meta(pool, last_modified, file_size).await.map_err(|e| {
+    cache::set_meta(pool, last_modified, file_size).await.map_err(|e| {
         log::error!("Failed to save osu!.db metadata to cache: {}", e);
         e.to_string()
     })?;

@@ -2691,6 +2691,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
+name = "minimal-lexical"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
+
+[[package]]
 name = "minisign-verify"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2778,6 +2784,16 @@ dependencies = [
  "cfg-if",
  "cfg_aliases",
  "libc",
+]
+
+[[package]]
+name = "nom"
+version = "7.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
+dependencies = [
+ "memchr",
+ "minimal-lexical",
 ]
 
 [[package]]
@@ -3138,6 +3154,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "osu-db"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81551da2a88af2d4e6e6776def19894f5b17620b3e5ef78bcc9ea57f278b6f03"
+dependencies = [
+ "chrono",
+ "nom 7.1.3",
+]
+
+[[package]]
 name = "osu-tools"
 version = "0.4.3"
 dependencies = [
@@ -3146,6 +3172,7 @@ dependencies = [
  "futures-util",
  "log",
  "open",
+ "osu-db",
  "osynic_osudb",
  "regex",
  "reqwest",
@@ -3177,7 +3204,7 @@ checksum = "3b084931ebdadc8c8b778d662f9904d779e2749bdde3aa761cab3678d57bda1b"
 dependencies = [
  "chrono",
  "liblzma",
- "nom",
+ "nom 8.0.0",
  "serde",
 ]
 

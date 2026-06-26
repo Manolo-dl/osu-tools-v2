@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use sqlx::{FromRow, SqlitePool};
-use crate::commands::osu_db::{OsuBeatmapSet, OsuDiff};
+use super::reader::{OsuBeatmapSet, OsuDiff};
 
 #[derive(FromRow)]
 pub struct OsuDbMeta {

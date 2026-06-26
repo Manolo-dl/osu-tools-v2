@@ -30,8 +30,9 @@ pub fn run() {
             });
 
             tauri::async_runtime::block_on(async {
-                commands::osu_db_cache::init_schema(&pool).await.expect("failed to init osudb schema");
-                commands::collection_cache::init_schema(&pool).await.expect("failed to init collection schema")
+                
+                commands::osu_db::cache::init_schema(&pool).await.expect("failed to init osudb schema");
+                commands::collections::cache::init_schema(&pool).await.expect("failed to init collection schema")
             });
 
             app.manage(DbState { pool });
@@ -61,12 +62,14 @@ pub fn run() {
         .level(log::LevelFilter::Debug)
         .level_for("h2", log::LevelFilter::Off)
         .level_for("hyper", log::LevelFilter::Off)
+        .level_for("hyper_util", log::LevelFilter::Off)
         .level_for("reqwest", log::LevelFilter::Off)
         .level_for("tracing", log::LevelFilter::Off)
         .level_for("tao", log::LevelFilter::Off)
         .level_for("wry", log::LevelFilter::Off)
         .level_for("rustls", log::LevelFilter::Off)
-        .level_for("rustsl_platform_verifier", log::LevelFilter::Off)
+        .level_for("zbus", log::LevelFilter::Off)
+        .level_for("rustls_platform_verifier", log::LevelFilter::Off)
         .level_for("sqlx", log::LevelFilter::Off)
         .level_for("tauri_plugin_updater", log::LevelFilter::Off)
         .targets([
@@ -79,19 +82,20 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
-            commands::osu_path::get_osu_path,
-            commands::osu_path::save_osu_path,
-            commands::collections::read_osu_collections,
-            commands::collections::write_text_file,
-            commands::osu_db::read_osu_db_full,
-            commands::download::start_downloads,
-            commands::download::append_text_file,
-            commands::manage_folders::validate_pack_folder,
-            commands::pack_creator::create_pack,
-            commands::logs::read_logs,
-            commands::database::get_database_tables,
-            commands::database::get_table_columns,
-            commands::database::execute_query,
+            commands::system::osu_path::get_osu_path,
+            commands::system::osu_path::save_osu_path,
+            commands::collections::reader::read_osu_collections,
+            commands::collections::reader::write_text_file,
+            commands::collections::writer::import_collections,
+            commands::osu_db::reader::read_osu_db_full,
+            commands::system::download::start_downloads,
+            commands::system::download::append_text_file,
+            commands::packs::folders::validate_pack_folder,
+            commands::packs::creator::create_pack,
+            commands::dev::logs::read_logs,
+            commands::dev::database::get_database_tables,
+            commands::dev::database::get_table_columns,
+            commands::dev::database::execute_query,
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
