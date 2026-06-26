@@ -86,6 +86,7 @@ pub fn run() {
             commands::system::osu_path::save_osu_path,
             commands::collections::reader::read_osu_collections,
             commands::collections::reader::write_text_file,
+            commands::collections::writer::import_collections,
             commands::osu_db::reader::read_osu_db_full,
             commands::system::download::start_downloads,
             commands::system::download::append_text_file,
