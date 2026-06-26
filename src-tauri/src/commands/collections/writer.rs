@@ -13,7 +13,7 @@ pub struct ImportCollection {
 pub async fn import_collections(
     osu_state: tauri::State<'_, OsuState>,
     collections: Vec<ImportCollection>
-) -> Result<String, String> {
+) -> Result<(), String> {
 
     let osu_path = {
         let path = osu_state.path.lock().unwrap();
@@ -71,5 +71,5 @@ pub async fn import_collections(
 
     log::info!("Imported collections: {} new collections, {} maps added", new_collections_count, added_count);
 
-    Ok(format!("{} new collections, {} maps added", new_collections_count, added_count))
+    Ok(())
 }

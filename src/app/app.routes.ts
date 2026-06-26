@@ -32,6 +32,10 @@ export const routes: Routes = [
                 path: 'create-packs',
                 loadComponent: () => import('@pages/create-packs').then(m => m.CreatePacksPageComponent),
                 resolve: { osuDb: osuDbResolver }
+            },
+            {
+                path: 'import-collections',
+                loadComponent: () => import('@pages/import-collections').then(m => m.ImportCollectionsPageComponent)
             }
         ]
     },
