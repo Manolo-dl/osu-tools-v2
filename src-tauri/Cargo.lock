@@ -3176,6 +3176,7 @@ dependencies = [
  "osynic_osudb",
  "regex",
  "reqwest",
+ "rosu-replay",
  "serde",
  "serde_json",
  "sqlx",
@@ -3928,6 +3929,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "rosu-replay"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b763bdd4f25a8f5ac9aa634d51ebe1bd15ad490bb2f8881277ef48ba9d126615"
+dependencies = [
+ "base64 0.22.1",
+ "byteorder",
+ "chrono",
+ "liblzma",
+ "serde",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

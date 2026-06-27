@@ -42,6 +42,7 @@ chrono = "0.4.45"
 zip = "8.6.0"
 open = "5.3.5"
 osu-db = { version = "0.3.0", default-features = false }
+rosu-replay = "0.2.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0.2" }
