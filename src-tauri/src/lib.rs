@@ -95,8 +95,7 @@ pub fn run() {
             commands::dev::logs::read_logs,
             commands::dev::database::get_database_tables,
             commands::dev::database::get_table_columns,
-            commands::dev::database::execute_query,
-            commands::replay::reader::read_replay,
+            commands::dev::database::execute_query
         ])
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
