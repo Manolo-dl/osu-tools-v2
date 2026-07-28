@@ -1,6 +1,6 @@
 import { Routes } from "@angular/router";
 import { collectionResolver } from "@entities/collection";
-import { osuDbResolver } from "@entities/osu-db/osu-db-resolver";
+import { osuDbResolver } from "@entities/osu-db";
 import { logResolver } from "@entities/log";
 import { osuPathGuard } from "@shared/guards";
 import { databaseResolver } from "@entities/database";
@@ -52,6 +52,11 @@ export const routes: Routes = [
                 path: 'database',
                 loadComponent: () => import('@pages/database').then(m => m.DatabasePageComponent),
                 resolve: { tables: databaseResolver }
+            },
+            {
+                path: 'tosu-data',
+                loadComponent: () => import('@pages/tosu-data').then(m => m.TosuDataPage),
+                resolve: { }
             }
         ]
     },
