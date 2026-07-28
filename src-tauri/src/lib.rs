@@ -46,6 +46,12 @@ pub fn run() {
                 }
             });
 
+            let sidecar_command = app.shell().sidecar("tosu").unwrap();
+
+            let (mut rx, mut child) = sidecar_command
+                .spawn()
+                .expect("Failed to spawn sidecar");
+
             let tosu_handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {

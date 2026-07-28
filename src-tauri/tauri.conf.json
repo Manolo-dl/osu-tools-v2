@@ -38,6 +38,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "externalBin": ["binaries/tosu"],
     "createUpdaterArtifacts": true
   },
   "plugins": {
