@@ -4,6 +4,8 @@ use std::sync::Mutex;
 use sqlx::SqlitePool;
 use tauri::Manager;
 
+use crate::commands::tosu;
+
 mod commands;
 
 pub struct OsuState {
@@ -42,6 +44,12 @@ pub fn run() {
                 if let Err(e) = update(handle).await {
                     log::error!("failed to check for updates: {e}");
                 }
+            });
+
+            let tosu_handle = app.handle().clone();
+
+            tauri::async_runtime::spawn(async move {
+                tosu::listener::start_tosu_listener(tosu_handle).await;
             });
             Ok(())
         })
