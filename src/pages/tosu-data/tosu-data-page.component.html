@@ -3,45 +3,11 @@
   <header class="page-header">
     <div class="header-left">
       <h1 class="page-title">Tosu Data</h1>
-      <p class="page-desc">Raw WebSocket feed from tosu · ws://127.0.0.1:24050/websocket/v2</p>
+      <p class="page-desc">ws://127.0.0.1:24050/websocket/v2</p>
     </div>
-    <div class="header-right">
-      @if (store.connected()) {
-        <div class="status-badge connected">
-          <span class="status-dot"></span>
-          Connected
-        </div>
-      } @else {
-        <div class="status-badge disconnected">
-          <span class="status-dot"></span>
-          Disconnected
-        </div>
-        <button class="reconnect-btn" (click)="reconnect()">Reconnect</button>
-      }
-    </div>
+    <app-tosu-status />
   </header>
 
-  @if (!store.data()) {
-    <div class="empty-state">
-      @if (store.connected()) {
-        <span>Waiting for data…</span>
-      } @else {
-        <span>Not connected to tosu. Make sure tosu is running.</span>
-      }
-    </div>
-  } @else {
-    <div class="sections">
-      @for (key of topLevelKeys(); track key) {
-        <section class="section">
-          <div class="section-header">
-            <span class="section-key">{{ key }}</span>
-          </div>
-          <div class="section-body">
-            <app-tosu-field-tree [value]="valueFor(key)" />
-          </div>
-        </section>
-      }
-    </div>
-  }
+  <app-tosu-data-sections />
 
 </div>
