@@ -1,5 +1,5 @@
 {
   "bundle": {
-    "externalBin": ["binaries/osumem"]
+    "externalBin": ["binaries/osumem", "binaries/tosu"]
   }
 }

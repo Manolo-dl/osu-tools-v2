@@ -11,6 +11,7 @@ export const USER_ITEMS: NavItem[] = [
 
 export const DEV_ITEMS: NavItem[] = [
     { label: 'logs', route: '/dev/logs', icon: 'phosphorFolder' },
-    { label: 'database', route: '/dev/database', icon: 'phosphorFolder' }
+    { label: 'database', route: '/dev/database', icon: 'phosphorFolder' },
+    { label: 'tosu-data', route: '/dev/tosu-data', icon: 'phosphorFolder' }
 ];
     
