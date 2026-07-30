@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { TrainerStore } from '@features/trainer/stores/trainer.store';
 
 @Component({
   selector: 'app-trainer-actions',
@@ -6,4 +7,6 @@ import { Component } from '@angular/core';
   templateUrl: './trainer-actions.component.html',
   styleUrl: './trainer-actions.component.css',
 })
-export class TrainerActionsComponent {}
+export class TrainerActionsComponent {
+  readonly trainer = inject(TrainerStore);
+}

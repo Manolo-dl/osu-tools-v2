@@ -23,7 +23,7 @@ export const TrainerStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
 
-    withMethods((store) => ({
+    withMethods((store, tosu = inject(TosuStore)) => ({
 
         setValue(stat: DifficultyKey, value: number) {
             patchState(store, {
@@ -60,6 +60,31 @@ export const TrainerStore = signalStore(
             tasks.splice(currentIndex, 0, moved);
             patchState(store, { tasks });
         },
+
+        reset() {
+            const data = tosu.data();
+            const stats = data?.beatmap.stats;
+
+            patchState(store, {
+                hp: { value : stats?.hp.original ?? 5, locked: false },
+                cs: { value : stats?.cs.original ?? 5, locked: false },
+                od: { value : stats?.od.original ?? 5, locked: false },
+                ar: { value : stats?.ar.original ?? 5, locked: false },
+                tasks: [],
+            });
+        },
+
+        createMap() {
+            console.log(
+                'create map: ', {
+                    hp: store.hp(),
+                    cs: store.cs(),
+                    od: store.od(),
+                    ar: store.ar(),
+                    tasks: store.tasks()
+                }
+            );
+        }
     })),
 
     withHooks({

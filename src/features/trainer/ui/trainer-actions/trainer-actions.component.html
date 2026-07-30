@@ -1,1 +1,17 @@
-<p>trainer-actions.component works!</p>,
+<div class="trainer-actions">
+  <button
+    class="trainer-actions__reset"
+    type="button"
+    (click)="trainer.reset()"
+  >
+    Reset
+  </button>
+
+  <button
+    class="trainer-actions__create"
+    type="button"
+    (click)="trainer.createMap()"
+  >
+    Create Map
+  </button>
+</div>
