@@ -54,32 +54,39 @@ pub fn run() {
                 }
             });
 
-            let sidecar_command = app.shell().sidecar("tosu").unwrap();
-
-            let (mut rx, child) = sidecar_command
-                .spawn()
-                .expect("Failed to spawn sidecar");
-
+            let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                use tauri_plugin_shell::process::CommandEvent;
+                if is_tosu_running().await {
+                    log::info!("tosu is already running, not spawning a new instance");
+                } else {
+                    match app_handle.shell().sidecar("tosu") {
+                        Ok(sidecar_command) => match sidecar_command.spawn() {
+                            Ok((mut rx, child)) => {
+                                app_handle.manage(TosuProcess { child: Mutex::new(Some(child)) });
 
-                while let Some(event) = rx.recv().await {
-                    match event {
-                        CommandEvent::Stdout(line) => {
-                            log::debug!("[tosu] {}", String::from_utf8_lossy(&line));
-                        }
-                        CommandEvent::Stderr(line) => {
-                            log::warn!("[tosu] {}", String::from_utf8_lossy(&line));
-                        }
-                        CommandEvent::Terminated(payload) => {
-                            log::warn!("[tosu] process terminated: {:?}", payload);
-                        }
-                        _ => {}
+                                // logging de la salida de tosu
+                                use tauri_plugin_shell::process::CommandEvent;
+                                while let Some(event) = rx.recv().await {
+                                    match event {
+                                        CommandEvent::Stdout(line) => {
+                                            log::debug!("[tosu] {}", String::from_utf8_lossy(&line));
+                                        }
+                                        CommandEvent::Stderr(line) => {
+                                            log::warn!("[tosu] {}", String::from_utf8_lossy(&line));
+                                        }
+                                        CommandEvent::Terminated(payload) => {
+                                            log::warn!("[tosu] process terminated: {:?}", payload);
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+                            Err(e) => log::error!("failed to spawn tosu sidecar: {e}"),
+                        },
+                        Err(e) => log::error!("failed to create tosu sidecar command: {e}"),
                     }
                 }
             });
-
-            app.manage(TosuProcess { child: Mutex::new(Some(child)) });
 
             app.manage(TosuListenerState { 
                 started: AtomicBool::new(false),
@@ -185,4 +192,8 @@ async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
     }
 
     Ok(())
+}
+
+async fn is_tosu_running() -> bool {
+    tokio::net::TcpStream::connect("127.0.0.1:24050").await.is_ok()
 }
