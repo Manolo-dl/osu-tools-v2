@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { TrainerStore } from '@features/trainer/stores/trainer.store';
+import { DifficultyKey } from '@features/trainer';
+import { TrainerStore } from '@features/trainer';
 
 @Component({
   selector: 'app-trainer-difficulty-sliders',
@@ -12,7 +13,7 @@ export class TrainerDifficultySlidersComponent {
   
   readonly trainer = inject(TrainerStore);
 
-  onSliderChange(stat: 'hp' | 'cs' | 'ar' | 'od', event: Event) {
+  onSliderChange(stat: DifficultyKey, event: Event) {
     const value = Number((event.target as HTMLInputElement).value);
     this.trainer.setValue(stat, value);
   }
