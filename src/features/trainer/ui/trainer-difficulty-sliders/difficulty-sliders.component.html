@@ -1,1 +1,43 @@
-<p>difficulty-sliders.component works!</p>,
+<div class="difficulty-sliders">
+
+  <div class="difficulty-sliders__row">
+    <span class="difficulty-sliders__label">HP</span>
+    <input type="range" min="0" max="10" step="0.1"
+      [value]="trainer.hp().value"
+      [disabled]="trainer.hp().locked"
+      (input)="onSliderChange('hp', $event)" />
+    <span class="difficulty-sliders__value">{{ trainer.hp().value | number:'1.1-1' }}</span>
+    <button [class.difficulty-sliders__lock--active]="trainer.hp().locked" (click)="trainer.toggleLock('hp')">🔒</button>
+  </div>
+
+  <div class="difficulty-sliders__row">
+    <span class="difficulty-sliders__label">CS</span>
+    <input type="range" min="0" max="10" step="0.1"
+      [value]="trainer.cs().value"
+      [disabled]="trainer.cs().locked"
+      (input)="onSliderChange('cs', $event)" />
+    <span class="difficulty-sliders__value">{{ trainer.cs().value | number:'1.1-1' }}</span>
+    <button [class.difficulty-sliders__lock--active]="trainer.cs().locked" (click)="trainer.toggleLock('cs')">🔒</button>
+  </div>
+
+  <div class="difficulty-sliders__row">
+    <span class="difficulty-sliders__label">AR</span>
+    <input type="range" min="0" max="10" step="0.1"
+      [value]="trainer.ar().value"
+      [disabled]="trainer.ar().locked"
+      (input)="onSliderChange('ar', $event)" />
+    <span class="difficulty-sliders__value">{{ trainer.ar().value | number:'1.1-1' }}</span>
+    <button [class.difficulty-sliders__lock--active]="trainer.ar().locked" (click)="trainer.toggleLock('ar')">🔒</button>
+  </div>
+
+  <div class="difficulty-sliders__row">
+    <span class="difficulty-sliders__label">OD</span>
+    <input type="range" min="0" max="10" step="0.1"
+      [value]="trainer.od().value"
+      [disabled]="trainer.od().locked"
+      (input)="onSliderChange('od', $event)" />
+    <span class="difficulty-sliders__value">{{ trainer.od().value | number:'1.1-1' }}</span>
+    <button [class.difficulty-sliders__lock--active]="trainer.od().locked" (click)="trainer.toggleLock('od')">🔒</button>
+  </div>
+
+</div>
