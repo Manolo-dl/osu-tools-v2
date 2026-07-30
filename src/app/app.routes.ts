@@ -38,6 +38,11 @@ export const routes: Routes = [
                 path: 'import-collections',
                 loadComponent: () => import('@pages/import-collections').then(m => m.ImportCollectionsPageComponent),
                 resolve: { osuDb: osuDbResolver, collections: collectionResolver }
+            },
+            {
+                path: 'trainer',
+                loadComponent: () => import('@pages/trainer').then(m => m.TrainerPageComponent),
+                resolve: { tosu: tosuResolver }
             }
         ]
     },
