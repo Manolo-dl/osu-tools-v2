@@ -1,39 +1,40 @@
-<div class="task-pipeline">
+<div class="pipeline-panel">
 
-  <div class="task-pipeline__header">
-    <h3 class="task-pipeline__title">Tasks</h3>
+  <div class="panel-header">
+    <span class="section-title">Tasks</span>
 
     <select
-      class="task-pipeline__add"
+      class="add-task-select"
       (change)="addTask($any($event.target).value); $any($event.target).value = ''"
     >
-      <option value="" disabled selected>+ Añadir tarea</option>
+      <option value="" disabled selected>+ Add task</option>
       @for (type of availableTasksFiltered(); track type) {
         <option [value]="type">{{ taskLabels[type] }}</option>
       }
     </select>
   </div>
 
-  <div class="task-pipeline__list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+  <div class="task-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
 
     @for (entry of trainer.tasks(); track entry.id) {
-      <div class="task-pipeline__item" cdkDrag>
+      <div class="task-item" cdkDrag>
 
-        <span class="task-pipeline__handle" cdkDragHandle>⋮⋮</span>
+        <span class="task-handle" cdkDragHandle>⋮⋮</span>
 
-        <div class="task-pipeline__content">
-          <span class="task-pipeline__label">{{ taskLabels[entry.task.type] }}</span>
+        <div class="task-content">
+          <span class="task-label">{{ taskLabels[entry.task.type] }}</span>
 
           @if (entry.task.type === 'RateChange') {
-            <div class="task-pipeline__params">
+            <div class="task-params">
               <input
                 type="range" min="0.5" max="2" step="0.05"
+                class="task-rate-slider"
                 [value]="entry.task.params.rate"
                 (input)="onRateChange(entry.id, +$any($event.target).value, entry.task.params.nightcore)"
               />
-              <span class="task-pipeline__rate-value">{{ entry.task.params.rate }}x</span>
+              <span class="task-rate-value">{{ entry.task.params.rate }}x</span>
 
-              <label class="task-pipeline__checkbox">
+              <label class="task-checkbox">
                 <input
                   type="checkbox"
                   [checked]="entry.task.params.nightcore"
@@ -45,8 +46,9 @@
           }
 
           @if (entry.task.type === 'Mirror') {
-            <div class="task-pipeline__params">
+            <div class="task-params">
               <select
+                class="task-axis-select"
                 [value]="entry.task.params.axis"
                 (change)="onMirrorChange(entry.id, $any($event.target).value)"
               >
@@ -58,8 +60,9 @@
         </div>
 
         <button
-          class="task-pipeline__remove"
+          class="task-remove"
           type="button"
+          title="Remove task"
           (click)="trainer.removeTask(entry.id)"
         >
           ✕
@@ -69,7 +72,7 @@
     }
 
     @if (trainer.tasks().length === 0) {
-      <p class="task-pipeline__empty">No hay tareas añadidas todavía.</p>
+      <p class="empty-state">No tasks added yet.</p>
     }
 
   </div>

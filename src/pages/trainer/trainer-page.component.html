@@ -1,17 +1,21 @@
-<div>
-    <section>
-        <app-trainer-beatmap-header />
-    </section>
+<div class="trainer-page">
 
-    <section>
-        <app-trainer-difficulty-sliders />
-    </section>
+  <header class="page-header">
+    <h1 class="page-title">Trainer</h1>
+    <p class="page-desc">Fine-tune difficulty stats and chain modifiers before generating a new map.</p>
+  </header>
 
-    <section>
-        <app-trainer-task-pipeline />
-    </section>
+  <app-trainer-beatmap-header />
 
-    <section>
-        <app-trainer-actions />
+  <div class="trainer-layout">
+    <aside class="sidebar-panel">
+      <app-trainer-difficulty-sliders />
+      <app-trainer-actions />
+    </aside>
+
+    <section class="main-panel">
+      <app-trainer-task-pipeline />
     </section>
+  </div>
+
 </div>
