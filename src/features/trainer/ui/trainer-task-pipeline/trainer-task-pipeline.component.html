@@ -1,1 +1,77 @@
-<p>trainer-task-pipeline.component works!</p>,
+<div class="task-pipeline">
+
+  <div class="task-pipeline__header">
+    <h3 class="task-pipeline__title">Tasks</h3>
+
+    <select
+      class="task-pipeline__add"
+      (change)="addTask($any($event.target).value); $any($event.target).value = ''"
+    >
+      <option value="" disabled selected>+ Añadir tarea</option>
+      @for (type of availableTasksFiltered(); track type) {
+        <option [value]="type">{{ taskLabels[type] }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="task-pipeline__list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+
+    @for (entry of trainer.tasks(); track entry.id) {
+      <div class="task-pipeline__item" cdkDrag>
+
+        <span class="task-pipeline__handle" cdkDragHandle>⋮⋮</span>
+
+        <div class="task-pipeline__content">
+          <span class="task-pipeline__label">{{ taskLabels[entry.task.type] }}</span>
+
+          @if (entry.task.type === 'RateChange') {
+            <div class="task-pipeline__params">
+              <input
+                type="range" min="0.5" max="2" step="0.05"
+                [value]="entry.task.params.rate"
+                (input)="onRateChange(entry.id, +$any($event.target).value, entry.task.params.nightcore)"
+              />
+              <span class="task-pipeline__rate-value">{{ entry.task.params.rate }}x</span>
+
+              <label class="task-pipeline__checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="entry.task.params.nightcore"
+                  (change)="onRateChange(entry.id, entry.task.params.rate, $any($event.target).checked)"
+                />
+                Nightcore
+              </label>
+            </div>
+          }
+
+          @if (entry.task.type === 'Mirror') {
+            <div class="task-pipeline__params">
+              <select
+                [value]="entry.task.params.axis"
+                (change)="onMirrorChange(entry.id, $any($event.target).value)"
+              >
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+              </select>
+            </div>
+          }
+        </div>
+
+        <button
+          class="task-pipeline__remove"
+          type="button"
+          (click)="trainer.removeTask(entry.id)"
+        >
+          ✕
+        </button>
+
+      </div>
+    }
+
+    @if (trainer.tasks().length === 0) {
+      <p class="task-pipeline__empty">No hay tareas añadidas todavía.</p>
+    }
+
+  </div>
+
+</div>
