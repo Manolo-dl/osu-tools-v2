@@ -45,6 +45,7 @@ osu-db = { version = "0.3.0", default-features = false }
 rosu-replay = "0.2.2"
 tokio-tungstenite = "0.30.0"
 anyhow = "1.0.104"
+rosu-map = "0.2.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0.2" }
