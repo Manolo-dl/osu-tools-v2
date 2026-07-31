@@ -46,6 +46,9 @@ rosu-replay = "0.2.2"
 tokio-tungstenite = "0.30.0"
 anyhow = "1.0.104"
 rosu-map = "0.2.1"
+symphonia = { version = "0.6.0", feature = ["mp3", "ogg", "vorbis", "wav", "flac"] }
+hound = "3.5.1"
+timestretch = "0.8.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0.2" }
