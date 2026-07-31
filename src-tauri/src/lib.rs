@@ -146,7 +146,8 @@ pub fn run() {
             commands::dev::database::get_database_tables,
             commands::dev::database::get_table_columns,
             commands::dev::database::execute_query,
-            commands::tosu::listener::connect_tosu
+            commands::tosu::listener::connect_tosu,
+            commands::trainer::run::run_trainer
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {

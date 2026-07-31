@@ -2,6 +2,8 @@ import { effect, inject, untracked } from "@angular/core";
 import { TosuStore } from "@entities/tosu";
 import { patchState, signalStore, withHooks, withMethods, withState } from "@ngrx/signals";
 import { DifficultyKey, DifficultyStat, MirrorParams, RateChangeParams, TrainerTask, TrainerTaskParams } from "../models/trainer.model";
+import { OsuPathStore } from "@shared/stores";
+import { invoke } from "@tauri-apps/api/core";
 
 interface TrainerState {
     hp: DifficultyStat;
@@ -23,7 +25,7 @@ export const TrainerStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
 
-    withMethods((store, tosu = inject(TosuStore)) => ({
+    withMethods((store, tosu = inject(TosuStore), osuPath = inject(OsuPathStore)) => ({
 
         setValue(stat: DifficultyKey, value: number) {
             patchState(store, {
@@ -75,15 +77,25 @@ export const TrainerStore = signalStore(
         },
 
         createMap() {
-            console.log(
-                'create map: ', {
-                    hp: store.hp(),
-                    cs: store.cs(),
-                    od: store.od(),
-                    ar: store.ar(),
-                    tasks: store.tasks()
-                }
-            );
+            const data = tosu.data();
+            if (!data) return;
+
+            const osuFilePath = `${osuPath.path()}/Songs/${data.directPath.beatmapFile}`;
+
+            invoke('run_trainer', {
+                request: {
+                    osuFilePath: osuFilePath,
+                    difficulty: {
+                        hp: store.hp().value,
+                        cs: store.cs().value,
+                        od: store.od().value,
+                        ar: store.ar().value,
+                    },
+                    tasks: store.tasks(),
+                },
+            }).catch((e) => {
+                console.error('run_trainer failed', e);
+            })
         }
     })),
 
