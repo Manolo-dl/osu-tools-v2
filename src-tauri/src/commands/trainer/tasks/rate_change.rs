@@ -46,7 +46,7 @@ pub fn apply(beatmap: &mut Beatmap, params: &RateChangeParams) -> Result<()> {
         br.end_time = (br.end_time / rate).round();
     }
 
-    let suffix = if params.nightcore { " NC" } else { "" };
+    let suffix = if params.adjust_pitch { " AP" } else { "" };
     beatmap.version = format!("{} ({}x{})", beatmap.version, rate, suffix);
 
     Ok(())

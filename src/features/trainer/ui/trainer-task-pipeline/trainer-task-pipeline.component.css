@@ -100,14 +100,52 @@
   flex-wrap: wrap;
 }
 
-.task-rate-slider {
-  width: 100px;
+.task-field {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.task-rate-value {
+.task-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.task-field-unit {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+}
+
+.task-number-input {
+  width: 64px;
+  padding: 3px 6px;
+  font-size: 12px;
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  outline: none;
+  text-align: right;
+}
+
+.task-number-input:focus {
+  border-color: var(--accent);
+}
+
+.task-bpm-original {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.task-bpm-arrow {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .task-checkbox {

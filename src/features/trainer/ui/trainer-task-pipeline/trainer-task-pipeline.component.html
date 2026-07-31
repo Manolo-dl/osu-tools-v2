@@ -26,21 +26,38 @@
 
           @if (entry.task.type === 'RateChange') {
             <div class="task-params">
-              <input
-                type="range" min="0.5" max="2" step="0.05"
-                class="task-rate-slider"
-                [value]="entry.task.params.rate"
-                (input)="onRateChange(entry.id, +$any($event.target).value, entry.task.params.nightcore)"
-              />
-              <span class="task-rate-value">{{ entry.task.params.rate }}x</span>
+              <div class="task-field">
+                <span class="task-field-label">Rate</span>
+                <input
+                  type="number" min="0.5" max="2" step="0.05"
+                  class="task-number-input"
+                  [value]="entry.task.params.rate"
+                  (change)="onRateInput(entry.id, $any($event.target).value, entry.task.params.adjustPitch)"
+                />
+                <span class="task-field-unit">x</span>
+              </div>
+
+              <div class="task-field">
+                <span class="task-field-label">BPM</span>
+                @if (originalBpm() !== null) {
+                  <span class="task-bpm-original">{{ originalBpm() }}</span>
+                  <span class="task-bpm-arrow">→</span>
+                }
+                <input
+                  type="number" min="1" step="1"
+                  class="task-number-input"
+                  [value]="newBpm(entry.task.params.rate) ?? entry.task.params.rate * 180"
+                  (change)="onBpmInput(entry.id, $any($event.target).value, entry.task.params.adjustPitch)"
+                />
+              </div>
 
               <label class="task-checkbox">
                 <input
                   type="checkbox"
-                  [checked]="entry.task.params.nightcore"
-                  (change)="onRateChange(entry.id, entry.task.params.rate, $any($event.target).checked)"
+                  [checked]="entry.task.params.adjustPitch"
+                  (change)="onRateInput(entry.id, entry.task.params.rate + '', $any($event.target).checked)"
                 />
-                Nightcore
+                Adjust Pitch
               </label>
             </div>
           }

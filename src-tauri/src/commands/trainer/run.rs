@@ -80,20 +80,20 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
     });
 
     if let Some(params) = rate_task {
-        log::debug!("processing audio for rate change: rate={}, nightcore={}", params.rate, params.nightcore);
+        log::debug!("processing audio for rate change: rate={}, adjust_pitch={}", params.rate, params.adjust_pitch);
 
         let audio_src = beatmap_folder.join(&beatmap.audio_file);
         let rate = params.rate;
-        let nightcore = params.nightcore;
+        let adjust_pitch = params.adjust_pitch;
 
         let (processed_samples, output_sample_rate, channels) = tokio::task::spawn_blocking(move || {
             let decoded = audio_processing::decode_audio(&audio_src)?;
 
-            let (samples, sample_rate) = if nightcore {
-                audio_processing::apply_resample(&decoded, rate)
-            } else {
+            let (samples, sample_rate) = if adjust_pitch {
                 let stretched = audio_processing::apply_timestretch(&decoded, rate)?;
                 (stretched, decoded.sample_rate)
+            } else {
+                audio_processing::apply_resample(&decoded, rate)
             };
 
             Ok::<_, anyhow::Error>((samples, sample_rate, decoded.channels))

@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RateChangeParams {
     pub rate: f64,
-    pub nightcore: bool,
+    pub adjust_pitch: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -4,7 +4,7 @@ export type TrainerTaskType = 'RateChange' | 'Mirror' | 'RemoveSV' | 'NoSpinner'
 
 export interface RateChangeParams {
     rate: number;
-    nightcore: boolean;
+    adjustPitch: boolean;
 }
 
 export interface MirrorParams {
