@@ -2,10 +2,13 @@ use std::{fs::File, path::Path};
 
 use anyhow::Result;
 use hound::{WavSpec, WavWriter};
+use soundtouch::{Setting, SoundTouch};
 use symphonia::core::{
-    codecs::{CodecParameters, audio::AudioDecoderOptions}, formats::{FormatOptions, probe::Hint}, io::MediaSourceStream, meta::MetadataOptions,
+    codecs::{CodecParameters, audio::AudioDecoderOptions},
+    formats::{FormatOptions, probe::Hint},
+    io::MediaSourceStream,
+    meta::MetadataOptions,
 };
-use timestretch::StretchParams;
 
 pub struct DecodedAudio {
     pub samples: Vec<f32>,
@@ -52,12 +55,15 @@ pub fn decode_audio(path: &Path) -> Result<DecodedAudio> {
         .make_audio_decoder(&audio_params, &dec_opts)?;
 
     let mut samples: Vec<f32> = Vec::new();
+    let mut packet_count = 0;
+    let mut decoded_count = 0;
 
     loop {
         let packet = match format.next_packet()? {
             Some(packet) => packet,
             None => break,
         };
+        packet_count += 1;
 
         if packet.track_id != track_id {
             continue;
@@ -65,11 +71,24 @@ pub fn decode_audio(path: &Path) -> Result<DecodedAudio> {
 
         match decoder.decode(&packet) {
             Ok(decoded) => {
-                decoded.copy_to_vec_interleaved::<f32>(&mut samples);
+                decoded_count += 1;
+                // Buffer temporal por paquete, luego lo AÑADIMOS al vector total
+                // (copy_to_vec_interleaved probablemente hace clear() internamente)
+                let mut packet_samples: Vec<f32> = Vec::new();
+                decoded.copy_to_vec_interleaved::<f32>(&mut packet_samples);
+                samples.extend_from_slice(&packet_samples);
             }
-            Err(_) => continue,
+            Err(e) => {
+                log::warn!("decode error on packet: {:?}", e);
+                continue;
+            }
         }
     }
+
+    log::debug!(
+        "decode_audio finished: {} packets read, {} decoded ok, {} total samples",
+        packet_count, decoded_count, samples.len()
+    );
 
     Ok(DecodedAudio {
         samples,
@@ -78,21 +97,29 @@ pub fn decode_audio(path: &Path) -> Result<DecodedAudio> {
     })
 }
 
-pub fn apply_timestretch(
-    audio: &DecodedAudio,
-    rate: f64,
-) -> Result<Vec<f32>> {
+/// Modo "Normal": cambia la velocidad manteniendo el pitch original.
+pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
+    let mut st = SoundTouch::new();
+    st.set_channels(audio.channels as u32)
+        .set_sample_rate(audio.sample_rate)
+        .set_tempo(rate)
+        .set_setting(Setting::UseQuickseek, 1);
 
-    let stretch_ratio = 1.0 / rate;
+    let output = st.generate_audio(&audio.samples);
 
-    let params = StretchParams::new(stretch_ratio)
-        .with_sample_rate(audio.sample_rate)
-        .with_channels(audio.channels as u32);
+    log::debug!(
+        "soundtouch output: {} samples (input was {})",
+        output.len(),
+        audio.samples.len()
+    );
 
-    let ouput = timestretch::stretch(&audio.samples, &params)
-        .map_err(|e| anyhow::anyhow!("timestretch failed: {:?}", e))?;
+    Ok(output)
+}
 
-    Ok(ouput)
+/// Modo "Nightcore": cambia la velocidad dejando que el pitch suba/baje naturalmente.
+pub fn apply_resample(audio: &DecodedAudio, rate: f64) -> (Vec<f32>, u32) {
+    let new_sample_rate = (audio.sample_rate as f64 * rate).round() as u32;
+    (audio.samples.clone(), new_sample_rate)
 }
 
 pub fn write_wav(
@@ -101,6 +128,8 @@ pub fn write_wav(
     channels: u16,
     output_path: &Path,
 ) -> Result<()> {
+    log::debug!("write_wav: {} samples, sample_rate={}, channels={}", samples.len(), sample_rate, channels);
+
     let spec = WavSpec {
         channels,
         sample_rate,

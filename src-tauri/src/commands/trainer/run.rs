@@ -2,7 +2,9 @@ use std::{fs, path::Path};
 
 use rosu_map::Beatmap;
 
-use crate::commands::trainer::{model::RunTrainerRequest, pipeline};
+use crate::commands::trainer::{
+    audio_processing, model::{RunTrainerRequest, TrainerTaskParams}, pipeline,
+};
 
 #[tauri::command]
 pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
@@ -32,8 +34,6 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
 
     let title = format!("{} - {}", beatmap.artist, beatmap.title);
 
-    // Usamos $HOME en vez de /tmp para evitar cruzar filesystems
-    // (tmpfs vs el filesystem real donde vive el prefijo de Wine)
     let base_dir = dirs::home_dir()
         .ok_or_else(|| "could not find home directory".to_string())?
         .join(".osu-trainer");
@@ -68,7 +68,52 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
     }
     log::debug!("copied original beatmapset contents to {:?}", temp_dir);
 
-    // Escribe la nueva dificultad generada
+    // ¿Hay una tarea RateChange? Si la hay, generamos un audio NUEVO (sin tocar el original,
+    // que sigue siendo referenciado por las demás dificultades del set).
+    let rate_task = request.tasks.iter().find_map(|t| {
+        if let TrainerTaskParams::RateChange(params) = &t.task {
+            Some(params)
+        } else {
+            None
+        }
+    });
+
+    if let Some(params) = rate_task {
+        log::debug!("processing audio for rate change: rate={}, nightcore={}", params.rate, params.nightcore);
+
+        let audio_src = beatmap_folder.join(&beatmap.audio_file);
+        let decoded = audio_processing::decode_audio(&audio_src).map_err(|e| {
+            log::error!("failed to decode audio {:?}: {}", audio_src, e);
+            e.to_string()
+        })?;
+
+        let (processed_samples, output_sample_rate) = if params.nightcore {
+            audio_processing::apply_resample(&decoded, params.rate)
+        } else {
+            let stretched = audio_processing::apply_timestretch(&decoded, params.rate).map_err(|e| {
+                log::error!("timestretch failed: {}", e);
+                e.to_string()
+            })?;
+            (stretched, decoded.sample_rate)
+        };
+
+        // Nombre distinto al original, para no pisarlo ni afectar a las demás dificultades del set
+        let wav_filename = format!("audio_trainer_{}x.wav", params.rate);
+        let wav_path = temp_dir.join(&wav_filename);
+
+        audio_processing::write_wav(&processed_samples, output_sample_rate, decoded.channels as u16, &wav_path)
+            .map_err(|e| {
+                log::error!("failed to write wav {:?}: {}", wav_path, e);
+                e.to_string()
+            })?;
+
+        // Solo la NUEVA dificultad apunta al nuevo audio; el resto del set sigue con el original
+        beatmap.audio_file = wav_filename;
+
+        log::debug!("audio processing complete: {:?}", wav_path);
+    }
+
+    // Escribe la nueva dificultad generada (con audio_file ya actualizado si aplica)
     let output_osu = beatmap.encode_to_string().map_err(|e| {
         log::error!("failed to encode beatmap: {}", e);
         e.to_string()

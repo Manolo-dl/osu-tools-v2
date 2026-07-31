@@ -2,4 +2,4 @@ pub mod model;
 pub mod pipeline;
 pub mod tasks;
 pub mod run;
-pub mod audio;
+pub mod audio_processing;
