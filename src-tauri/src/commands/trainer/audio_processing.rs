@@ -103,7 +103,9 @@ pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
     st.set_channels(audio.channels as u32)
         .set_sample_rate(audio.sample_rate)
         .set_tempo(rate)
-        .set_setting(Setting::UseQuickseek, 1);
+        .set_setting(Setting::UseQuickseek, 1)
+        .set_setting(Setting::SequenceMs, 40)
+        .set_setting(Setting::SeekwindowMs, 15);
 
     let output = st.generate_audio(&audio.samples);
 

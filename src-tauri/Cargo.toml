@@ -48,10 +48,15 @@ anyhow = "1.0.104"
 rosu-map = "0.2.1"
 symphonia = { version = "0.6.0", features = ["all"] }
 hound = "3.5.1"
-soundtouch = "0.5.4"
+soundtouch = { version = "0.5.4", features = ["bundled"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0.2" }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1

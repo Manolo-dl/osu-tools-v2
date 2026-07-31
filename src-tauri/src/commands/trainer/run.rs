@@ -15,7 +15,8 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         .ok_or_else(|| {
             log::error!("run_trainer failed: invalid .osu path {:?}", original_path);
             "Invalid .osu path".to_string()
-        })?;
+        })?
+        .to_path_buf();
 
     let mut beatmap = rosu_map::from_path::<Beatmap>(original_path).map_err(|e| {
         log::error!("failed to parse .osu file {:?}: {}", original_path, e);
@@ -53,7 +54,7 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
     })?;
 
     // Copia TODO el contenido original del beatmapset (demás diffs, audio, background, etc.)
-    for entry in fs::read_dir(beatmap_folder).map_err(|e| e.to_string())? {
+    for entry in fs::read_dir(&beatmap_folder).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
         let path = entry.path();
 
@@ -68,11 +69,11 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
     }
     log::debug!("copied original beatmapset contents to {:?}", temp_dir);
 
-    // ¿Hay una tarea RateChange? Si la hay, generamos un audio NUEVO (sin tocar el original,
-    // que sigue siendo referenciado por las demás dificultades del set).
+    // ¿Hay una tarea RateChange? Si la hay, procesamos el audio en un hilo bloqueante dedicado,
+    // para no congelar el runtime de tokio (y con él, el listener del WebSocket de tosu).
     let rate_task = request.tasks.iter().find_map(|t| {
         if let TrainerTaskParams::RateChange(params) = &t.task {
-            Some(params)
+            Some(params.clone())
         } else {
             None
         }
@@ -82,32 +83,40 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         log::debug!("processing audio for rate change: rate={}, nightcore={}", params.rate, params.nightcore);
 
         let audio_src = beatmap_folder.join(&beatmap.audio_file);
-        let decoded = audio_processing::decode_audio(&audio_src).map_err(|e| {
-            log::error!("failed to decode audio {:?}: {}", audio_src, e);
+        let rate = params.rate;
+        let nightcore = params.nightcore;
+
+        let (processed_samples, output_sample_rate, channels) = tokio::task::spawn_blocking(move || {
+            let decoded = audio_processing::decode_audio(&audio_src)?;
+
+            let (samples, sample_rate) = if nightcore {
+                audio_processing::apply_resample(&decoded, rate)
+            } else {
+                let stretched = audio_processing::apply_timestretch(&decoded, rate)?;
+                (stretched, decoded.sample_rate)
+            };
+
+            Ok::<_, anyhow::Error>((samples, sample_rate, decoded.channels))
+        })
+        .await
+        .map_err(|e| {
+            log::error!("audio processing task panicked: {}", e);
+            format!("audio processing task panicked: {}", e)
+        })?
+        .map_err(|e| {
+            log::error!("audio processing failed: {}", e);
             e.to_string()
         })?;
 
-        let (processed_samples, output_sample_rate) = if params.nightcore {
-            audio_processing::apply_resample(&decoded, params.rate)
-        } else {
-            let stretched = audio_processing::apply_timestretch(&decoded, params.rate).map_err(|e| {
-                log::error!("timestretch failed: {}", e);
-                e.to_string()
-            })?;
-            (stretched, decoded.sample_rate)
-        };
-
-        // Nombre distinto al original, para no pisarlo ni afectar a las demás dificultades del set
-        let wav_filename = format!("audio_trainer_{}x.wav", params.rate);
+        let wav_filename = format!("audio_trainer_{}x.wav", rate);
         let wav_path = temp_dir.join(&wav_filename);
 
-        audio_processing::write_wav(&processed_samples, output_sample_rate, decoded.channels as u16, &wav_path)
+        audio_processing::write_wav(&processed_samples, output_sample_rate, channels as u16, &wav_path)
             .map_err(|e| {
                 log::error!("failed to write wav {:?}: {}", wav_path, e);
                 e.to_string()
             })?;
 
-        // Solo la NUEVA dificultad apunta al nuevo audio; el resto del set sigue con el original
         beatmap.audio_file = wav_filename;
 
         log::debug!("audio processing complete: {:?}", wav_path);
