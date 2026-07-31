@@ -75,7 +75,7 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
     })?;
 
     let new_osu_name = format!(
-        "{} - {} ({}) [{}].osu",
+        "{} - {} ({}) [{} (trainer)].osu",
         beatmap.artist, beatmap.title, beatmap.creator, beatmap.version
     );
 
