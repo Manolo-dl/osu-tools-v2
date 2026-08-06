@@ -60,3 +60,10 @@ tauri-plugin-updater = "2"
 opt-level = 3
 lto = "fat"
 codegen-units = 1
+
+# En `tauri dev` las dependencias se compilaban sin optimizar: SoundTouch (C++ vía
+# el crate cc) y los decodificadores de symphonia salían a -O0, varias veces más
+# lentos que en release. Optimizar solo las dependencias no penaliza el tiempo de
+# recompilado de nuestro propio código.
+[profile.dev.package."*"]
+opt-level = 3
