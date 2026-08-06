@@ -1,4 +1,4 @@
-use std::{fs::File, path::Path};
+use std::{fs::File, io::Cursor, path::Path};
 
 use anyhow::Result;
 use hound::{WavSpec, WavWriter};
@@ -166,13 +166,15 @@ pub fn apply_resample(audio: &DecodedAudio, rate: f64) -> (Vec<f32>, u32) {
     (audio.samples.clone(), new_sample_rate)
 }
 
-pub fn write_wav(
-    samples: &[f32],
-    sample_rate: u32,
-    channels: u16,
-    output_path: &Path,
-) -> Result<()> {
-    log::debug!("write_wav: {} samples, sample_rate={}, channels={}", samples.len(), sample_rate, channels);
+/// Codifica el WAV en memoria en vez de a disco, para poder añadirlo
+/// directamente como entrada del .osz sin pasar por un directorio de staging.
+pub fn encode_wav(samples: &[f32], sample_rate: u32, channels: u16) -> Result<Vec<u8>> {
+    log::debug!(
+        "encode_wav: {} samples, sample_rate={}, channels={}",
+        samples.len(),
+        sample_rate,
+        channels
+    );
 
     let spec = WavSpec {
         channels,
@@ -181,13 +183,15 @@ pub fn write_wav(
         sample_format: hound::SampleFormat::Float,
     };
 
-    let mut writer = WavWriter::create(output_path, spec)?;
+    let mut cursor = Cursor::new(Vec::with_capacity(samples.len() * 4 + 44));
 
-    for &sample in samples {
-        writer.write_sample(sample)?;
+    {
+        let mut writer = WavWriter::new(&mut cursor, spec)?;
+        for &sample in samples {
+            writer.write_sample(sample)?;
+        }
+        writer.finalize()?;
     }
 
-    writer.finalize()?;
-
-    Ok(())
+    Ok(cursor.into_inner())
 }

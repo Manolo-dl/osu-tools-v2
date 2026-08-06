@@ -1,10 +1,36 @@
+use std::path::Path;
+
+use tauri::Manager;
+
 use crate::OsuState;
+
+/// Habilita la carpeta Songs en el scope del protocolo `asset:` en runtime.
+///
+/// La ruta de osu! se detecta al arrancar, así que no se puede declarar en
+/// `tauri.conf.json`: ahí solo cabía una ruta fija (que solo valía para una
+/// máquina) o `**` (que abre el disco entero al webview). Tauri permite ampliar
+/// el scope en caliente, que es lo que necesita `convertFileSrc()` para pintar
+/// los backgrounds que llegan por el websocket de tosu.
+fn allow_songs_in_asset_scope(app: &tauri::AppHandle, osu_path: &str) {
+    let songs = Path::new(osu_path).join("Songs");
+
+    match app.asset_protocol_scope().allow_directory(&songs, true) {
+        Ok(()) => log::info!("asset scope: allowed {:?}", songs),
+        Err(e) => log::error!("asset scope: failed to allow {:?}: {}", songs, e),
+    }
+}
 
 #[tauri::command]
 pub async fn get_osu_path(
     app: tauri::AppHandle,
     state: tauri::State<'_, OsuState>,
 ) -> Result<String, String> {
+    let path = resolve_osu_path(&app, state.inner()).await?;
+    allow_songs_in_asset_scope(&app, &path);
+    Ok(path)
+}
+
+async fn resolve_osu_path(app: &tauri::AppHandle, state: &OsuState) -> Result<String, String> {
     log::info!("Getting osu! path");
 
     if let Some(home) = dirs::home_dir() {
@@ -122,9 +148,16 @@ pub async fn get_osu_path(
 }
 
 #[tauri::command]
-pub fn save_osu_path(path: String, state: tauri::State<'_, OsuState>) -> Result<(), String> {
+pub fn save_osu_path(
+    app: tauri::AppHandle,
+    path: String,
+    state: tauri::State<'_, OsuState>,
+) -> Result<(), String> {
 
     *state.path.lock().unwrap() = Some(path.clone());
+
+    // Cubre también la selección manual de carpeta, que no pasa por get_osu_path.
+    allow_songs_in_asset_scope(&app, &path);
 
     #[cfg(target_os = "windows")]
     let cosu_file = dirs::data_dir()

@@ -33,41 +33,21 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         e.to_string()
     })?;
 
-    let title = format!("{} - {}", beatmap.artist, beatmap.title);
+    // El .osz se crea como hermano de la carpeta del mapa, o sea dentro de Songs,
+    // igual que cosu-trainer (`zipf = "<folderpath>.osz"`). Solo lleva la diff
+    // nueva y el audio nuevo: osu! lo fusiona con el set existente al importar,
+    // así que el background, el vídeo y las demás diffs siguen donde estaban.
+    let songs_dir = beatmap_folder
+        .parent()
+        .ok_or_else(|| "beatmap folder has no parent (Songs) directory".to_string())?;
 
-    let base_dir = dirs::home_dir()
-        .ok_or_else(|| "could not find home directory".to_string())?
-        .join(".osu-trainer");
+    let mut osz_name = beatmap_folder
+        .file_name()
+        .ok_or_else(|| "beatmap folder has no name".to_string())?
+        .to_os_string();
+    osz_name.push(".osz");
 
-    let temp_dir = base_dir.join("staging").join(&title);
-    let output_dir = base_dir.join("output");
-
-    log::debug!("creating temp directory at {:?}", temp_dir);
-    fs::create_dir_all(&temp_dir).map_err(|e| {
-        log::error!("failed to create temp directory {:?}: {}", temp_dir, e);
-        e.to_string()
-    })?;
-
-    fs::create_dir_all(&output_dir).map_err(|e| {
-        log::error!("failed to create output directory {:?}: {}", output_dir, e);
-        e.to_string()
-    })?;
-
-    // Copia TODO el contenido original del beatmapset (demás diffs, audio, background, etc.)
-    for entry in fs::read_dir(&beatmap_folder).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let path = entry.path();
-
-        if path.is_file() {
-            let file_name = path.file_name().unwrap();
-            let dest = temp_dir.join(file_name);
-            fs::copy(&path, &dest).map_err(|e| {
-                log::error!("failed to copy {:?} -> {:?}: {}", path, dest, e);
-                e.to_string()
-            })?;
-        }
-    }
-    log::debug!("copied original beatmapset contents to {:?}", temp_dir);
+    let osz_path = songs_dir.join(osz_name);
 
     // ¿Hay una tarea RateChange? Si la hay, procesamos el audio en un hilo bloqueante dedicado,
     // para no congelar el runtime de tokio (y con él, el listener del WebSocket de tosu).
@@ -78,6 +58,8 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
             None
         }
     });
+
+    let mut audio_entry: Option<(String, Vec<u8>)> = None;
 
     if let Some(params) = rate_task {
         log::debug!("processing audio for rate change: rate={}, adjust_pitch={}", params.rate, params.adjust_pitch);
@@ -109,17 +91,18 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         })?;
 
         let wav_filename = format!("audio_trainer_{}x.wav", rate);
-        let wav_path = temp_dir.join(&wav_filename);
 
-        audio_processing::write_wav(&processed_samples, output_sample_rate, channels as u16, &wav_path)
-            .map_err(|e| {
-                log::error!("failed to write wav {:?}: {}", wav_path, e);
-                e.to_string()
-            })?;
+        let wav_bytes =
+            audio_processing::encode_wav(&processed_samples, output_sample_rate, channels as u16)
+                .map_err(|e| {
+                    log::error!("failed to encode wav: {}", e);
+                    e.to_string()
+                })?;
 
-        beatmap.audio_file = wav_filename;
+        log::debug!("audio processing complete: {} ({} bytes)", wav_filename, wav_bytes.len());
 
-        log::debug!("audio processing complete: {:?}", wav_path);
+        beatmap.audio_file = wav_filename.clone();
+        audio_entry = Some((wav_filename, wav_bytes));
     }
 
     // Escribe la nueva dificultad generada (con audio_file ya actualizado si aplica)
@@ -128,21 +111,15 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         e.to_string()
     })?;
 
+    let output_osu = restore_beatmap_set_id(output_osu, beatmap.beatmap_set_id);
+
     let new_osu_name = format!(
         "{} - {} ({}) [{} (trainer)].osu",
         beatmap.artist, beatmap.title, beatmap.creator, beatmap.version
     );
 
-    fs::write(temp_dir.join(&new_osu_name), output_osu).map_err(|e| {
-        log::error!("failed to write {:?}: {}", temp_dir.join(&new_osu_name), e);
-        e.to_string()
-    })?;
-    log::debug!("wrote new diff: {}", new_osu_name);
-
-    let osz_path = output_dir.join(format!("{}.osz", title));
     log::debug!("creating osz archive at {:?}", osz_path);
-
-    create_osz(&temp_dir, &osz_path).map_err(|e| {
+    write_osz(&osz_path, audio_entry.as_ref(), &new_osu_name, &output_osu).map_err(|e| {
         log::error!("failed to create osz archive {:?}: {}", osz_path, e);
         e
     })?;
@@ -153,42 +130,67 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         format!("Failed to open .osz: {}", e)
     })?;
 
-    if let Err(e) = fs::remove_dir_all(&temp_dir) {
-        log::warn!("failed to clean up temp directory {:?}: {}", temp_dir, e);
-    } else {
-        log::debug!("cleaned up temp directory {:?}", temp_dir);
-    }
-
     log::info!("successfully generated trainer map: {}", beatmap.version);
 
     Ok(())
 }
 
-fn create_osz(source_dir: &Path, output_path: &Path) -> Result<(), String> {
-    use std::io::{Read, Write};
+/// rosu-map parsea `BeatmapSetID`/`BeatmapID` pero su encoder no los vuelve a
+/// escribir: `encode_metadata` solo emite Title, Artist, Creator, Version,
+/// Source y Tags. Sin `BeatmapSetID` osu! no puede emparejar el .osz con el set
+/// ya instalado y lo importaría como set nuevo (sin background ni demás diffs),
+/// que es justo lo que queremos evitar con un .osz mínimo.
+///
+/// `BeatmapID` se deja fuera a propósito, igual que hace cosu-trainer, para que
+/// la diff generada no colisione con la original.
+fn restore_beatmap_set_id(osu: String, set_id: i32) -> String {
+    const HEADER: &str = "[Metadata]\n";
+
+    if set_id <= 0 {
+        log::warn!(
+            "beatmap has no valid BeatmapSetID ({}); osu! will import the .osz as a new set",
+            set_id
+        );
+        return osu;
+    }
+
+    match osu.find(HEADER) {
+        Some(idx) => {
+            let at = idx + HEADER.len();
+            let mut out = String::with_capacity(osu.len() + 32);
+            out.push_str(&osu[..at]);
+            out.push_str(&format!("BeatmapSetID: {}\n", set_id));
+            out.push_str(&osu[at..]);
+            out
+        }
+        None => {
+            log::warn!("no [Metadata] section in encoded beatmap, cannot restore BeatmapSetID");
+            osu
+        }
+    }
+}
+
+/// Escribe el .osz directamente desde memoria: sin staging y sin copiar el set.
+fn write_osz(
+    output_path: &Path,
+    audio: Option<&(String, Vec<u8>)>,
+    osu_name: &str,
+    osu_content: &str,
+) -> Result<(), String> {
+    use std::io::Write;
     use zip::write::SimpleFileOptions;
 
     let file = fs::File::create(output_path).map_err(|e| e.to_string())?;
     let mut zip = zip::ZipWriter::new(file);
     let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
 
-    for entry in fs::read_dir(source_dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let path = entry.path();
-
-        if path.is_file() {
-            let file_name = path.file_name()
-                .and_then(|n| n.to_str())
-                .ok_or("Invalid file name")?;
-
-            zip.start_file(file_name, options).map_err(|e| e.to_string())?;
-
-            let mut f = fs::File::open(&path).map_err(|e| e.to_string())?;
-            let mut buffer = Vec::new();
-            f.read_to_end(&mut buffer).map_err(|e| e.to_string())?;
-            zip.write_all(&buffer).map_err(|e| e.to_string())?;
-        }
+    if let Some((audio_name, audio_bytes)) = audio {
+        zip.start_file(audio_name, options).map_err(|e| e.to_string())?;
+        zip.write_all(audio_bytes).map_err(|e| e.to_string())?;
     }
+
+    zip.start_file(osu_name, options).map_err(|e| e.to_string())?;
+    zip.write_all(osu_content.as_bytes()).map_err(|e| e.to_string())?;
 
     zip.finish().map_err(|e| e.to_string())?;
     Ok(())

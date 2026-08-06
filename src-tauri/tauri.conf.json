@@ -24,10 +24,7 @@
       "dangerousDisableAssetCspModification": false,
       "assetProtocol": {
         "enable": true,
-        "scope": [
-          "/home/manolo/.local/share/osu-wine/osu!/Songs/**",
-          "$HOME/.osu-trainer/**"
-        ]
+        "scope": []
       }
     }
   },
