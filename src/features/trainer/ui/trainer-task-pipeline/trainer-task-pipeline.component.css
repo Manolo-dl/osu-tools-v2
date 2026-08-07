@@ -120,9 +120,9 @@
 }
 
 .task-number-input {
-  width: 64px;
-  padding: 3px 6px;
-  font-size: 12px;
+  width: 80px;
+  padding: 5px 8px;
+  font-size: 13px;
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);

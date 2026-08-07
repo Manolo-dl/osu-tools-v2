@@ -109,8 +109,15 @@ const STRETCH_CHUNK_FRAMES: usize = 4096;
 /// steps, each one a full memcpy: O(n^2). Draining per chunk keeps the FIFO at
 /// a few KB and `ensureCapacity` never reallocates. On a 4 min track:
 /// 57.7 s -> 0.19 s, with bit-identical output.
-pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
+pub fn apply_timestretch(
+    audio: &DecodedAudio,
+    rate: f64,
+    mut on_progress: impl FnMut(f32),
+) -> Result<Vec<f32>> {
     let channels = audio.channels;
+    let total_frames = audio.samples.len() / channels;
+    let mut processed_frames = 0usize;
+    let mut last_pct = 0u8;
 
     let mut st = SoundTouch::new();
     // SequenceMs/SeekwindowMs are kept: dropping them for calcSeqParameters'
@@ -128,7 +135,8 @@ pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
     let recv_frames = recv.len() / channels;
 
     for chunk in audio.samples.chunks(STRETCH_CHUNK_FRAMES * channels) {
-        st.put_samples(chunk, chunk.len() / channels);
+        let chunk_frames = chunk.len() / channels;
+        st.put_samples(chunk, chunk_frames);
 
         loop {
             let n = st.receive_samples(recv.as_mut_slice(), recv_frames);
@@ -136,6 +144,13 @@ pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
                 break;
             }
             output.extend_from_slice(&recv[..n * channels]);
+        }
+
+        processed_frames += chunk_frames;
+        let pct = ((processed_frames as f32 / total_frames as f32) * 100.0) as u8;
+        if pct > last_pct {
+            last_pct = pct;
+            on_progress(processed_frames as f32 / total_frames as f32);
         }
     }
 

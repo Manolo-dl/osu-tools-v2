@@ -2,6 +2,7 @@
   <button
     class="reset-btn"
     type="button"
+    [disabled]="trainer.creating()"
     (click)="trainer.reset()"
   >
     Reset
@@ -10,8 +11,22 @@
   <button
     class="create-btn"
     type="button"
+    [disabled]="trainer.creating()"
     (click)="trainer.createMap()"
   >
-    Create Map
+    @if (trainer.creating()) {
+      Creating...
+    } @else {
+      Create Map
+    }
   </button>
 </div>
+
+@if (trainer.creating()) {
+  <div class="progress-wrap">
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="trainer.progress()"></div>
+    </div>
+    <span class="progress-label">{{ trainer.progress() }}%</span>
+  </div>
+}

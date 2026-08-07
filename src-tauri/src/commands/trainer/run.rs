@@ -2,13 +2,23 @@ use std::{fs, path::Path};
 
 use rosu_map::Beatmap;
 
+use tauri::Emitter;
+
 use crate::commands::trainer::{
-    audio_processing, model::{RunTrainerRequest, TrainerTaskParams}, osu_fixups, pipeline,
+    audio_processing, model::{RunTrainerRequest, TrainerTaskParams, TrainerProgress}, osu_fixups, pipeline,
 };
 
 #[tauri::command]
-pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
+pub async fn run_trainer(app: tauri::AppHandle, request: RunTrainerRequest) -> Result<(), String> {
     log::debug!("run_trainer called for {}", request.osu_file_path);
+
+    macro_rules! emit_progress {
+        ($pct:expr) => {
+            let _ = app.emit("trainer-progress", TrainerProgress { percent: $pct });
+        };
+    }
+
+    emit_progress!(5);
 
     let original_path = Path::new(&request.osu_file_path);
     let beatmap_folder = original_path.parent()
@@ -28,10 +38,14 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
     beatmap.overall_difficulty = request.difficulty.od as f32;
     beatmap.approach_rate = request.difficulty.ar as f32;
 
+    emit_progress!(10);
+
     pipeline::run(&mut beatmap, &request.tasks).map_err(|e| {
         log::error!("pipeline execution failed: {}", e);
         e.to_string()
     })?;
+
+    emit_progress!(20);
 
     // The .osz is written next to the beatmap folder, i.e. inside Songs, like
     // cosu-trainer does. It only carries the new diff and the new audio: osu!
@@ -68,17 +82,24 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         let audio_src = beatmap_folder.join(&beatmap.audio_file);
         let rate = params.rate;
         let adjust_pitch = params.adjust_pitch;
+        let app_audio = app.clone();
 
         let (processed_samples, output_sample_rate, channels) = tokio::task::spawn_blocking(move || {
             let decoded = audio_processing::decode_audio(&audio_src)?;
+            let _ = app_audio.emit("trainer-progress", TrainerProgress { percent: 30 });
 
             let (samples, sample_rate) = if adjust_pitch {
-                let stretched = audio_processing::apply_timestretch(&decoded, rate)?;
+                let app_stretch = app_audio.clone();
+                let stretched = audio_processing::apply_timestretch(&decoded, rate, |p| {
+                    let pct = (30.0 + p * 55.0) as u8;
+                    let _ = app_stretch.emit("trainer-progress", TrainerProgress { percent: pct });
+                })?;
                 (stretched, decoded.sample_rate)
             } else {
                 audio_processing::apply_resample(&decoded, rate)
             };
 
+            let _ = app_audio.emit("trainer-progress", TrainerProgress { percent: 88 });
             Ok::<_, anyhow::Error>((samples, sample_rate, decoded.channels))
         })
         .await
@@ -119,18 +140,15 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         beatmap.artist, beatmap.title, beatmap.creator, beatmap.version
     );
 
+    emit_progress!(94);
+
     log::debug!("creating osz archive at {:?}", osz_path);
     write_osz(&osz_path, audio_entry.as_ref(), &new_osu_name, &output_osu).map_err(|e| {
         log::error!("failed to create osz archive {:?}: {}", osz_path, e);
         e
     })?;
 
-    log::debug!("opening osz with default handler: {:?}", osz_path);
-    open::that(&osz_path).map_err(|e| {
-        log::error!("failed to open .osz: {}", e);
-        format!("Failed to open .osz: {}", e)
-    })?;
-
+    emit_progress!(100);
     log::info!("successfully generated trainer map: {}", beatmap.version);
 
     Ok(())

@@ -4,6 +4,7 @@ import { patchState, signalStore, withHooks, withMethods, withState } from "@ngr
 import { DifficultyKey, DifficultyStat, MirrorParams, RateChangeParams, TrainerTask, TrainerTaskParams } from "../models/trainer.model";
 import { OsuPathStore } from "@shared/stores";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 interface TrainerState {
     hp: DifficultyStat;
@@ -11,6 +12,8 @@ interface TrainerState {
     od: DifficultyStat;
     ar: DifficultyStat;
     tasks: TrainerTask[];
+    creating: boolean;
+    progress: number;
 }
 
 const initialState: TrainerState = {
@@ -19,6 +22,8 @@ const initialState: TrainerState = {
     od: { value: 5, locked: false },
     ar: { value: 5, locked: false },
     tasks: [],
+    creating: false,
+    progress: 0,
 };
 
 export const TrainerStore = signalStore(
@@ -76,15 +81,21 @@ export const TrainerStore = signalStore(
             });
         },
 
-        createMap() {
+        async createMap() {
             const data = tosu.data();
             if (!data) return;
+
+            patchState(store, { creating: true, progress: 0 });
+
+            const unlisten = await listen<{ percent: number }>('trainer-progress', event => {
+                patchState(store, { progress: event.payload.percent });
+            });
 
             const osuFilePath = `${osuPath.path()}/Songs/${data.directPath.beatmapFile}`;
 
             invoke('run_trainer', {
                 request: {
-                    osuFilePath: osuFilePath,
+                    osuFilePath,
                     difficulty: {
                         hp: store.hp().value,
                         cs: store.cs().value,
@@ -95,7 +106,10 @@ export const TrainerStore = signalStore(
                 },
             }).catch((e) => {
                 console.error('run_trainer failed', e);
-            })
+            }).finally(() => {
+                unlisten();
+                patchState(store, { creating: false });
+            });
         }
     })),
 
