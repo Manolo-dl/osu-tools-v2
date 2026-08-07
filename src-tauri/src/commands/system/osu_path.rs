@@ -4,13 +4,12 @@ use tauri::Manager;
 
 use crate::OsuState;
 
-/// Habilita la carpeta Songs en el scope del protocolo `asset:` en runtime.
+/// Allows the Songs folder in the `asset:` protocol scope at runtime.
 ///
-/// La ruta de osu! se detecta al arrancar, así que no se puede declarar en
-/// `tauri.conf.json`: ahí solo cabía una ruta fija (que solo valía para una
-/// máquina) o `**` (que abre el disco entero al webview). Tauri permite ampliar
-/// el scope en caliente, que es lo que necesita `convertFileSrc()` para pintar
-/// los backgrounds que llegan por el websocket de tosu.
+/// The osu! path is resolved at runtime, so it cannot be declared in
+/// `tauri.conf.json` — that would only allow a hardcoded path or `**`, which
+/// exposes the whole disk to the webview. Widening the scope at runtime is what
+/// `convertFileSrc()` needs to render the backgrounds coming from tosu.
 fn allow_songs_in_asset_scope(app: &tauri::AppHandle, osu_path: &str) {
     let songs = Path::new(osu_path).join("Songs");
 
@@ -156,7 +155,7 @@ pub fn save_osu_path(
 
     *state.path.lock().unwrap() = Some(path.clone());
 
-    // Cubre también la selección manual de carpeta, que no pasa por get_osu_path.
+    // Also covers manual folder selection, which does not go through get_osu_path.
     allow_songs_in_asset_scope(&app, &path);
 
     #[cfg(target_os = "windows")]

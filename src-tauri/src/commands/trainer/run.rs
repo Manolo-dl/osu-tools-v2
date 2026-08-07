@@ -3,7 +3,7 @@ use std::{fs, path::Path};
 use rosu_map::Beatmap;
 
 use crate::commands::trainer::{
-    audio_processing, model::{RunTrainerRequest, TrainerTaskParams}, pipeline,
+    audio_processing, model::{RunTrainerRequest, TrainerTaskParams}, osu_fixups, pipeline,
 };
 
 #[tauri::command]
@@ -33,10 +33,10 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         e.to_string()
     })?;
 
-    // El .osz se crea como hermano de la carpeta del mapa, o sea dentro de Songs,
-    // igual que cosu-trainer (`zipf = "<folderpath>.osz"`). Solo lleva la diff
-    // nueva y el audio nuevo: osu! lo fusiona con el set existente al importar,
-    // así que el background, el vídeo y las demás diffs siguen donde estaban.
+    // The .osz is written next to the beatmap folder, i.e. inside Songs, like
+    // cosu-trainer does. It only carries the new diff and the new audio: osu!
+    // merges it into the existing set on import, so the background, the video
+    // and the other diffs stay where they are.
     let songs_dir = beatmap_folder
         .parent()
         .ok_or_else(|| "beatmap folder has no parent (Songs) directory".to_string())?;
@@ -49,8 +49,9 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
 
     let osz_path = songs_dir.join(osz_name);
 
-    // ¿Hay una tarea RateChange? Si la hay, procesamos el audio en un hilo bloqueante dedicado,
-    // para no congelar el runtime de tokio (y con él, el listener del WebSocket de tosu).
+    // If there is a RateChange task, process the audio on a dedicated blocking
+    // thread so the tokio runtime (and with it tosu's websocket listener) is not
+    // stalled.
     let rate_task = request.tasks.iter().find_map(|t| {
         if let TrainerTaskParams::RateChange(params) = &t.task {
             Some(params.clone())
@@ -105,13 +106,13 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
         audio_entry = Some((wav_filename, wav_bytes));
     }
 
-    // Escribe la nueva dificultad generada (con audio_file ya actualizado si aplica)
+    // Write the generated diff, with audio_file already updated if applicable.
     let output_osu = beatmap.encode_to_string().map_err(|e| {
         log::error!("failed to encode beatmap: {}", e);
         e.to_string()
     })?;
 
-    let output_osu = restore_beatmap_set_id(output_osu, beatmap.beatmap_set_id);
+    let output_osu = osu_fixups::sanitize(output_osu, beatmap.beatmap_set_id);
 
     let new_osu_name = format!(
         "{} - {} ({}) [{} (trainer)].osu",
@@ -135,42 +136,7 @@ pub async fn run_trainer(request: RunTrainerRequest) -> Result<(), String> {
     Ok(())
 }
 
-/// rosu-map parsea `BeatmapSetID`/`BeatmapID` pero su encoder no los vuelve a
-/// escribir: `encode_metadata` solo emite Title, Artist, Creator, Version,
-/// Source y Tags. Sin `BeatmapSetID` osu! no puede emparejar el .osz con el set
-/// ya instalado y lo importaría como set nuevo (sin background ni demás diffs),
-/// que es justo lo que queremos evitar con un .osz mínimo.
-///
-/// `BeatmapID` se deja fuera a propósito, igual que hace cosu-trainer, para que
-/// la diff generada no colisione con la original.
-fn restore_beatmap_set_id(osu: String, set_id: i32) -> String {
-    const HEADER: &str = "[Metadata]\n";
-
-    if set_id <= 0 {
-        log::warn!(
-            "beatmap has no valid BeatmapSetID ({}); osu! will import the .osz as a new set",
-            set_id
-        );
-        return osu;
-    }
-
-    match osu.find(HEADER) {
-        Some(idx) => {
-            let at = idx + HEADER.len();
-            let mut out = String::with_capacity(osu.len() + 32);
-            out.push_str(&osu[..at]);
-            out.push_str(&format!("BeatmapSetID: {}\n", set_id));
-            out.push_str(&osu[at..]);
-            out
-        }
-        None => {
-            log::warn!("no [Metadata] section in encoded beatmap, cannot restore BeatmapSetID");
-            osu
-        }
-    }
-}
-
-/// Escribe el .osz directamente desde memoria: sin staging y sin copiar el set.
+/// Writes the .osz straight from memory: no staging, no copying the set.
 fn write_osz(
     output_path: &Path,
     audio: Option<&(String, Vec<u8>)>,

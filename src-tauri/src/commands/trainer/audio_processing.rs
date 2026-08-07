@@ -58,8 +58,8 @@ pub fn decode_audio(path: &Path) -> Result<DecodedAudio> {
     let mut packet_count = 0;
     let mut decoded_count = 0;
 
-    // Buffer reutilizado entre paquetes: copy_to_vec_interleaved hace resize(),
-    // así que sobrescribe el contenido pero conserva la capacidad ya reservada.
+    // Reused across packets: copy_to_vec_interleaved resizes, so it overwrites
+    // the contents while keeping the already reserved capacity.
     let mut packet_samples: Vec<f32> = Vec::new();
 
     loop {
@@ -98,25 +98,24 @@ pub fn decode_audio(path: &Path) -> Result<DecodedAudio> {
     })
 }
 
-/// Frames por bloque que se empujan a SoundTouch antes de drenar su salida.
+/// Frames pushed into SoundTouch before draining its output.
 const STRETCH_CHUNK_FRAMES: usize = 4096;
 
-/// Modo "Normal": cambia la velocidad manteniendo el pitch original.
+/// Changes the speed while preserving the original pitch.
 ///
-/// Alimenta SoundTouch por bloques y drena la salida tras cada uno, en vez de
-/// usar `generate_audio()`. Ese helper empuja la pista entera de golpe y solo
-/// drena al final, con lo que el FIFO interno de SoundTouch crece de 0 a ~85 MB
-/// en pasos de 4 KB, haciendo un memcpy completo en cada paso: coste O(n²).
-/// Drenando por bloques el FIFO se mantiene en unos pocos KB y `ensureCapacity`
-/// nunca reasigna. Medido sobre una pista de 4 min: 57.7 s -> 0.19 s, con salida
-/// bit a bit idéntica a la anterior.
+/// Feeds SoundTouch in chunks and drains after each one instead of using
+/// `generate_audio()`, which pushes the whole track at once and only drains at
+/// the end. That grows SoundTouch's internal FIFO from 0 to ~85 MB in 4 KB
+/// steps, each one a full memcpy: O(n^2). Draining per chunk keeps the FIFO at
+/// a few KB and `ensureCapacity` never reallocates. On a 4 min track:
+/// 57.7 s -> 0.19 s, with bit-identical output.
 pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
     let channels = audio.channels;
 
     let mut st = SoundTouch::new();
-    // Se mantienen SequenceMs/SeekwindowMs: quitarlos (dejando el auto-tuning de
-    // calcSeqParameters) solo ahorra ~5% ya con el streaming, pero cambia el
-    // granulado del stretch, así que la salida deja de ser idéntica.
+    // SequenceMs/SeekwindowMs are kept: dropping them for calcSeqParameters'
+    // auto-tuning only saves ~5% once streaming, but changes the stretch
+    // granulation, so the output would no longer be identical.
     st.set_channels(channels as u32)
         .set_sample_rate(audio.sample_rate)
         .set_tempo(rate)
@@ -140,8 +139,8 @@ pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
         }
     }
 
-    // Drenar la cola tras el flush. `generate_audio()` llama a flush() pero no
-    // vuelve a leer, así que perdía los últimos ~13 ms de la pista.
+    // Drain the tail after flushing. `generate_audio()` calls flush() but never
+    // reads again, dropping the last ~13 ms of the track.
     st.flush();
     loop {
         let n = st.receive_samples(recv.as_mut_slice(), recv_frames);
@@ -160,14 +159,14 @@ pub fn apply_timestretch(audio: &DecodedAudio, rate: f64) -> Result<Vec<f32>> {
     Ok(output)
 }
 
-/// Modo "Nightcore": cambia la velocidad dejando que el pitch suba/baje naturalmente.
+/// Changes the speed letting the pitch shift naturally.
 pub fn apply_resample(audio: &DecodedAudio, rate: f64) -> (Vec<f32>, u32) {
     let new_sample_rate = (audio.sample_rate as f64 * rate).round() as u32;
     (audio.samples.clone(), new_sample_rate)
 }
 
-/// Codifica el WAV en memoria en vez de a disco, para poder añadirlo
-/// directamente como entrada del .osz sin pasar por un directorio de staging.
+/// Encodes the WAV in memory so it can be added straight into the .osz without
+/// going through a staging directory.
 pub fn encode_wav(samples: &[f32], sample_rate: u32, channels: u16) -> Result<Vec<u8>> {
     log::debug!(
         "encode_wav: {} samples, sample_rate={}, channels={}",
