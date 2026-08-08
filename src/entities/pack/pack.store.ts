@@ -1,8 +1,9 @@
 import { patchState, signalStore, withComputed, withMethods, withState } from "@ngrx/signals";
-import { PackRequest, SelectedDiff } from "./pack.model";
+import { SelectedDiff } from "./pack.model";
 import { invoke } from "@tauri-apps/api/core";
 import { computed, inject } from "@angular/core";
 import { OsuDbStore } from "@entities/osu-db";
+import { OsuCollection } from "@entities/collection";
 import { ToastStore } from "@shared/stores";
 
 interface PackStoreState {
@@ -61,7 +62,7 @@ export const PackStore = signalStore(
         ),
     })),
 
-    withMethods((store, toastStore = inject(ToastStore)) => ({
+    withMethods((store, toastStore = inject(ToastStore), osuDb = inject(OsuDbStore)) => ({
         toggleDiff(diff: SelectedDiff) {
             const diffs = store.selectedDiffs();
             const index = diffs.findIndex(d => d.md5 === diff.md5);
@@ -83,6 +84,31 @@ export const PackStore = signalStore(
                 const newDiffs = [...diffs];
                 newDiffs[index] = { ...newDiffs[index], newDiffName };
                 patchState(store, { selectedDiffs: newDiffs });
+            }
+        },
+
+        addFromCollection(collection: OsuCollection) {
+            const setsByMd5 = osuDb.beatmapSetsByMd5();
+            const diffsByMd5 = osuDb.diffsByMd5();
+            const alreadyAdded = store.addedMd5s();
+
+            const newDiffs: SelectedDiff[] = [];
+            for (const md5 of collection.md5s) {
+                if (alreadyAdded.has(md5)) continue;
+                const set = setsByMd5.get(md5);
+                const diff = diffsByMd5.get(md5);
+                if (!set || !diff) continue;
+                newDiffs.push({
+                    md5: diff.md5,
+                    beatmapsetId: set.beatmapsetId,
+                    fileName: diff.fileName,
+                    audio: diff.audio,
+                    newDiffName: `[${diff.creator}] ${set.artist} - ${set.title} (${diff.diffName})`,
+                });
+            }
+
+            if (newDiffs.length > 0) {
+                patchState(store, { selectedDiffs: [...store.selectedDiffs(), ...newDiffs] });
             }
         },
 

@@ -1,6 +1,7 @@
 use tauri_plugin_log::{Target, TargetKind};
+use tauri_plugin_shell::{ShellExt, process::CommandChild};
 use tauri_plugin_updater::UpdaterExt;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex, atomic::AtomicBool};
 use sqlx::SqlitePool;
 use tauri::Manager;
 
@@ -12,6 +13,15 @@ pub struct OsuState {
 
 pub struct DbState {
     pub pool: SqlitePool,
+}
+
+pub struct TosuProcess {
+    pub child: Mutex<Option<CommandChild>>,
+}
+
+pub struct TosuListenerState {
+    pub started: AtomicBool,
+    pub shutdown: Arc<AtomicBool>
 }
 
 pub fn run() {
@@ -43,6 +53,46 @@ pub fn run() {
                     log::error!("failed to check for updates: {e}");
                 }
             });
+
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                if is_tosu_running().await {
+                    log::info!("tosu is already running, not spawning a new instance");
+                } else {
+                    match app_handle.shell().sidecar("tosu") {
+                        Ok(sidecar_command) => match sidecar_command.spawn() {
+                            Ok((mut rx, child)) => {
+                                app_handle.manage(TosuProcess { child: Mutex::new(Some(child)) });
+
+                                // logging de la salida de tosu
+                                use tauri_plugin_shell::process::CommandEvent;
+                                while let Some(event) = rx.recv().await {
+                                    match event {
+                                        CommandEvent::Stdout(line) => {
+                                            log::debug!("[tosu] {}", String::from_utf8_lossy(&line));
+                                        }
+                                        CommandEvent::Stderr(line) => {
+                                            log::warn!("[tosu] {}", String::from_utf8_lossy(&line));
+                                        }
+                                        CommandEvent::Terminated(payload) => {
+                                            log::warn!("[tosu] process terminated: {:?}", payload);
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+                            Err(e) => log::error!("failed to spawn tosu sidecar: {e}"),
+                        },
+                        Err(e) => log::error!("failed to create tosu sidecar command: {e}"),
+                    }
+                }
+            });
+
+            app.manage(TosuListenerState { 
+                started: AtomicBool::new(false),
+                shutdown: Arc::new(AtomicBool::new(false))
+            });
+            
             Ok(())
         })
         .plugin(tauri_plugin_notification::init())
@@ -96,7 +146,19 @@ pub fn run() {
             commands::dev::database::get_database_tables,
             commands::dev::database::get_table_columns,
             commands::dev::database::execute_query,
+            commands::tosu::listener::connect_tosu,
+            commands::trainer::run::run_trainer
         ])
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                if let Some(state) = window.app_handle().try_state::<TosuProcess>() {
+                    if let Some(child) = state.child.lock().unwrap().take() {
+                        let _ = child.kill();
+                        log::info!("tosu sidecar killed on close");
+                    }
+                }
+            }
+        })
         .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -131,4 +193,8 @@ async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
     }
 
     Ok(())
+}
+
+async fn is_tosu_running() -> bool {
+    tokio::net::TcpStream::connect("127.0.0.1:24050").await.is_ok()
 }

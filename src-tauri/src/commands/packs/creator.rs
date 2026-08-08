@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 use crate::{DbState, OsuState};
-use super::folders::get_beatmapset_folder;
+use crate::commands::osu_db::folders::get_beatmapset_folder;
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
