@@ -1,6 +1,6 @@
 [package]
 name = "osu-tools"
-version = "0.5.0"
+version = "0.6.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -45,9 +45,25 @@ osu-db = { version = "0.3.0", default-features = false }
 rosu-replay = "0.2.2"
 tokio-tungstenite = "0.30.0"
 anyhow = "1.0.104"
+rosu-map = "0.2.1"
+symphonia = { version = "0.6.0", features = ["all"] }
+hound = "3.5.1"
+soundtouch = { version = "0.5.4", features = ["bundled"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0.2" }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+
+# Under `tauri dev` dependencies were built unoptimized: SoundTouch (C++ through
+# the cc crate) and symphonia's decoders came out at -O0, several times slower
+# than in release. Optimizing only the dependencies does not affect the rebuild
+# time of our own code.
+[profile.dev.package."*"]
+opt-level = 3

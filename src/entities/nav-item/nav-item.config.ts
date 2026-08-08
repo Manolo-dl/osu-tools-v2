@@ -6,7 +6,8 @@ export const USER_ITEMS: NavItem[] = [
     { label: 'Export Collections', route: '/user/export-collections', icon: 'phosphorFolder' },
     { label: 'Import Collections', route: '/user/import-collections', icon: 'phosphorFolder' },
     { label: 'Export Song Folder', route: '/user/export-song-folder', icon: 'phosphorMusicNote' },
-    { label: 'Create Packs', route: '/user/create-packs', icon: 'phosphorFolder' }
+    { label: 'Create Packs', route: '/user/create-packs', icon: 'phosphorFolder' },
+    { label: 'Trainer', route: '/user/trainer', icon: 'phosphorTarget' }
 ];
 
 export const DEV_ITEMS: NavItem[] = [
