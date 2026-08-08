@@ -2,7 +2,37 @@
   display: block;
 }
 
+.actions-row {
+  display: flex;
+  gap: 10px;
+}
+
+.reset-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.reset-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.reset-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .create-pack-btn {
+  flex: 2;
   width: 100%;
   padding: 10px 16px;
   background: var(--accent);
