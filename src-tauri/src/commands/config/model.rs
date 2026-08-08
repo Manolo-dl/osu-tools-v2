@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Default, Clone)]
 pub struct AppConfig {
     #[serde(default)]
-    osu_path: Option<String>,
+    pub osu_path: Option<String>,
 
     #[serde(default)]
-    excluded_tools: Vec<String>,
+    pub excluded_tools: Vec<String>,
 
     #[serde(default)]
     pub tosu: TosuConfig,

@@ -162,6 +162,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::system::osu_path::get_osu_path,
             commands::system::osu_path::save_osu_path,
+            commands::system::osu_path::get_osu_path_from_tosu,
             commands::collections::reader::read_osu_collections,
             commands::collections::reader::write_text_file,
             commands::collections::writer::import_collections,
@@ -185,6 +186,17 @@ pub fn run() {
                         log::info!("tosu sidecar killed on close");
                     }
                 }
+
+                let config_state = window.app_handle().state::<AppConfigState>();
+
+                let config = config_state.config.lock().unwrap().clone();
+
+                if let Err(e) = commands::config::file::write_config(&config) {
+                    log::error!("failed to write configuration.toml on close: {e}");
+                } else  {
+                    log::info!("configuration.toml saved on close");
+                }
+
             }
         })
         .manage(OsuState { path: Mutex::new(None) })
