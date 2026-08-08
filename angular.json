@@ -6,7 +6,7 @@
     "analytics": false
   },
   "projects": {
-    "osu-tools": {
+    "onisu": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -72,10 +72,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "osu-tools:build:production"
+              "buildTarget": "onisu:build:production"
             },
             "development": {
-              "buildTarget": "osu-tools:build:development"
+              "buildTarget": "onisu:build:development"
             }
           },
           "defaultConfiguration": "development"

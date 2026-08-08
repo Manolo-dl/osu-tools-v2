@@ -3051,6 +3051,47 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
+name = "onisu"
+version = "0.6.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "dirs",
+ "futures-util",
+ "hound",
+ "log",
+ "open",
+ "osu-db",
+ "osynic_osudb",
+ "regex",
+ "reqwest",
+ "rosu-map",
+ "rosu-replay",
+ "serde",
+ "serde_json",
+ "soundtouch",
+ "sqlx",
+ "symphonia",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-log",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "tauri-plugin-os",
+ "tauri-plugin-shell",
+ "tauri-plugin-store",
+ "tauri-plugin-updater",
+ "tokio",
+ "tokio-tungstenite",
+ "toml 1.1.4+spec-1.1.0",
+ "walkdir",
+ "webkit2gtk",
+ "zip 8.6.0",
+]
+
+[[package]]
 name = "open"
 version = "5.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3131,47 +3172,6 @@ checksum = "81551da2a88af2d4e6e6776def19894f5b17620b3e5ef78bcc9ea57f278b6f03"
 dependencies = [
  "chrono",
  "nom 7.1.3",
-]
-
-[[package]]
-name = "osu-tools"
-version = "0.6.0"
-dependencies = [
- "anyhow",
- "chrono",
- "dirs",
- "futures-util",
- "hound",
- "log",
- "open",
- "osu-db",
- "osynic_osudb",
- "regex",
- "reqwest",
- "rosu-map",
- "rosu-replay",
- "serde",
- "serde_json",
- "soundtouch",
- "sqlx",
- "symphonia",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-log",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "tauri-plugin-os",
- "tauri-plugin-shell",
- "tauri-plugin-store",
- "tauri-plugin-updater",
- "tokio",
- "tokio-tungstenite",
- "toml 1.1.4+spec-1.1.0",
- "walkdir",
- "webkit2gtk",
- "zip 8.6.0",
 ]
 
 [[package]]

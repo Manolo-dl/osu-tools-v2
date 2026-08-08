@@ -235,6 +235,15 @@ async fn is_tosu_running(ip: &str, port: u16) -> bool {
 }
 
 pub fn app_root_dir() -> PathBuf {
+
+    // If the application is runnig in AppImage, use the AppImage directory as the root directory
+    if let Ok(appimage_path) = std::env::var("APPIMAGE") {
+        if let Some(parent) = std::path::Path::new(&appimage_path).parent() {
+            log::debug!("APPIMAGE environment variable found, using AppImage directory as root: {}", parent.display());
+            return parent.to_path_buf();
+        }
+    }
+
     std::env::current_exe()
         .expect("failed to get current exe path")
         .parent()
