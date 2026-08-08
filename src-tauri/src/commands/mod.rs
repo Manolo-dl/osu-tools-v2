@@ -5,3 +5,4 @@ pub mod system;
 pub mod dev;
 pub mod tosu;
 pub mod trainer;
+pub mod config;
