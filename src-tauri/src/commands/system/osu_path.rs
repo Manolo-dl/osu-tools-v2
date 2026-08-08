@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use tauri::Manager;
 
-use crate::{AppConfigState, OsuState};
+use crate::AppConfigState;
 
 /// Allows the Songs folder in the `asset:` protocol scope at runtime.
 fn allow_songs_in_asset_scope(app: &tauri::AppHandle, osu_path: &str) {
@@ -16,10 +16,9 @@ fn allow_songs_in_asset_scope(app: &tauri::AppHandle, osu_path: &str) {
 
 #[tauri::command]
 pub async fn get_osu_path(
-    app: tauri::AppHandle,
-    state: tauri::State<'_, OsuState>,
+    app: tauri::AppHandle
 ) -> Result<String, String> {
-    let path = resolve_osu_path(&app, state.inner()).await?;
+    let path = resolve_osu_path(&app).await?;
     allow_songs_in_asset_scope(&app, &path);
     Ok(path)
 }
@@ -55,7 +54,7 @@ pub async fn get_osu_path_from_tosu(state: tauri::State<'_, AppConfigState>) -> 
     Ok(game_path.to_string())
 }
 
-async fn resolve_osu_path(app: &tauri::AppHandle, state: &OsuState) -> Result<String, String> {
+async fn resolve_osu_path(app: &tauri::AppHandle) -> Result<String, String> {
     log::debug!("Getting osu! path");
 
     // Check if the path is already stored in the state
@@ -64,7 +63,6 @@ async fn resolve_osu_path(app: &tauri::AppHandle, state: &OsuState) -> Result<St
 
     // 1. Check path from config
     if let Some(path) = config.osu_path.clone() {
-        *state.path.lock().unwrap() = Some(path.clone());
         return Ok(path);
     }
 

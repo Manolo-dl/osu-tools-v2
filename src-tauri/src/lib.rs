@@ -9,10 +9,6 @@ use crate::commands::config::model::AppConfig;
 
 mod commands;
 
-pub struct OsuState {
-    pub path: Mutex<Option<String>>,
-}
-
 pub struct DbState {
     pub pool: SqlitePool,
 }
@@ -199,7 +195,6 @@ pub fn run() {
 
             }
         })
-        .manage(OsuState { path: Mutex::new(None) })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

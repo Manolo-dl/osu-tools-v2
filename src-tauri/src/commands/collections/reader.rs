@@ -1,6 +1,5 @@
 use osynic_osudb::entity::collection::collectiondb::CollectionDB;
-use crate::OsuState;
-use crate::DbState;
+use crate::{AppConfigState, DbState};
 use super::cache as collection_cache;
 
 #[derive(serde::Serialize)]
@@ -11,14 +10,13 @@ pub struct OsuCollection {
 
 #[tauri::command]
 pub async fn read_osu_collections(
-    osu_state: tauri::State<'_, OsuState>,
+    osu_state: tauri::State<'_, AppConfigState>,
     db_state: tauri::State<'_, DbState>,
 ) -> Result<Vec<OsuCollection>, String> {
 
-    let osu_path = {
-        let path = osu_state.path.lock().unwrap();
-        path.as_ref().ok_or("osu! path not set")?.clone()
-    };
+    let osu_path = osu_state.config.lock().unwrap()
+        .osu_path.clone()
+        .ok_or("osu! path not set")?;
 
     let collection_path = std::path::Path::new(&osu_path).join("collection.db");
 

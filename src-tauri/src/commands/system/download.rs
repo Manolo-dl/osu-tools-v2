@@ -1,7 +1,8 @@
 use reqwest::Client;
 use futures_util::StreamExt;
 use tauri::Emitter;
-use crate::OsuState;
+
+use crate::AppConfigState;
 
 #[derive(serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -14,15 +15,14 @@ pub struct DownloadProgress {
 #[tauri::command]
 pub async fn start_downloads(
     app: tauri::AppHandle,
-    osu_state: tauri::State<'_, OsuState>,
+    osu_state: tauri::State<'_, AppConfigState>,
     beatmap_set_ids: Vec<u64>,
     osu_session: String,
 ) -> Result<(), String> {
 
-    let osu_path = {
-        let path = osu_state.path.lock().unwrap();
-        path.as_ref().ok_or("osu! path not set")?.clone()
-    };
+    let osu_path = osu_state.config.lock().unwrap()
+        .osu_path.clone()
+        .ok_or("osu! path not set")?;
 
     let songs_folder = format!("{}/Songs", osu_path);
     if !std::path::Path::new(&songs_folder).exists() {

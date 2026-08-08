@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 use std::panic;
 use osynic_osudb::entity::osu::osudb::OsuDB;
-use crate::OsuState;
-use crate::DbState;
+use crate::{AppConfigState, DbState};
 use super::cache;
 
 #[derive(serde::Serialize)]
@@ -36,14 +35,13 @@ pub struct OsuBeatmapSet {
 
 #[tauri::command]
 pub async fn read_osu_db_full(
-    osu_state: tauri::State<'_, OsuState>,
+    osu_state: tauri::State<'_, AppConfigState>,
     db_state: tauri::State<'_, DbState>,
 ) -> Result<Vec<OsuBeatmapSet>, String> {
 
-    let osu_path = {
-        let path = osu_state.path.lock().unwrap();
-        path.as_ref().ok_or("osu! path not set")?.clone()
-    };
+    let osu_path = osu_state.config.lock().unwrap()
+        .osu_path.clone()
+        .ok_or("osu! path not set")?;
 
     let db_path = std::path::Path::new(&osu_path).join("osu!.db");
 

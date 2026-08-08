@@ -1,5 +1,5 @@
 use std::{fs, path::Path};
-use crate::{DbState, OsuState};
+use crate::{AppConfigState, DbState};
 use crate::commands::osu_db::folders::get_beatmapset_folder;
 
 #[derive(serde::Deserialize)]
@@ -23,21 +23,17 @@ pub struct PackRequest {
 pub async fn create_pack(
     request: PackRequest,
     db_state: tauri::State<'_, DbState>,
-    osu_state: tauri::State<'_, OsuState>,
+    osu_state: tauri::State<'_, AppConfigState>,
 ) -> Result<(), String> {
 
     log::debug!("create_pack called with title={}, creator={}, {} diffs", request.title, request.final_creator, request.diffs.len());
 
     let pool = &db_state.pool;
 
-    let osu_path = {
-        let path = osu_state.path.lock().unwrap();
-        path.as_ref().ok_or_else(|| {
-            log::error!("create_pack failed: osu! path not set");
-            "Osu path not set".to_string()
-        })?.clone()
-    };
-
+    let osu_path = osu_state.config.lock().unwrap()
+        .osu_path.clone()
+        .ok_or("osu! path not set")?;
+    
     let safe_title = sanitize(&request.title);
     let temp_dir = std::env::temp_dir().join(format!("osu-pack-{}", safe_title));
 
