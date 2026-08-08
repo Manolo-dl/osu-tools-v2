@@ -17,7 +17,7 @@ export class TrainerTaskPipelineComponent {
   readonly tosu = inject(TosuStore);
 
   taskLabels = TASK_LABELS;
-  availableTasks: TrainerTaskType[] = ['RateChange', 'Mirror', 'RemoveSV', 'NoSpinner'];
+  availableTasks: TrainerTaskType[] = ['RateChange'];
 
   availableTasksFiltered = computed(() => {
     const existingTypes = new Set(this.trainer.tasks().map(t => t.task.type));
@@ -39,15 +39,6 @@ export class TrainerTaskPipelineComponent {
     switch (type) {
       case 'RateChange':
         this.trainer.addTask({ type: 'RateChange', params: { rate: 1.0, adjustPitch: false } });
-        break;
-      case 'Mirror':
-        this.trainer.addTask({ type: 'Mirror', params: { axis: 'horizontal' } });
-        break;
-      case 'RemoveSV':
-        this.trainer.addTask({ type: 'RemoveSV', params: {} });
-        break;
-      case 'NoSpinner':
-        this.trainer.addTask({ type: 'NoSpinner', params: {} });
         break;
     }
   }

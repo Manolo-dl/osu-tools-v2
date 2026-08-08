@@ -14,6 +14,10 @@
     </select>
   </div>
 
+  <div class="wip-notice">
+    Only <strong>Rate Change</strong> is currently implemented. Other tasks are coming soon.
+  </div>
+
   <div class="task-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
 
     @for (entry of trainer.tasks(); track entry.id) {
@@ -62,18 +66,7 @@
             </div>
           }
 
-          @if (entry.task.type === 'Mirror') {
-            <div class="task-params">
-              <select
-                class="task-axis-select"
-                [value]="entry.task.params.axis"
-                (change)="onMirrorChange(entry.id, $any($event.target).value)"
-              >
-                <option value="horizontal">Horizontal</option>
-                <option value="vertical">Vertical</option>
-              </select>
-            </div>
-          }
+
         </div>
 
         <button
