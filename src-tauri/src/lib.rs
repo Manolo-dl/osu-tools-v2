@@ -164,6 +164,8 @@ pub fn run() {
             commands::collections::writer::import_collections,
             commands::osu_db::reader::read_osu_db_full,
             commands::system::download::start_downloads,
+            commands::system::download::get_osu_session,
+            commands::system::download::set_osu_session,
             commands::system::download::append_text_file,
             commands::packs::folders::validate_pack_folder,
             commands::packs::creator::create_pack,
