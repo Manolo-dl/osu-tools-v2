@@ -25,11 +25,12 @@ pub async fn start_downloads(
 ) -> Result<(), String> {
 
     let config_state = app.state::<AppConfigState>();
-    let (osu_path, downloader_config) = {
+    let (osu_path, downloader_config, open_file) = {
         let config = config_state.config.lock().unwrap();
         (
             config.osu_path.clone().ok_or("osu! path not set")?,
             config.downloader.clone(),
+            config.open_file.clone(),
         )
     };
 
@@ -68,7 +69,7 @@ pub async fn start_downloads(
                 beatmap_set_id: id, progress: 0.0, status: "downloading".to_string(),
             }).ok();
 
-            let result = download_beatmap(&app, &client, id, &osu_session, &songs_folder, skip_video).await;
+            let result = download_beatmap(&app, &client, id, &osu_session, &songs_folder, skip_video, open_file).await;
 
             match &result {
                 Ok(_) => {
@@ -134,6 +135,7 @@ async fn download_beatmap(
     osu_session: &str,
     songs_folder: &str,
     skip_video: bool,
+    open_file: bool,
 ) -> Result<(), String> {
 
     let url = if skip_video {
@@ -221,11 +223,19 @@ async fn download_beatmap(
 
     file.flush().await.map_err(|e| e.to_string())?;
     drop(file);
-
+    
     tokio::fs::rename(&tmp_path, &final_path).await.map_err(|e| {
         log::error!("Failed to move file to {}: {}", final_path, e);
         e.to_string()
     })?;
+
+    if open_file {
+        if let Err(e) = open::that(&final_path) {
+            log::error!("Failed to open file {}: {}", final_path, e);
+        } else {
+            log::info!("Opened file {}", final_path);
+        }
+    }
 
     Ok(())
 }

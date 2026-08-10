@@ -177,17 +177,20 @@ pub fn run() {
             commands::trainer::run::run_trainer
         ])
         .on_window_event(|window, event| {
+            
             if let tauri::WindowEvent::CloseRequested { .. } = event {
-                if let Some(state) = window.app_handle().try_state::<TosuProcess>() {
-                    if let Some(child) = state.child.lock().unwrap().take() {
-                        let _ = child.kill();
-                        log::info!("tosu sidecar killed on close");
+                
+                let config_state = window.app_handle().state::<AppConfigState>();
+                let config = config_state.config.lock().unwrap().clone();
+                
+                if config.tosu.kill_on_exit {
+                    if let Some(state) = window.app_handle().try_state::<TosuProcess>() {
+                        if let Some(child) = state.child.lock().unwrap().take() {
+                            let _ = child.kill();
+                            log::info!("tosu sidecar killed on close");
+                        }
                     }
                 }
-
-                let config_state = window.app_handle().state::<AppConfigState>();
-
-                let config = config_state.config.lock().unwrap().clone();
 
                 if let Err(e) = commands::config::file::write_config(&config) {
                     log::error!("failed to write configuration.toml on close: {e}");

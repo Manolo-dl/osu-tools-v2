@@ -14,8 +14,11 @@ pub struct AppConfig {
     #[serde(default)]
     pub downloader: DownloaderConfig,
 
-    #[serde(default)]
-    pub osu_db: OsuDbConfig,
+    #[serde(default = "default_true")]
+    pub sqlite_db: bool,
+
+    #[serde(default = "default_false")]
+    pub open_file: bool,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -23,8 +26,8 @@ pub struct TosuConfig {
     #[serde(default = "default_true")]
     pub auto_start: bool,
 
-    #[serde(default)]
-    pub auto_shutdown: bool,
+    #[serde(default = "default_true")]
+    pub kill_on_exit: bool, // Kill the process only when started by the app, not if it was already running
 
     #[serde(default = "default_ip")]
     pub ip: String,
@@ -57,14 +60,6 @@ pub struct DownloaderConfig {
     pub max_concurrent_downloads: u32,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
-pub struct OsuDbConfig {
-    #[serde(default = "default_true")]
-    pub db: bool,
-
-
-}
-
 fn default_true() -> bool { true }
 fn default_ip() -> String { "127.0.0.1".to_string() }
 fn default_port() -> u16 { 24050 }
@@ -75,7 +70,7 @@ impl Default for TosuConfig {
     fn default() -> Self {
         Self {
             auto_start: true,
-            auto_shutdown: false,
+            kill_on_exit: true,
             ip: default_ip(),
             port: default_port(),
         }
@@ -92,14 +87,6 @@ impl Default for DownloaderConfig {
             load_library: false,
             skip_video: false,
             max_concurrent_downloads: default_max_concurrent_downloads(),
-        }
-    }
-}
-
-impl Default for OsuDbConfig {
-    fn default() -> Self {
-        Self {
-            db: true,
         }
     }
 }
