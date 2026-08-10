@@ -1,11 +1,14 @@
 use reqwest::Client;
-use futures_util::{StreamExt, stream};
+use futures_util::StreamExt;
 use tauri::{Emitter, Manager};
+use tokio::io::AsyncWriteExt;
+use std::sync::Arc;
+use tokio::sync::Semaphore;
 
 use crate::AppConfigState;
 
-const MAX_SIZE: u64 = 200 * 1024 * 1024; // 200 MB
-const DELAY_BETWEEN_DOWNLOADS_MS: u64 = 1000; // 1 second - recommended from the osu API documentation
+const MAX_SIZE: u64 = 200 * 1024 * 1024;
+const DELAY_BETWEEN_DOWNLOADS_MS: u64 = 1000; // ~1 req/seg, osu! documentation recommendation
 
 #[derive(serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -21,7 +24,6 @@ pub async fn start_downloads(
     beatmap_set_ids: Vec<u64>,
 ) -> Result<(), String> {
 
-    // Get the osu! path and downloader configuration from the app state
     let config_state = app.state::<AppConfigState>();
     let (osu_path, downloader_config) = {
         let config = config_state.config.lock().unwrap();
@@ -48,50 +50,53 @@ pub async fn start_downloads(
 
     let client = Client::new();
     let max_concurrent = downloader_config.max_concurrent_downloads.max(1) as usize;
+    let semaphore = Arc::new(Semaphore::new(max_concurrent));
 
-    let results: Vec<(u64, Result<(), String>)> = stream::iter(beatmap_set_ids)
-        .map(|id| {
-            let app = app.clone();
-            let client = client.clone();
-            let osu_session = osu_session.clone();
-            let songs_folder = songs_folder.clone();
-            let skip_video = downloader_config.skip_video;
+    let tasks: Vec<_> = beatmap_set_ids.into_iter().map(|id| {
+        let app = app.clone();
+        let client = client.clone();
+        let osu_session = osu_session.clone();
+        let songs_folder = songs_folder.clone();
+        let skip_video = downloader_config.skip_video;
+        let semaphore = semaphore.clone();
 
-            async move {
-                app.emit("download:progress", DownloadProgress {
-                    beatmap_set_id: id,
-                    progress: 0.0,
-                    status: "downloading".to_string(),
-                }).ok();
+        tokio::spawn(async move {
+            
+            let permit = semaphore.acquire().await.unwrap();
 
-                tokio::time::sleep(std::time::Duration::from_millis(DELAY_BETWEEN_DOWNLOADS_MS)).await;
+            app.emit("download:progress", DownloadProgress {
+                beatmap_set_id: id, progress: 0.0, status: "downloading".to_string(),
+            }).ok();
 
-                let result = download_beatmap(&app, &client, id, &osu_session, &songs_folder, skip_video).await;
+            let result = download_beatmap(&app, &client, id, &osu_session, &songs_folder, skip_video).await;
 
-                match &result {
-                    Ok(_) => {
-                        app.emit("download:progress", DownloadProgress {
-                            beatmap_set_id: id,
-                            progress: 100.0,
-                            status: "done".to_string(),
-                        }).ok();
-                    }
-                    Err(e) => {
-                        log::warn!("Beatmap {} marked as failed: {}", id, e);
-                        app.emit("download:progress", DownloadProgress {
-                            beatmap_set_id: id,
-                            progress: 0.0,
-                            status: "failed".to_string(),
-                        }).ok();
-                    }
+            match &result {
+                Ok(_) => {
+                    app.emit("download:progress", DownloadProgress {
+                        beatmap_set_id: id, progress: 100.0, status: "done".to_string(),
+                    }).ok();
                 }
-
-                (id, result)
+                Err(e) => {
+                    log::warn!("Beatmap {} marked as failed: {}", id, e);
+                    app.emit("download:progress", DownloadProgress {
+                        beatmap_set_id: id, progress: 0.0, status: "failed".to_string(),
+                    }).ok();
+                }
             }
+
+            tokio::time::sleep(std::time::Duration::from_millis(DELAY_BETWEEN_DOWNLOADS_MS)).await;
+            drop(permit);
+
+            (id, result)
         })
-        .buffer_unordered(max_concurrent)
-        .collect()
-        .await;
+    }).collect();
+
+    let mut results: Vec<(u64, Result<(), String>)> = Vec::new();
+    for task in tasks {
+        if let Ok(r) = task.await {
+            results.push(r);
+        }
+    }
 
     let failed_ids: Vec<u64> = results.iter()
         .filter_map(|(id, r)| r.as_ref().err().map(|_| *id))
@@ -108,11 +113,15 @@ pub async fn start_downloads(
     if downloader_config.notify {
         use tauri_plugin_notification::NotificationExt;
 
-        let _ = app.notification()
+        if let Err(e) = app.notification()
             .builder()
-            .title("Downloads complete")
+            .title("Downloader")
             .body(format!("{} succeeded, {} failed", results.len() - failed_ids.len(), failed_ids.len()))
-            .show();
+            .show()
+        {
+            log::error!("Failed to show notification: {}", e);
+        }
+
     }
 
     Ok(())
@@ -124,7 +133,7 @@ async fn download_beatmap(
     beatmap_set_id: u64,
     osu_session: &str,
     songs_folder: &str,
-    skip_video: bool
+    skip_video: bool,
 ) -> Result<(), String> {
 
     let url = if skip_video {
@@ -134,7 +143,7 @@ async fn download_beatmap(
     };
 
     let response = client
-        .get(url)
+        .get(&url)
         .header("Cookie", format!("osu_session={}", osu_session))
         .header("Referer", format!("https://osu.ppy.sh/beatmapsets/{}", beatmap_set_id))
         .send()
@@ -153,7 +162,7 @@ async fn download_beatmap(
 
     if total > MAX_SIZE {
         log::error!("Beatmap set {} is too large: {} bytes", beatmap_set_id, total);
-        return Err(format!("Beatmap set {} is too large", beatmap_set_id));
+        return Err(format!("Beatmap set {} is too large ({} bytes)", beatmap_set_id, total));
     }
 
     let disposition = response.headers()
@@ -163,13 +172,19 @@ async fn download_beatmap(
         .to_string();
 
     let filename = extract_filename(&disposition, beatmap_set_id);
-    let path = format!("{}/{}", songs_folder, filename);
-    let tmp_path = format!("{}.part", path);
 
-    use tokio::io::AsyncWriteExt;
+    let temp_dir = std::path::Path::new(songs_folder)
+        .parent()
+        .ok_or_else(|| "invalid songs folder path".to_string())?
+        .join(".onisu-downloads-tmp");
+
+    tokio::fs::create_dir_all(&temp_dir).await.map_err(|e| e.to_string())?;
+
+    let tmp_path = temp_dir.join(format!("{}.osz.part", beatmap_set_id));
+    let final_path = format!("{}/{}", songs_folder, filename);
 
     let mut file = tokio::fs::File::create(&tmp_path).await.map_err(|e| {
-        log::error!("error to create file {}: {}", tmp_path, e);
+        log::error!("Failed to create file {:?}: {}", tmp_path, e);
         e.to_string()
     })?;
 
@@ -189,7 +204,7 @@ async fn download_beatmap(
         downloaded += chunk.len() as u64;
 
         if let Err(e) = file.write_all(&chunk).await {
-            log::error!("Failed to write chunk for {}: {}",  beatmap_set_id, e);
+            log::error!("Failed to write chunk for {}: {}", beatmap_set_id, e);
             let _ = tokio::fs::remove_file(&tmp_path).await;
             return Err(e.to_string());
         }
@@ -207,8 +222,8 @@ async fn download_beatmap(
     file.flush().await.map_err(|e| e.to_string())?;
     drop(file);
 
-    tokio::fs::rename(&tmp_path, &path).await.map_err(|e| {
-        log::error!("Failed to finalize file {}: {}", path, e);
+    tokio::fs::rename(&tmp_path, &final_path).await.map_err(|e| {
+        log::error!("Failed to move file to {}: {}", final_path, e);
         e.to_string()
     })?;
 
@@ -217,25 +232,25 @@ async fn download_beatmap(
 
 fn extract_filename(disposition: &str, beatmap_set_id: u64) -> String {
     let re = regex::Regex::new(r#"filename="?([^";\n]+)"?"#).unwrap();
-    if let Some(cap) = re.captures(disposition) {
-        let name = cap[1].to_string();
-        return name.replace(['/', '\\', '\0'], "_");
-    }
-    format!("{}.osz", beatmap_set_id)
+    let name = if let Some(cap) = re.captures(disposition) {
+        cap[1].to_string()
+    } else {
+        return format!("{}.osz", beatmap_set_id);
+    };
+
+    sanitize_filename(&name)
 }
 
-#[tauri::command]
-pub fn get_osu_session(state: tauri::State<'_, AppConfigState>) -> Option<String> {
-    state.config.lock().unwrap().downloader.osu_session.clone()
-}
-
-#[tauri::command]
-pub fn set_osu_session(
-    session: Option<String>,
-    state: tauri::State<'_, AppConfigState>,
-) -> Result<(), String> {
-    state.config.lock().unwrap().downloader.osu_session = session;
-    Ok(())
+fn sanitize_filename(name: &str) -> String {
+    name.chars()
+        .map(|c| match c {
+            '<' | '>' | ':' | '"' | '/' | '\\' | '|' | '?' | '*' | '\0' => '_',
+            c if (c as u32) < 0x20 => '_',
+            c => c,
+        })
+        .collect::<String>()
+        .trim_end_matches(['.', ' '])
+        .to_string()
 }
 
 #[tauri::command]
@@ -251,4 +266,18 @@ pub async fn append_text_file(path: String, content: String) -> Result<(), Strin
         log::error!("Failed to write file {}: {}", path, e);
         e.to_string()
     })
+}
+
+#[tauri::command]
+pub fn get_osu_session(state: tauri::State<'_, AppConfigState>) -> Option<String> {
+    state.config.lock().unwrap().downloader.osu_session.clone()
+}
+
+#[tauri::command]
+pub fn set_osu_session(
+    session: Option<String>,
+    state: tauri::State<'_, AppConfigState>,
+) -> Result<(), String> {
+    state.config.lock().unwrap().downloader.osu_session = session;
+    Ok(())
 }
