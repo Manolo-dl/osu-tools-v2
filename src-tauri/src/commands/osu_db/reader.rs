@@ -1,91 +1,68 @@
 use std::collections::HashMap;
 use std::panic;
 use osynic_osudb::entity::osu::osudb::OsuDB;
-use crate::{AppConfigState, DbState};
+use crate::{AppConfigState, DbState, commands::osu_db::model::{OsuBeatmapSet, OsuDiff}};
 use super::cache;
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OsuDiff {
-    pub md5: String,
-    pub diff_name: String,
-    pub mode: u8,
-    pub bpm: f64,
-    pub length: u32,
-    pub stars: f64,
-    pub last_played: bool,
-    pub circle_size: f32,
-    pub approach_rate: f32,
-    pub hp_drain: f32,
-    pub overall_difficulty: f32,
-    pub file_name: String,
-    pub audio: String,
-    pub creator: String,
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OsuBeatmapSet {
-    pub beatmapset_id: u32,
-    pub title: String,
-    pub artist: String,
-    pub status: String,
-    pub diffs: Vec<OsuDiff>,
-}
 
 #[tauri::command]
 pub async fn read_osu_db_full(
-    osu_state: tauri::State<'_, AppConfigState>,
+    config_state: tauri::State<'_, AppConfigState>,
     db_state: tauri::State<'_, DbState>,
 ) -> Result<Vec<OsuBeatmapSet>, String> {
 
-    let osu_path = osu_state.config.lock().unwrap()
+    let osu_path = config_state.config.lock().unwrap()
         .osu_path.clone()
         .ok_or("osu! path not set")?;
 
+    let use_sqlite = config_state.config.lock().unwrap().sqlite_db.clone();
+
     let db_path = std::path::Path::new(&osu_path).join("osu!.db");
 
-    log::debug!("Attempting to read osu!.db from {:?}", db_path);
-
+    
     let metadata = std::fs::metadata(&db_path).map_err(|e| {
         log::error!("Failed to read osu!.db metadata: {:?}: {}", db_path, e);
         e.to_string()
     })?;
-
+    
     let file_size = metadata.len() as i64;
     let last_modified = metadata
-        .modified()
-        .map_err(|e| e.to_string())?
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_err(|e| e.to_string())?
-        .as_secs() as i64;
+    .modified()
+    .map_err(|e| e.to_string())?
+    .duration_since(std::time::UNIX_EPOCH)
+    .map_err(|e| e.to_string())?
+    .as_secs() as i64;
 
     let pool = &db_state.pool;
 
-    if let Some(meta) = cache::get_meta(pool).await {
-        if meta.last_modified == last_modified && meta.file_size == file_size {
-            log::debug!("loading osu!.db from cache");
-            return cache::get_beatmapsets(pool).await.map_err(|e| {
-                log::error!("Failed to read osu!.db from cache: {}", e);
-                e.to_string()
-            });
+    if use_sqlite {
+        log::debug!("Attempting to read osu!.db from {:?}", db_path);
+        if let Some(meta) = cache::get_meta(pool).await {
+            if meta.last_modified == last_modified && meta.file_size == file_size {
+                log::debug!("loading osu!.db from cache");
+                return cache::get_beatmapsets(pool).await.map_err(|e| {
+                    log::error!("Failed to read osu!.db from cache: {}", e);
+                    e.to_string()
+                });
+            }
         }
     }
 
     log::debug!("cache miss, reading osu!.db at {:?}", db_path);
     let sets = read_from_osudb(&osu_path)?;
     log::info!("successfully parsed {} beatmap sets from osu!.db", sets.len());
-    log::debug!("saving osu!.db to cache");
 
-    cache::save_beatmapsets(pool, &sets).await.map_err(|e| {
-        log::error!("Failed to save osu!.db to cache: {}", e);
-        e.to_string()
-    })?;
-
-    cache::set_meta(pool, last_modified, file_size).await.map_err(|e| {
-        log::error!("Failed to save osu!.db metadata to cache: {}", e);
-        e.to_string()
-    })?;
+    if use_sqlite {
+        log::debug!("saving osu!.db to cache");
+        cache::save_beatmapsets(pool, &sets).await.map_err(|e| {
+            log::error!("Failed to save osu!.db to cache: {}", e);
+            e.to_string()
+        })?;
+    
+        cache::set_meta(pool, last_modified, file_size).await.map_err(|e| {
+            log::error!("Failed to save osu!.db metadata to cache: {}", e);
+            e.to_string()
+        })?;
+    }
 
     Ok(sets)
 }
