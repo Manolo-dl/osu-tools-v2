@@ -79,6 +79,22 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "storybook": {
+          "builder": "@storybook/angular-vite:start-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "onisu:build",
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular-vite:build-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "onisu:build",
+            "outputDir": "storybook-static"
+          }
         }
       }
     }
