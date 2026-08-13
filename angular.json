@@ -85,7 +85,8 @@
           "options": {
             "configDir": ".storybook",
             "browserTarget": "onisu:build",
-            "port": 6006
+            "port": 6006,
+            "styles": ["src/styles.css"]
           }
         },
         "build-storybook": {
@@ -93,7 +94,8 @@
           "options": {
             "configDir": ".storybook",
             "browserTarget": "onisu:build",
-            "outputDir": "storybook-static"
+            "outputDir": "storybook-static",
+            "styles": ["src/styles.css"]
           }
         }
       }
