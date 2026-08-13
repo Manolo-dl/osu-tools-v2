@@ -1,38 +1,8 @@
 use std::collections::HashMap;
-use sqlx::{FromRow, SqlitePool};
-use super::reader::{OsuBeatmapSet, OsuDiff};
 
-#[derive(FromRow)]
-pub struct OsuDbMeta {
-    pub last_modified: i64,
-    pub file_size: i64,
-}
+use sqlx::SqlitePool;
 
-#[derive(FromRow)]
-struct BeatmapSetRow {
-    pub beatmapset_id: i64,
-    pub title: String,
-    pub artist: String,
-    pub status: String,
-}
-
-#[derive(FromRow)]
-struct DiffRow {
-    pub beatmapset_id: i64,
-    pub md5: String,
-    pub diff_name: String,
-    pub mode: i64,
-    pub length: i64,
-    pub stars: f64,
-    pub last_played: i64,
-    pub circle_size: f64,
-    pub approach_rate: f64,
-    pub hp_drain: f64,
-    pub overall_difficulty: f64,
-    pub file_name: String,
-    pub audio: String,
-    pub creator: String,
-}
+use crate::commands::osu_db::model::{BeatmapSetRow, DiffRow, OsuBeatmapSet, OsuDbMeta, OsuDiff};
 
 pub async fn get_meta(pool: &SqlitePool) -> Option<OsuDbMeta> {
     sqlx::query_as::<_, OsuDbMeta>(

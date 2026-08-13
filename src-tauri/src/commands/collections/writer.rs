@@ -1,24 +1,16 @@
 use std::collections::HashSet;
 
-use crate::OsuState;
-
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ImportCollection {
-    pub name: String,
-    pub md5s: Vec<String>,
-}
+use crate::{AppConfigState, commands::collections::model::ImportCollection};
 
 #[tauri::command]
 pub async fn import_collections(
-    osu_state: tauri::State<'_, OsuState>,
+    config_state: tauri::State<'_, AppConfigState>,
     collections: Vec<ImportCollection>
 ) -> Result<(), String> {
 
-    let osu_path = {
-        let path = osu_state.path.lock().unwrap();
-        path.as_ref().ok_or("osu! path not set")?.clone()
-    };
+    let osu_path = config_state.config.lock().unwrap()
+        .osu_path.clone()
+        .ok_or("osu! path not set")?;
 
     let collection_path = std::path::Path::new(&osu_path).join("collection.db");
 

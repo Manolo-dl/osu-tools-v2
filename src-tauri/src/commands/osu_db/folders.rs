@@ -1,14 +1,9 @@
-use sqlx::{SqlitePool, prelude::FromRow};
+use sqlx::SqlitePool;
 use walkdir::WalkDir;
 
-#[derive(FromRow)]
-pub struct BeatmapsetFolder {
-    pub folder_path: String,
-}
+use crate::{commands::osu_db::model::BeatmapsetFolder};
 
 async fn resolve_cached_beatmapset_folder(pool: &SqlitePool, beatmapset_id: u32) -> Result<Option<BeatmapsetFolder>, sqlx::Error> {
-
-    // check if the beatmapset folder is already cached
     Ok(
         sqlx::query_as::<_, BeatmapsetFolder>(
             "SELECT folder_path FROM beatmapset_folders WHERE beatmapset_id = $1"
@@ -59,29 +54,34 @@ async fn save_beatmapset_folder(pool: &SqlitePool, beatmapset_id: u32, folder_pa
 
 pub async fn get_beatmapset_folder(
     pool: &SqlitePool,
+    use_sqlite: bool,
     osu_path: &str,
     beatmapset_id: u32,
     file_name: &str,
 ) -> Result<BeatmapsetFolder, String> {
-    
-    let cached = resolve_cached_beatmapset_folder(pool, beatmapset_id)
-    .await
-    .map_err(|e| e.to_string())?;
 
-    if let Some(folder) = cached {
-        if check_beatmapset_folder_exists(&folder.folder_path)
-        .await?
-        {
-            return Ok(folder);
+    if use_sqlite {
+        let cached = resolve_cached_beatmapset_folder(pool, beatmapset_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    
+        if let Some(folder) = cached {
+            if check_beatmapset_folder_exists(&folder.folder_path)
+            .await?
+            {
+                return Ok(folder);
+            }
         }
     }
 
     let folder = resolve_beatmapset_folder(osu_path, file_name, beatmapset_id)
         .await?;
 
-    save_beatmapset_folder(pool, beatmapset_id, &folder.folder_path)
-        .await
-        .map_err(|e| e.to_string())?;
+    if use_sqlite {
+        save_beatmapset_folder(pool, beatmapset_id, &folder.folder_path)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
 
     Ok(folder)
 }

@@ -1,15 +1,10 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use tauri::Manager;
 
-use crate::OsuState;
+use crate::AppConfigState;
 
 /// Allows the Songs folder in the `asset:` protocol scope at runtime.
-///
-/// The osu! path is resolved at runtime, so it cannot be declared in
-/// `tauri.conf.json` — that would only allow a hardcoded path or `**`, which
-/// exposes the whole disk to the webview. Widening the scope at runtime is what
-/// `convertFileSrc()` needs to render the backgrounds coming from tosu.
 fn allow_songs_in_asset_scope(app: &tauri::AppHandle, osu_path: &str) {
     let songs = Path::new(osu_path).join("Songs");
 
@@ -21,124 +16,83 @@ fn allow_songs_in_asset_scope(app: &tauri::AppHandle, osu_path: &str) {
 
 #[tauri::command]
 pub async fn get_osu_path(
-    app: tauri::AppHandle,
-    state: tauri::State<'_, OsuState>,
+    app: tauri::AppHandle
 ) -> Result<String, String> {
-    let path = resolve_osu_path(&app, state.inner()).await?;
+    let path = resolve_osu_path(&app).await?;
     allow_songs_in_asset_scope(&app, &path);
     Ok(path)
 }
 
-async fn resolve_osu_path(app: &tauri::AppHandle, state: &OsuState) -> Result<String, String> {
-    log::info!("Getting osu! path");
+#[tauri::command]
+pub async fn get_osu_path_from_tosu(state: tauri::State<'_, AppConfigState>) -> Result<String, String> {
 
-    if let Some(home) = dirs::home_dir() {
-        log::info!("home dir: {:?}", home);
+    let tosu_config = state.config.lock().unwrap().tosu.clone();
+    let url = format!("http://{}:{}/json/v2", tosu_config.ip, tosu_config.port);
 
-        #[cfg(target_os = "windows")]
-        let cosu_file = dirs::data_dir()
-            .unwrap_or(home.clone())
-            .join("cosu_songsfd");
+    let body = reqwest::get(url)
+        .await
+        .map_err(|e| {
+            log::error!("error fetching from tosu: {}", e);
+            e.to_string()
+        })?
+        .text()
+        .await
+        .map_err(|e| {
+            log::error!("error fetching text from tosu: {}", e);
+            e.to_string()
+        })?;
 
-        #[cfg(not(target_os = "windows"))]
-        let cosu_file = home.join(".cosu_songsfd");
-        log::info!("checking cosu_songsfd at {:?}", cosu_file);
+    let json: serde_json::Value = serde_json::from_str(&body)
+        .map_err(|e| e.to_string())?;
 
-        if cosu_file.exists() {
-            log::info!("found cosu_songsfd, reading...");
-            if let Ok(path) = std::fs::read_to_string(&cosu_file) {
-                let path = path.trim().to_string();
-                if !path.is_empty() {
-                    *state.path.lock().unwrap() = Some(path.clone());
-                    return Ok(path);
-                }
-            }
-        } else {
-            log::info!("cosu_songsfd not found");
-        }
+    let game_path = json
+        .get("folders")
+        .and_then(|f| f.get("game"))
+        .and_then(|g| g.as_str())
+        .ok_or_else(|| "tosu response missing folders.game".to_string())?;
+
+    Ok(game_path.to_string())
+}
+
+async fn resolve_osu_path(app: &tauri::AppHandle) -> Result<String, String> {
+    log::debug!("Getting osu! path");
+
+    // Check if the path is already stored in the state
+    let config_state = app.state::<AppConfigState>();
+    let config = config_state.config.lock().unwrap().clone();
+
+    // 1. Check path from config
+    if let Some(path) = config.osu_path.clone() {
+        return Ok(path);
     }
 
-    log::info!("checking OSU_SONG_FOLDER env variable");
-    if let Ok(path) = std::env::var("OSU_SONG_FOLDER") {
-        if !path.is_empty() {
-            *state.path.lock().unwrap() = Some(path.clone());
-            return Ok(path);
-        }
+    // 2. Check path with tosu
+    if let Ok(path) = get_osu_path_from_tosu(app.state::<AppConfigState>()).await {
+        save_detected_path(&config_state, &path);
+        return Ok(path);
     }
 
-    log::info!("checking default paths");
-    #[cfg(target_os = "windows")]
+    // 3. Check default paths
+    log::debug!("checking default paths");
+
     if let Some(local) = dirs::data_local_dir() {
-        let osu_dir = local.join("osu!");
-        if osu_dir.join("Songs").exists() {
-            *state.path.lock().unwrap() = Some(osu_dir.to_string_lossy().to_string());
-            return Ok(osu_dir.to_string_lossy().to_string());
-        }
-    }
+        
+        let candidates: Vec<PathBuf> = if cfg!(target_os = "windows") {
+            vec![
+                local.join("osu!"),
+            ]
+        } else {
+            vec![
+                local.join("osu-wine/osu!"),
+                local.join("osu"),
+            ]
+        };
 
-    #[cfg(not(target_os = "windows"))]
-    if let Some(home) = dirs::home_dir() {
-        let candidates = [
-            home.join(".local/share/osu"),
-            home.join(".wine/drive_c/users")
-                .join(std::env::var("USER").unwrap_or_default())
-                .join("AppData/Local/osu!"),
-        ];
         for path in &candidates {
-            log::info!("checking path: {:?}", path);
             if path.join("Songs").exists() {
-                *state.path.lock().unwrap() = Some(path.to_string_lossy().to_string());
+                save_detected_path(&config_state, &path.to_string_lossy().to_string());
                 return Ok(path.to_string_lossy().to_string());
             }
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        use tauri_plugin_shell::ShellExt;
-
-        log::info!("checking osumem");
-        let sidecar = app.shell().sidecar("osumem").map_err(|e| {
-            log::error!("sidecar error: {}", e);
-            e.to_string()
-        })?;
-
-        let (mut rx, child) = sidecar.spawn().map_err(|e| {
-            log::error!("osumem spawn error: {}", e);
-            e.to_string()
-        })?;
-
-        let found = tokio::time::timeout(std::time::Duration::from_secs(10), async {
-            while let Some(event) = rx.recv().await {
-                let bytes = match event {
-                    tauri_plugin_shell::process::CommandEvent::Stdout(b) => b,
-                    tauri_plugin_shell::process::CommandEvent::Stderr(b) => b,
-                    _ => continue,
-                };
-                let text = String::from_utf8_lossy(&bytes);
-                for line in text.lines() {
-                    log::info!("osumem: {}", line);
-                    if let Some(songs_path) = line.strip_prefix("Found Song folder: ") {
-                        let osu_dir = std::path::Path::new(songs_path.trim())
-                            .parent()
-                            .map(|p| p.to_string_lossy().to_string());
-                        return osu_dir;
-                    }
-                }
-            }
-            None
-        })
-        .await;
-
-        let _ = child.kill();
-
-        match found {
-            Ok(Some(path)) if !path.is_empty() => {
-                *state.path.lock().unwrap() = Some(path.clone());
-                return Ok(path);  
-            },
-            Ok(_) => log::warn!("osumem did not output a song folder path"),
-            Err(_) => log::warn!("osumem timed out after 10s"),
         }
     }
 
@@ -146,27 +100,18 @@ async fn resolve_osu_path(app: &tauri::AppHandle, state: &OsuState) -> Result<St
     Err("osu! folder not found".to_string())
 }
 
+fn save_detected_path(state: &tauri::State<AppConfigState>, path: &str) {
+    let mut config = state.config.lock().unwrap();
+    config.osu_path = Some(path.to_string());
+}
+
+// save osu! path when selected manually by the user
 #[tauri::command]
-pub fn save_osu_path(
-    app: tauri::AppHandle,
-    path: String,
-    state: tauri::State<'_, OsuState>,
-) -> Result<(), String> {
-
-    *state.path.lock().unwrap() = Some(path.clone());
-
-    // Also covers manual folder selection, which does not go through get_osu_path.
+pub fn save_osu_path(app: tauri::AppHandle, path: String) -> Result<(), String> {
     allow_songs_in_asset_scope(&app, &path);
 
-    #[cfg(target_os = "windows")]
-    let cosu_file = dirs::data_dir()
-        .ok_or("could not find data dir")?
-        .join("cosu_songsfd");
+    let config_state = app.state::<AppConfigState>();
+    save_detected_path(&config_state, &path);
 
-    #[cfg(not(target_os = "windows"))]
-    let cosu_file = dirs::home_dir()
-        .ok_or("could not find home dir")?
-        .join(".cosu_songsfd");
-
-    std::fs::write(&cosu_file, path).map_err(|e| e.to_string())
+    Ok(())
 }

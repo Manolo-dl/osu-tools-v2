@@ -1,19 +1,19 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "osu-tools",
+  "productName": "onisu",
   "version": "0.6.0",
-  "identifier": "com.manolo.osu-tools",
+  "identifier": "com.manolo.onisu",
   "build": {
     "beforeDevCommand": "npm run start",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist/osu-tools/browser"
+    "frontendDist": "../dist/onisu/browser"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "osu-tools",
+        "title": "onisu",
         "width": 800,
         "height": 600,
         "dragDropEnabled": true
@@ -39,7 +39,12 @@
       "icons/icon.ico"
     ],
     "externalBin": ["binaries/tosu"],
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": true,
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
   },
   "plugins": {
     "updater": {
