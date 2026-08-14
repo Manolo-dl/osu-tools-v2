@@ -1,3 +1,4 @@
+import { TuiRoot } from "@taiga-ui/core";
 import { Component, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { HeaderComponent } from "@widgets/header";
@@ -9,7 +10,7 @@ import { PlatformStore } from "@shared/stores";
 
 @Component({
   selector: "app-root",
-  imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent, ToastComponent],
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent, ToastComponent, TuiRoot],
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
 })
