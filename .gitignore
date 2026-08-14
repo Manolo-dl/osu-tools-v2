@@ -40,3 +40,5 @@ Thumbs.db
 .env
 
 CONTEXT.md
+*storybook.log
+storybook-static

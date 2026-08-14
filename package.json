@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "storybook": "ng run onisu:storybook",
+    "build-storybook": "ng run onisu:build-storybook"
   },
   "private": true,
   "dependencies": {
@@ -32,10 +34,29 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "latest",
+    "@angular-devkit/architect": "^0.2200.1",
+    "@angular-devkit/build-angular": "^22.0.1",
+    "@angular-devkit/core": "^22.0.1",
+    "@angular/animations": "^22.0.1",
     "@angular/build": "^22.0.2",
     "@angular/cli": "^22.0.2",
     "@angular/compiler-cli": "^22.0.1",
+    "@chromatic-com/storybook": "latest",
+    "@compodoc/compodoc": "latest",
+    "@storybook/addon-a11y": "^10.5.8",
+    "@storybook/addon-docs": "^10.5.8",
+    "@storybook/addon-onboarding": "^10.5.8",
+    "@storybook/addon-vitest": "^10.5.8",
+    "@storybook/angular-vite": "^10.5.8",
     "@tauri-apps/cli": "^2",
-    "typescript": "~6.0.3"
+    "@types/node": "^20",
+    "@vitest/browser-playwright": "latest",
+    "@vitest/coverage-v8": "latest",
+    "playwright": "latest",
+    "storybook": "^10.5.8",
+    "typescript": "~6.0.3",
+    "vite": "latest",
+    "vitest": "latest"
   }
 }
