@@ -6,6 +6,17 @@ import docJson from "../documentation.json";
 import { appConfig } from '../src/app/app.config';
 setCompodocJson(docJson);
 
+if (typeof window !== 'undefined' && !(window as any).__TAURI_INTERNALS__) {
+  (window as any).__TAURI_INTERNALS__ = {
+    invoke: async () => null,
+    transformCallback: () => {},
+    metadata: {
+      currentWindow: { label: 'main' },
+      currentWebview: { label: 'main' },
+    },
+  };
+}
+
 
 const preview: Preview = {
   decorators: [
