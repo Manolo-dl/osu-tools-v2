@@ -1,5 +1,16 @@
 <div class="window-controls">
-  <button (click)="this.window.minimize()">Minimize</button>
-  <button (click)="this.window.maximize()">Maximize</button>
-  <button (click)="this.window.close()">Close</button>
+  <button
+  size="l"
+  appearance="outline"
+  tuiButton
+  (click)="this.window.minimize()"
+  >
+  <fa-icon [icon]="icons.faMinimize" />
+  </button>
+  <button (click)="this.window.maximize()">
+    <fa-icon [icon]="icons.faMaximize" />
+</button>
+  <button (click)="this.window.close()">
+    <fa-icon [icon]="icons.faXmark" />
+  </button>
 </div>
