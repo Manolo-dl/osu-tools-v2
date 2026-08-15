@@ -3683,7 +3683,7 @@
     "components": [
         {
             "name": "AppComponent",
-            "id": "component-AppComponent-9be8e05637530c36ec8680c8987fd1d7d015528ee447be2a4518dd467574b4305e1d9982afcc220bc69890cb5e73475295988aa43ce32585aac56d396edcc62d",
+            "id": "component-AppComponent-51a3a707465ae97884a3af808ae6a76d6b61a01c7ee1d094624612268521a61d3419370b97280456e3f624363d6c88d3e9b63034e4955e94f861e434a54e881c",
             "file": "src/app/app.component.ts",
             "changeDetection": "ChangeDetectionStrategy.OnPush",
             "encapsulation": [],
@@ -3774,14 +3774,13 @@
                     "type": "component"
                 },
                 {
-                    "name": "DistributionNoticeComponent",
-                    "type": "component"
+                    "name": "TuiRoot"
                 }
             ],
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, inject, OnInit } from \"@angular/core\";\nimport { RouterOutlet } from \"@angular/router\";\nimport { HeaderComponent } from \"@widgets/header\";\nimport { SidebarComponent } from \"@widgets/sidebar\";\nimport { OsuPathComponent } from \"@widgets/osu-path\";\nimport { DistributionNoticeComponent } from \"@widgets/distribution-notice\";\nimport { ToastComponent } from \"@widgets/toast\";\nimport { ThemeService } from \"@shared/services\";\nimport { PlatformStore } from \"@shared/stores\";\n\n@Component({\n  selector: \"app-root\",\n  imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent, ToastComponent, DistributionNoticeComponent],\n  templateUrl: \"./app.component.html\",\n  styleUrl: \"./app.component.css\",\n})\nexport class AppComponent implements OnInit {\n  // inject early so the effect applies data-theme before first render\n  themeService = inject(ThemeService);\n  platformStore = inject(PlatformStore);\n\n  ngOnInit() {\n    this.platformStore.setOs();\n  }\n}\n",
+            "sourceCode": "import { TuiRoot } from \"@taiga-ui/core\";\nimport { Component, inject, OnInit } from \"@angular/core\";\nimport { RouterOutlet } from \"@angular/router\";\nimport { HeaderComponent } from \"@widgets/header\";\nimport { SidebarComponent } from \"@widgets/sidebar\";\nimport { OsuPathComponent } from \"@widgets/osu-path\";\nimport { ToastComponent } from \"@widgets/toast\";\nimport { ThemeService } from \"@shared/services\";\nimport { PlatformStore } from \"@shared/stores\";\n\n@Component({\n  selector: \"app-root\",\n  imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent, ToastComponent, TuiRoot],\n  templateUrl: \"./app.component.html\",\n  styleUrl: \"./app.component.css\",\n})\nexport class AppComponent implements OnInit {\n  // inject early so the effect applies data-theme before first render\n  themeService = inject(ThemeService);\n  platformStore = inject(PlatformStore);\n\n  ngOnInit() {\n    this.platformStore.setOs();\n  }\n}\n",
             "styleUrl": "./app.component.css",
             "assetsDirs": [],
             "styleUrlsData": [
@@ -3819,8 +3818,8 @@
                         "type": "component"
                     },
                     {
-                        "name": "DistributionNoticeComponent",
-                        "type": "component"
+                        "name": "TuiRoot",
+                        "type": "module"
                     },
                     {
                         "name": "OnInit",
@@ -3828,7 +3827,7 @@
                     }
                 ]
             },
-            "templateData": "<div class=\"app-shell\">\n  <app-header />\n  <div class=\"app-body\">\n    <app-sidebar />\n    <main class=\"app-content\">\n      <app-distribution-notice />\n      <app-osu-path />\n      <router-outlet />\n    </main>\n  </div>\n</div>\n<app-toast />\n"
+            "templateData": "<tui-root>\n<div class=\"app-shell\">\n  <app-header />\n  <div class=\"app-body\">\n    <app-sidebar />\n    <main class=\"app-content\">\n      <app-osu-path />\n      <router-outlet />\n    </main>\n  </div>\n</div>\n<app-toast />\n\n</tui-root>"
         },
         {
             "name": "BeatmapExportControlsComponent",
@@ -7034,91 +7033,6 @@
             "templateData": "<div class=\"table-list-panel\">\n  <div class=\"panel-header\">\n    <span class=\"section-title\">Tables</span>\n  </div>\n\n  <ul class=\"table-list\" role=\"list\">\n    @for (table of store.tables(); track table.name) {\n      <li\n        class=\"table-item\"\n        [class.active]=\"store.selectedTable() === table.name\"\n        (click)=\"store.selectTable(table.name)\"\n      >\n        <span class=\"table-name\">{{ table.name }}</span>\n        <span class=\"column-count\">{{ table.columns.length }} cols</span>\n      </li>\n    }\n  </ul>\n</div>"
         },
         {
-            "name": "DistributionNoticeComponent",
-            "id": "component-DistributionNoticeComponent-2f36dcc6156ea16082a22bb9c5235a6a1e20038d01ea8b1bd77cae7d02518d4112f16ab58a4b4b05a861ccfa4f94f8a900d2c920f6fb757a488200f18782cb6a",
-            "file": "src/widgets/distribution-notice/distribution-notice.component.ts",
-            "changeDetection": "ChangeDetectionStrategy.OnPush",
-            "encapsulation": [],
-            "entryComponents": [],
-            "inputs": [],
-            "outputs": [],
-            "providers": [],
-            "selector": "app-distribution-notice",
-            "styleUrls": [
-                "./distribution-notice.component.css"
-            ],
-            "styles": [],
-            "templateUrl": [
-                "./distribution-notice.component.html"
-            ],
-            "templateVariables": [],
-            "viewProviders": [],
-            "hostDirectives": [],
-            "inputsClass": [],
-            "outputsClass": [],
-            "propertiesClass": [
-                {
-                    "name": "dismissed",
-                    "coverageIgnore": false,
-                    "defaultValue": "signal(localStorage.getItem(STORAGE_KEY) === 'true')",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "unknown",
-                    "indexKey": "",
-                    "optional": false,
-                    "description": "",
-                    "line": 13,
-                    "rawdescription": "\n"
-                }
-            ],
-            "methodsClass": [
-                {
-                    "name": "dismiss",
-                    "coverageIgnore": false,
-                    "args": [],
-                    "optional": false,
-                    "returnType": "void",
-                    "typeParameters": [],
-                    "line": 15,
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "rawdescription": "\n",
-                    "description": ""
-                }
-            ],
-            "coverageIgnore": false,
-            "deprecated": false,
-            "deprecationMessage": "",
-            "hostBindings": [],
-            "hostListeners": [],
-            "standalone": true,
-            "imports": [],
-            "description": "",
-            "rawdescription": "\n",
-            "type": "component",
-            "sourceCode": "import { ChangeDetectionStrategy, Component, signal } from '@angular/core';\n\nconst STORAGE_KEY = 'distribution-notice-dismissed';\n\n@Component({\n    selector: 'app-distribution-notice',\n    imports: [],\n    templateUrl: './distribution-notice.component.html',\n    styleUrl: './distribution-notice.component.css',\n    changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class DistributionNoticeComponent {\n    dismissed = signal(localStorage.getItem(STORAGE_KEY) === 'true');\n\n    dismiss() {\n        localStorage.setItem(STORAGE_KEY, 'true');\n        this.dismissed.set(true);\n    }\n}\n",
-            "styleUrl": "./distribution-notice.component.css",
-            "assetsDirs": [],
-            "styleUrlsData": [
-                {
-                    "data": ":host {\n    display: block;\n}\n\n.notice {\n    display: flex;\n    align-items: flex-start;\n    gap: 10px;\n    padding: 10px 16px;\n    background: color-mix(in srgb, var(--warning, #e8b84b) 10%, transparent);\n    border: 1px solid color-mix(in srgb, var(--warning, #e8b84b) 25%, transparent);\n    border-radius: var(--radius);\n    margin-bottom: 12px;\n}\n\n.notice-icon {\n    flex-shrink: 0;\n    font-size: 14px;\n    color: var(--warning, #e8b84b);\n    margin-top: 1px;\n}\n\n.notice-text {\n    flex: 1;\n    font-size: 12px;\n    line-height: 1.55;\n    color: var(--text-secondary);\n}\n\n.notice-text strong {\n    font-weight: 700;\n    color: var(--warning, #e8b84b);\n}\n\n.dismiss-btn {\n    flex-shrink: 0;\n    width: 20px;\n    height: 20px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-size: 10px;\n    border-radius: 4px;\n    background: transparent;\n    color: var(--text-muted);\n    border: 1px solid transparent;\n    cursor: pointer;\n    transition: color 0.15s, border-color 0.15s;\n    margin-top: 1px;\n}\n\n.dismiss-btn:hover {\n    color: var(--text-primary);\n    border-color: var(--border);\n}\n",
-                    "styleUrl": "./distribution-notice.component.css"
-                }
-            ],
-            "stylesData": "",
-            "extends": [],
-            "relationships": {
-                "incoming": [
-                    {
-                        "name": "AppComponent",
-                        "type": "component"
-                    }
-                ],
-                "outgoing": []
-            },
-            "templateData": "@if (!dismissed()) {\n    <div class=\"notice\">\n        <span class=\"notice-icon\">⚠</span>\n        <p class=\"notice-text\">\n            <strong>Distribution change incoming.</strong>\n            This program will change drastically in how it's distributed.\n            New versions will not be detected automatically —\n            a full reinstall will be required when they become available.\n        </p>\n        <button class=\"dismiss-btn\" (click)=\"dismiss()\" title=\"Dismiss\">✕</button>\n    </div>\n}\n"
-        },
-        {
             "name": "DownloaderPageComponent",
             "id": "component-DownloaderPageComponent-a3ea358599d87cd8861af52e872b7b45bf7d06d1971f945795f32a5e5ab244c5a6b03bfbb107936f59a66bbffaff1c9c0ecf83929567cd8e2600c12075e7afcb",
             "file": "src/pages/downloader/downloader-page.component.ts",
@@ -9486,7 +9400,7 @@
         {
             "name": "PackDetailsFormComponent",
             "id": "component-PackDetailsFormComponent-217f3a38f463de1991e29510c66d721489a39bd0496e4d336fc89b2e65e2cf5fa55fe2b03b3b7c1d92dabee3f3b950a83f10f46f1bbad52d6d94e79634d3d5bd",
-            "file": "src/features/pack-creator/ui/pack-details-from/pack-details-form.component.ts",
+            "file": "src/features/pack-creator/ui/pack-details-form/pack-details-form.component.ts",
             "changeDetection": "ChangeDetectionStrategy.OnPush",
             "encapsulation": [],
             "entryComponents": [],
@@ -12086,7 +12000,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "ApplicationConfig",
-                "defaultValue": "{\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n  ],\n}"
+                "defaultValue": "{\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n        provideTaiga()\n    ],\n}"
             },
             {
                 "name": "BeatmapExporterStore",
@@ -12158,6 +12072,127 @@
                 "name": "Default",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
+                "file": "src/app/app.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<AppComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/database/database-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<DatabasePageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/create-packs/create-packs-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<CreatePacksPageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/downloader/downloader-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<DownloaderPageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/export-collections/export-collections-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ExportCollectionsPageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/export-song-folder/export-song-folder-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ExportSongFolderPageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/home/home-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<HomePageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/import-collections/import-collections-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ImportCollectionsPageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/logs/logs-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<LogsPageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/tosu-data/tosu-data-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TosuDataPage>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/trainer/trainer-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TrainerPageComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
                 "file": "src/widgets/header/header.stories.ts",
                 "coverageIgnore": false,
                 "deprecated": false,
@@ -12185,6 +12220,435 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
+                "defaultValue": "{\n    args: {\n        userItems: USER_ITEMS,\n        devItems: DEV_ITEMS,\n    },\n}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/widgets/toast/toast.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ToastComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/beatmap-set-list/beatmap-set-list.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapSetListComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/export-controls/export-controls.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ExportControlsComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/beatmap-set-card/beatmap-set-card.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapSetCardComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/stateful-input/stateful-input.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<StatefulInputComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/beatmap-search/ui/beatmap-import/beatmap-import.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapImportComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapQueueComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-export-controls/collection-export-controls.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<CollectionExportControlsComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-list/collection-list.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<CollectionListComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-preview/collection-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<CollectionPreviewComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-summary/collection-summary.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<CollectionSummaryComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/database/ui/database-results/database-results.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<DatabaseResultsComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/database/ui/database-structure/database-structure.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<DatabaseStructureComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/database/ui/database-table-list/database-table-list.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<DatabaseTableListComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-importer/ui/import-confirm-button/import-confirm-button.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ImportConfirmButtonComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ImportFileDropzoneComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-importer/ui/import-preview/import-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<ImportPreviewComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<OsuCookieInputComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-export-controls/beatmap-export-controls.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapExportControlsComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-filters/beatmap-filters.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapFiltersComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-preview/beatmap-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapPreviewComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-summary/beatmap-summary.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<BeatmapSummaryComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/logs/ui/log-column/log-column.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<LogColumnComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/logs/ui/log-viewer/log-viewer.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<LogViewerComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/create-pack-button/create-pack-button.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<CreatePackButtonComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-browser/pack-browser.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<PackBrowserComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-browser-card/pack-browser-card.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<PackBrowserCardComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-collection-adder/pack-collection-adder.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<PackCollectionAdderComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-details-form/pack-details-from.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<PackDetailsFormComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-preview/pack-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<PackPreviewComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-preview-card/pack-preview-card.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<PackPreviewCardComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-search-input/pack-search-input.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<PackSearchInputComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TosuDataSectionsComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/tosu-data/ui/tosu-field-tree/tosu-field-tree.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TosuFieldTreeComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/tosu-data/ui/tosu-status/tosu-status.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TosuStatusComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-actions/trainer-actions.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TrainerActionsComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-difficulty-sliders/difficulty-sliders.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TrainerDifficultySlidersComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TrainerTaskPipelineComponent>",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Default",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story<TrainerBeatmapHeaderComponent>",
                 "defaultValue": "{}"
             },
             {
@@ -12246,17 +12710,6 @@
                 "name": "initialState",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "src/features/collection-importer/import-collections.store.ts",
-                "coverageIgnore": false,
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "ImportCollectionState",
-                "defaultValue": "{\n    parsedImports: [],\n    isImporting: false,\n}"
-            },
-            {
-                "name": "initialState",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
                 "file": "src/entities/beatmap/beatmap.store.ts",
                 "coverageIgnore": false,
                 "deprecated": false,
@@ -12290,23 +12743,23 @@
                 "name": "initialState",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "src/entities/log/log.store.ts",
-                "coverageIgnore": false,
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "LogState",
-                "defaultValue": "{\n    logs: [],\n    isLoaded: false,\n}"
-            },
-            {
-                "name": "initialState",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
                 "file": "src/entities/nav-item/nav.store.ts",
                 "coverageIgnore": false,
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "NavStoreState",
                 "defaultValue": "{\n    mode: 'user'\n}"
+            },
+            {
+                "name": "initialState",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/entities/log/log.store.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "LogState",
+                "defaultValue": "{\n    logs: [],\n    isLoaded: false,\n}"
             },
             {
                 "name": "initialState",
@@ -12351,6 +12804,17 @@
                 "deprecationMessage": "",
                 "type": "UserState",
                 "defaultValue": "{\n    user: null,\n}"
+            },
+            {
+                "name": "initialState",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-importer/import-collections.store.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "ImportCollectionState",
+                "defaultValue": "{\n    parsedImports: [],\n    isImporting: false,\n}"
             },
             {
                 "name": "initialState",
@@ -12422,6 +12886,127 @@
                 "name": "meta",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
+                "file": "src/app/app.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<AppComponent>",
+                "defaultValue": "{\n  title: 'App',\n  component: AppComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/database/database-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<DatabasePageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Database Page\",\n    component: DatabasePageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/create-packs/create-packs-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<CreatePacksPageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Create Packs Page\",\n    component: CreatePacksPageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/downloader/downloader-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<DownloaderPageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Downloader\",\n    component: DownloaderPageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/export-collections/export-collections-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ExportCollectionsPageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Export Collections\",\n    component: ExportCollectionsPageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/export-song-folder/export-song-folder-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ExportSongFolderPageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Export Song Folder\",\n    component: ExportSongFolderPageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/home/home-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<HomePageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Home Page\",\n    component: HomePageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/import-collections/import-collections-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ImportCollectionsPageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Import Collections\",\n    component: ImportCollectionsPageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/logs/logs-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<LogsPageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Logs Page\",\n    component: LogsPageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/tosu-data/tosu-data-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TosuDataPage>",
+                "defaultValue": "{\n    title: \"Pages/Tosu Data\",\n    component: TosuDataPage,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/pages/trainer/trainer-page.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TrainerPageComponent>",
+                "defaultValue": "{\n    title: \"Pages/Trainer Page\",\n    component: TrainerPageComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
                 "file": "src/widgets/header/header.stories.ts",
                 "coverageIgnore": false,
                 "deprecated": false,
@@ -12449,7 +13034,436 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Meta<SidebarComponent>",
-                "defaultValue": "{\n    title: 'Widgets/Sidebar',\n    component: SidebarComponent,\n    tags: ['autodocs'],\n    decorators: [\n        applicationConfig({\n            providers: [\n                // Registramos todos los iconos que utiliza el sidebar en sus items\n                provideIcons({ \n                    phosphorHouse, \n                    phosphorDownloadSimple, \n                    phosphorFolder, \n                    phosphorMusicNote, \n                    phosphorTarget \n                }),\n            ]\n        }),\n    ],\n}"
+                "defaultValue": "{\n    title: 'Widgets/Sidebar',\n    component: SidebarComponent,\n    tags: ['autodocs'],\n    decorators: [\n        applicationConfig({\n            providers: [\n                provideRouter([]),\n                provideIcons({ \n                    phosphorHouse, \n                    phosphorDownloadSimple, \n                    phosphorFolder, \n                    phosphorMusicNote, \n                    phosphorTarget \n                }),\n            ]\n        }),\n    ],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/widgets/toast/toast.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ToastComponent>",
+                "defaultValue": "{\n    title: 'Widgets/Toast',\n    component: ToastComponent,\n    tags: ['autodocs'],\n    decorators: [\n        applicationConfig({\n            providers: [\n                ToastStore,\n                provideIcons({\n                    phosphorCheckCircle,\n                    phosphorXCircle,\n                    phosphorWarningCircle,\n                    phosphorInfo\n                })\n            ]\n        }),\n    ],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/beatmap-set-list/beatmap-set-list.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapSetListComponent>",
+                "defaultValue": "{\n    title: \"Shared/Beatmap Set List\",\n    component: BeatmapSetListComponent,\n    tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/export-controls/export-controls.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ExportControlsComponent>",
+                "defaultValue": "{\n    title: \"Shared/Export Controls\",\n    component: ExportControlsComponent,\n    tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/beatmap-set-card/beatmap-set-card.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapSetCardComponent>",
+                "defaultValue": "{\n    title: 'Shared/Beatmap Set Card',\n    component: BeatmapSetCardComponent,\n    tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/shared/ui/stateful-input/stateful-input.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<StatefulInputComponent>",
+                "defaultValue": "{\n    title: \"Shared/Stateful Input\",\n    component: StatefulInputComponent,\n    tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/beatmap-search/ui/beatmap-import/beatmap-import.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapImportComponent>",
+                "defaultValue": "{\n    title: \"Features/Beatmap Search/Beatmap Import\",\n    component: BeatmapImportComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapQueueComponent>",
+                "defaultValue": "{\n    title: \"Features/Beatmap Search/Beatmap Queue\",\n    component: BeatmapQueueComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-export-controls/collection-export-controls.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<CollectionExportControlsComponent>",
+                "defaultValue": "{\n    title: \"Features/Collection Exporter/Collection Export Controls\",\n    component: CollectionExportControlsComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-list/collection-list.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<CollectionListComponent>",
+                "defaultValue": "{\n    title: \"Features/Collection Exporter/Collection List\",\n    component: CollectionListComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-preview/collection-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<CollectionPreviewComponent>",
+                "defaultValue": "{ \n    title: \"Features/Collection Exporter/Collection Preview\",\n    component: CollectionPreviewComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-exporter/ui/collection-summary/collection-summary.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<CollectionSummaryComponent>",
+                "defaultValue": "{\n    title: \"Features/Collection Exporter/Collection Summary\",\n    component: CollectionSummaryComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/database/ui/database-results/database-results.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<DatabaseResultsComponent>",
+                "defaultValue": "{\n  title: 'Features/Database/Database Results',\n  component: DatabaseResultsComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/database/ui/database-structure/database-structure.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<DatabaseStructureComponent>",
+                "defaultValue": "{\n  title: 'Features/Database/Database Structure',\n  component: DatabaseStructureComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/database/ui/database-table-list/database-table-list.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<DatabaseTableListComponent>",
+                "defaultValue": "{\n  title: 'Features/Database/Database Table List',\n  component: DatabaseTableListComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-importer/ui/import-confirm-button/import-confirm-button.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ImportConfirmButtonComponent>",
+                "defaultValue": "{\n    title: \"Features/Collection Importer/Import Confirm Button\",\n    component: ImportConfirmButtonComponent,\n    tags: [\"autodocs\"],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ImportFileDropzoneComponent>",
+                "defaultValue": "{\n  title: 'Features/Collection Importer/Import File Dropzone',\n  component: ImportFileDropzoneComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/collection-importer/ui/import-preview/import-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<ImportPreviewComponent>",
+                "defaultValue": "{\n  title: 'Features/Collection Importer/Import Preview',\n  component: ImportPreviewComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<OsuCookieInputComponent>",
+                "defaultValue": "{\n  title: 'Features/Downloader/Osu Cookie Input',\n  component: OsuCookieInputComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-export-controls/beatmap-export-controls.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapExportControlsComponent>",
+                "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Export Controls',\n  component: BeatmapExportControlsComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-filters/beatmap-filters.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapFiltersComponent>",
+                "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Filters',\n  component: BeatmapFiltersComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-preview/beatmap-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapPreviewComponent>",
+                "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Preview',\n  component: BeatmapPreviewComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/export-songs/ui/beatmap-summary/beatmap-summary.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BeatmapSummaryComponent>",
+                "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Summary',\n  component: BeatmapSummaryComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/logs/ui/log-column/log-column.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<LogColumnComponent>",
+                "defaultValue": "{\n  title: 'Features/Logs/Log Column',\n  component: LogColumnComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/logs/ui/log-viewer/log-viewer.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<LogViewerComponent>",
+                "defaultValue": "{\n  title: 'Features/Logs/Log Viewer',\n  component: LogViewerComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/create-pack-button/create-pack-button.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<CreatePackButtonComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Create Pack Button',\n  component: CreatePackButtonComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-browser/pack-browser.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<PackBrowserComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Browser',\n  component: PackBrowserComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-browser-card/pack-browser-card.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<PackBrowserCardComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Browser Card',\n  component: PackBrowserCardComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-collection-adder/pack-collection-adder.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<PackCollectionAdderComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Collection Adder',\n  component: PackCollectionAdderComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-details-form/pack-details-from.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<PackDetailsFormComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Details Form',\n  component: PackDetailsFormComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-preview/pack-preview.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<PackPreviewComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Preview',\n  component: PackPreviewComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-preview-card/pack-preview-card.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<PackPreviewCardComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Preview Card',\n  component: PackPreviewCardComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/pack-creator/ui/pack-search-input/pack-search-input.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<PackSearchInputComponent>",
+                "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Search Input',\n  component: PackSearchInputComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TosuDataSectionsComponent>",
+                "defaultValue": "{\n  title: 'Features/Tosu Data/Tosu Data Sections',\n  component: TosuDataSectionsComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/tosu-data/ui/tosu-field-tree/tosu-field-tree.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TosuFieldTreeComponent>",
+                "defaultValue": "{\n  title: 'Features/Tosu Data/Tosu Field Tree',\n  component: TosuFieldTreeComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/tosu-data/ui/tosu-status/tosu-status.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TosuStatusComponent>",
+                "defaultValue": "{\n  title: 'Features/Tosu Data/Tosu Status',\n  component: TosuStatusComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-actions/trainer-actions.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TrainerActionsComponent>",
+                "defaultValue": "{\n  title: 'Features/Trainer/Trainer Actions',\n  component: TrainerActionsComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-difficulty-sliders/difficulty-sliders.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TrainerDifficultySlidersComponent>",
+                "defaultValue": "{\n  title: 'Features/Trainer/Trainer Difficulty Sliders',\n  component: TrainerDifficultySlidersComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TrainerTaskPipelineComponent>",
+                "defaultValue": "{\n  title: 'Features/Trainer/Trainer Task Pipeline',\n  component: TrainerTaskPipelineComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.stories.ts",
+                "coverageIgnore": false,
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<TrainerBeatmapHeaderComponent>",
+                "defaultValue": "{\n  title: 'Features/Trainer/Trainer Beatmap Header',\n  component: TrainerBeatmapHeaderComponent,\n  tags: ['autodocs'],\n}"
             },
             {
                 "name": "NavStore",
@@ -12538,17 +13552,6 @@
                 "deprecationMessage": "",
                 "type": "string",
                 "defaultValue": "'theme'"
-            },
-            {
-                "name": "STORAGE_KEY",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
-                "file": "src/widgets/distribution-notice/distribution-notice.component.ts",
-                "coverageIgnore": false,
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "string",
-                "defaultValue": "'distribution-notice-dismissed'"
             },
             {
                 "name": "TASK_LABELS",
@@ -12683,6 +13686,19 @@
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
                 "coverageIgnore": false,
+                "rawtype": "StoryObj<T>",
+                "file": "src/shared/models/story.model.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "rawdescription": "",
+                "description": "",
+                "kind": 184
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "coverageIgnore": false,
                 "rawtype": "StoryObj<HeaderComponent>",
                 "file": "src/widgets/header/header.stories.ts",
                 "deprecated": false,
@@ -12769,7 +13785,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "ApplicationConfig",
-                    "defaultValue": "{\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n  ],\n}"
+                    "defaultValue": "{\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n        provideTaiga()\n    ],\n}"
                 }
             ],
             "src/features/export-songs/stores/beatmap-exporter.store.ts": [
@@ -12927,6 +13943,270 @@
                     "defaultValue": "{\n    tables: [],\n    isLoaded: false,\n    selectedTable: null,\n    excludedColumns: [],\n    results: {},\n    isQuerying: false\n}"
                 }
             ],
+            "src/app/app.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/app.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<AppComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/app.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<AppComponent>",
+                    "defaultValue": "{\n  title: 'App',\n  component: AppComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/pages/database/database-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/database/database-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<DatabasePageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/database/database-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<DatabasePageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Database Page\",\n    component: DatabasePageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/create-packs/create-packs-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/create-packs/create-packs-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<CreatePacksPageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/create-packs/create-packs-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<CreatePacksPageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Create Packs Page\",\n    component: CreatePacksPageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/downloader/downloader-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/downloader/downloader-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<DownloaderPageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/downloader/downloader-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<DownloaderPageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Downloader\",\n    component: DownloaderPageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/export-collections/export-collections-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/export-collections/export-collections-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ExportCollectionsPageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/export-collections/export-collections-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ExportCollectionsPageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Export Collections\",\n    component: ExportCollectionsPageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/export-song-folder/export-song-folder-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/export-song-folder/export-song-folder-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ExportSongFolderPageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/export-song-folder/export-song-folder-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ExportSongFolderPageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Export Song Folder\",\n    component: ExportSongFolderPageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/home/home-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/home/home-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<HomePageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/home/home-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<HomePageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Home Page\",\n    component: HomePageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/import-collections/import-collections-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/import-collections/import-collections-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ImportCollectionsPageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/import-collections/import-collections-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ImportCollectionsPageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Import Collections\",\n    component: ImportCollectionsPageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/logs/logs-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/logs/logs-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<LogsPageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/logs/logs-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<LogsPageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Logs Page\",\n    component: LogsPageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/tosu-data/tosu-data-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/tosu-data/tosu-data-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TosuDataPage>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/tosu-data/tosu-data-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TosuDataPage>",
+                    "defaultValue": "{\n    title: \"Pages/Tosu Data\",\n    component: TosuDataPage,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/pages/trainer/trainer-page.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/trainer/trainer-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TrainerPageComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/pages/trainer/trainer-page.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TrainerPageComponent>",
+                    "defaultValue": "{\n    title: \"Pages/Trainer Page\",\n    component: TrainerPageComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
             "src/widgets/header/header.stories.ts": [
                 {
                     "name": "Default",
@@ -12985,7 +14265,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{}"
+                    "defaultValue": "{\n    args: {\n        userItems: USER_ITEMS,\n        devItems: DEV_ITEMS,\n    },\n}"
                 },
                 {
                     "name": "meta",
@@ -12996,7 +14276,943 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Meta<SidebarComponent>",
-                    "defaultValue": "{\n    title: 'Widgets/Sidebar',\n    component: SidebarComponent,\n    tags: ['autodocs'],\n    decorators: [\n        applicationConfig({\n            providers: [\n                // Registramos todos los iconos que utiliza el sidebar en sus items\n                provideIcons({ \n                    phosphorHouse, \n                    phosphorDownloadSimple, \n                    phosphorFolder, \n                    phosphorMusicNote, \n                    phosphorTarget \n                }),\n            ]\n        }),\n    ],\n}"
+                    "defaultValue": "{\n    title: 'Widgets/Sidebar',\n    component: SidebarComponent,\n    tags: ['autodocs'],\n    decorators: [\n        applicationConfig({\n            providers: [\n                provideRouter([]),\n                provideIcons({ \n                    phosphorHouse, \n                    phosphorDownloadSimple, \n                    phosphorFolder, \n                    phosphorMusicNote, \n                    phosphorTarget \n                }),\n            ]\n        }),\n    ],\n}"
+                }
+            ],
+            "src/widgets/toast/toast.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/widgets/toast/toast.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ToastComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/widgets/toast/toast.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ToastComponent>",
+                    "defaultValue": "{\n    title: 'Widgets/Toast',\n    component: ToastComponent,\n    tags: ['autodocs'],\n    decorators: [\n        applicationConfig({\n            providers: [\n                ToastStore,\n                provideIcons({\n                    phosphorCheckCircle,\n                    phosphorXCircle,\n                    phosphorWarningCircle,\n                    phosphorInfo\n                })\n            ]\n        }),\n    ],\n}"
+                }
+            ],
+            "src/shared/ui/beatmap-set-list/beatmap-set-list.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/beatmap-set-list/beatmap-set-list.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapSetListComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/beatmap-set-list/beatmap-set-list.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapSetListComponent>",
+                    "defaultValue": "{\n    title: \"Shared/Beatmap Set List\",\n    component: BeatmapSetListComponent,\n    tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/shared/ui/export-controls/export-controls.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/export-controls/export-controls.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ExportControlsComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/export-controls/export-controls.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ExportControlsComponent>",
+                    "defaultValue": "{\n    title: \"Shared/Export Controls\",\n    component: ExportControlsComponent,\n    tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/shared/ui/beatmap-set-card/beatmap-set-card.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/beatmap-set-card/beatmap-set-card.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapSetCardComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/beatmap-set-card/beatmap-set-card.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapSetCardComponent>",
+                    "defaultValue": "{\n    title: 'Shared/Beatmap Set Card',\n    component: BeatmapSetCardComponent,\n    tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/shared/ui/stateful-input/stateful-input.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/stateful-input/stateful-input.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<StatefulInputComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/shared/ui/stateful-input/stateful-input.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<StatefulInputComponent>",
+                    "defaultValue": "{\n    title: \"Shared/Stateful Input\",\n    component: StatefulInputComponent,\n    tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/beatmap-search/ui/beatmap-import/beatmap-import.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/beatmap-search/ui/beatmap-import/beatmap-import.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapImportComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/beatmap-search/ui/beatmap-import/beatmap-import.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapImportComponent>",
+                    "defaultValue": "{\n    title: \"Features/Beatmap Search/Beatmap Import\",\n    component: BeatmapImportComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapQueueComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapQueueComponent>",
+                    "defaultValue": "{\n    title: \"Features/Beatmap Search/Beatmap Queue\",\n    component: BeatmapQueueComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/features/collection-exporter/ui/collection-export-controls/collection-export-controls.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-export-controls/collection-export-controls.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<CollectionExportControlsComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-export-controls/collection-export-controls.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<CollectionExportControlsComponent>",
+                    "defaultValue": "{\n    title: \"Features/Collection Exporter/Collection Export Controls\",\n    component: CollectionExportControlsComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/features/collection-exporter/ui/collection-list/collection-list.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-list/collection-list.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<CollectionListComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-list/collection-list.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<CollectionListComponent>",
+                    "defaultValue": "{\n    title: \"Features/Collection Exporter/Collection List\",\n    component: CollectionListComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/features/collection-exporter/ui/collection-preview/collection-preview.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-preview/collection-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<CollectionPreviewComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-preview/collection-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<CollectionPreviewComponent>",
+                    "defaultValue": "{ \n    title: \"Features/Collection Exporter/Collection Preview\",\n    component: CollectionPreviewComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/features/collection-exporter/ui/collection-summary/collection-summary.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-summary/collection-summary.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<CollectionSummaryComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-exporter/ui/collection-summary/collection-summary.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<CollectionSummaryComponent>",
+                    "defaultValue": "{\n    title: \"Features/Collection Exporter/Collection Summary\",\n    component: CollectionSummaryComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/features/database/ui/database-results/database-results.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/database/ui/database-results/database-results.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<DatabaseResultsComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/database/ui/database-results/database-results.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<DatabaseResultsComponent>",
+                    "defaultValue": "{\n  title: 'Features/Database/Database Results',\n  component: DatabaseResultsComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/database/ui/database-structure/database-structure.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/database/ui/database-structure/database-structure.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<DatabaseStructureComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/database/ui/database-structure/database-structure.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<DatabaseStructureComponent>",
+                    "defaultValue": "{\n  title: 'Features/Database/Database Structure',\n  component: DatabaseStructureComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/database/ui/database-table-list/database-table-list.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/database/ui/database-table-list/database-table-list.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<DatabaseTableListComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/database/ui/database-table-list/database-table-list.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<DatabaseTableListComponent>",
+                    "defaultValue": "{\n  title: 'Features/Database/Database Table List',\n  component: DatabaseTableListComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/collection-importer/ui/import-confirm-button/import-confirm-button.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-importer/ui/import-confirm-button/import-confirm-button.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ImportConfirmButtonComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-importer/ui/import-confirm-button/import-confirm-button.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ImportConfirmButtonComponent>",
+                    "defaultValue": "{\n    title: \"Features/Collection Importer/Import Confirm Button\",\n    component: ImportConfirmButtonComponent,\n    tags: [\"autodocs\"],\n}"
+                }
+            ],
+            "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ImportFileDropzoneComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ImportFileDropzoneComponent>",
+                    "defaultValue": "{\n  title: 'Features/Collection Importer/Import File Dropzone',\n  component: ImportFileDropzoneComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/collection-importer/ui/import-preview/import-preview.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-importer/ui/import-preview/import-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<ImportPreviewComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/collection-importer/ui/import-preview/import-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<ImportPreviewComponent>",
+                    "defaultValue": "{\n  title: 'Features/Collection Importer/Import Preview',\n  component: ImportPreviewComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<OsuCookieInputComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<OsuCookieInputComponent>",
+                    "defaultValue": "{\n  title: 'Features/Downloader/Osu Cookie Input',\n  component: OsuCookieInputComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/export-songs/ui/beatmap-export-controls/beatmap-export-controls.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-export-controls/beatmap-export-controls.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapExportControlsComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-export-controls/beatmap-export-controls.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapExportControlsComponent>",
+                    "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Export Controls',\n  component: BeatmapExportControlsComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/export-songs/ui/beatmap-filters/beatmap-filters.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-filters/beatmap-filters.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapFiltersComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-filters/beatmap-filters.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapFiltersComponent>",
+                    "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Filters',\n  component: BeatmapFiltersComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/export-songs/ui/beatmap-preview/beatmap-preview.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-preview/beatmap-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapPreviewComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-preview/beatmap-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapPreviewComponent>",
+                    "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Preview',\n  component: BeatmapPreviewComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/export-songs/ui/beatmap-summary/beatmap-summary.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-summary/beatmap-summary.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<BeatmapSummaryComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/export-songs/ui/beatmap-summary/beatmap-summary.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BeatmapSummaryComponent>",
+                    "defaultValue": "{\n  title: 'Features/Export Songs/Beatmap Summary',\n  component: BeatmapSummaryComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/logs/ui/log-column/log-column.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/logs/ui/log-column/log-column.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<LogColumnComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/logs/ui/log-column/log-column.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<LogColumnComponent>",
+                    "defaultValue": "{\n  title: 'Features/Logs/Log Column',\n  component: LogColumnComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/logs/ui/log-viewer/log-viewer.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/logs/ui/log-viewer/log-viewer.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<LogViewerComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/logs/ui/log-viewer/log-viewer.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<LogViewerComponent>",
+                    "defaultValue": "{\n  title: 'Features/Logs/Log Viewer',\n  component: LogViewerComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/create-pack-button/create-pack-button.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/create-pack-button/create-pack-button.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<CreatePackButtonComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/create-pack-button/create-pack-button.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<CreatePackButtonComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Create Pack Button',\n  component: CreatePackButtonComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/pack-browser/pack-browser.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-browser/pack-browser.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<PackBrowserComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-browser/pack-browser.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<PackBrowserComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Browser',\n  component: PackBrowserComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/pack-browser-card/pack-browser-card.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-browser-card/pack-browser-card.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<PackBrowserCardComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-browser-card/pack-browser-card.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<PackBrowserCardComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Browser Card',\n  component: PackBrowserCardComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/pack-collection-adder/pack-collection-adder.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-collection-adder/pack-collection-adder.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<PackCollectionAdderComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-collection-adder/pack-collection-adder.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<PackCollectionAdderComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Collection Adder',\n  component: PackCollectionAdderComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/pack-details-form/pack-details-from.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-details-form/pack-details-from.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<PackDetailsFormComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-details-form/pack-details-from.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<PackDetailsFormComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Details Form',\n  component: PackDetailsFormComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/pack-preview/pack-preview.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-preview/pack-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<PackPreviewComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-preview/pack-preview.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<PackPreviewComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Preview',\n  component: PackPreviewComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/pack-preview-card/pack-preview-card.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-preview-card/pack-preview-card.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<PackPreviewCardComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-preview-card/pack-preview-card.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<PackPreviewCardComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Preview Card',\n  component: PackPreviewCardComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/pack-creator/ui/pack-search-input/pack-search-input.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-search-input/pack-search-input.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<PackSearchInputComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/pack-creator/ui/pack-search-input/pack-search-input.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<PackSearchInputComponent>",
+                    "defaultValue": "{\n  title: 'Features/Pack Creator/Pack Search Input',\n  component: PackSearchInputComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TosuDataSectionsComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TosuDataSectionsComponent>",
+                    "defaultValue": "{\n  title: 'Features/Tosu Data/Tosu Data Sections',\n  component: TosuDataSectionsComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/tosu-data/ui/tosu-field-tree/tosu-field-tree.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/tosu-data/ui/tosu-field-tree/tosu-field-tree.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TosuFieldTreeComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/tosu-data/ui/tosu-field-tree/tosu-field-tree.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TosuFieldTreeComponent>",
+                    "defaultValue": "{\n  title: 'Features/Tosu Data/Tosu Field Tree',\n  component: TosuFieldTreeComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/tosu-data/ui/tosu-status/tosu-status.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/tosu-data/ui/tosu-status/tosu-status.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TosuStatusComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/tosu-data/ui/tosu-status/tosu-status.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TosuStatusComponent>",
+                    "defaultValue": "{\n  title: 'Features/Tosu Data/Tosu Status',\n  component: TosuStatusComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/trainer/ui/trainer-actions/trainer-actions.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-actions/trainer-actions.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TrainerActionsComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-actions/trainer-actions.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TrainerActionsComponent>",
+                    "defaultValue": "{\n  title: 'Features/Trainer/Trainer Actions',\n  component: TrainerActionsComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/trainer/ui/trainer-difficulty-sliders/difficulty-sliders.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-difficulty-sliders/difficulty-sliders.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TrainerDifficultySlidersComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-difficulty-sliders/difficulty-sliders.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TrainerDifficultySlidersComponent>",
+                    "defaultValue": "{\n  title: 'Features/Trainer/Trainer Difficulty Sliders',\n  component: TrainerDifficultySlidersComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TrainerTaskPipelineComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TrainerTaskPipelineComponent>",
+                    "defaultValue": "{\n  title: 'Features/Trainer/Trainer Task Pipeline',\n  component: TrainerTaskPipelineComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.stories.ts": [
+                {
+                    "name": "Default",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story<TrainerBeatmapHeaderComponent>",
+                    "defaultValue": "{}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.stories.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<TrainerBeatmapHeaderComponent>",
+                    "defaultValue": "{\n  title: 'Features/Trainer/Trainer Beatmap Header',\n  component: TrainerBeatmapHeaderComponent,\n  tags: ['autodocs'],\n}"
                 }
             ],
             "src/entities/nav-item/nav-item.config.ts": [
@@ -13073,30 +15289,6 @@
                     "defaultValue": "{\n    parsedImports: [],\n    isImporting: false,\n}"
                 }
             ],
-            "src/entities/log/log.store.ts": [
-                {
-                    "name": "initialState",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "src/entities/log/log.store.ts",
-                    "coverageIgnore": false,
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "LogState",
-                    "defaultValue": "{\n    logs: [],\n    isLoaded: false,\n}"
-                },
-                {
-                    "name": "LogStore",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "src/entities/log/log.store.ts",
-                    "coverageIgnore": false,
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "unknown",
-                    "defaultValue": "signalStore(\n    { providedIn: 'root' },\n    withState(initialState),\n\n    withComputed((store) => ({\n        totalLogs: computed(() => store.logs().length),\n        groupedLogs: computed(() => {\n            const result: Record<string, Record<string, LogEntry[]>> = {\n                DEBUG: {},\n                INFO: {},\n                WARN: {},\n                ERROR: {},\n            };\n\n            for (const entry of store.logs()) {\n                const level = entry.level.toUpperCase();\n                if (!result[level]) result[level] = {};\n                if (!result[level][entry.target]) result[level][entry.target] = [];\n                result[level][entry.target].push(entry);\n            }\n\n            return result;\n        }),\n    })),\n\n    withMethods((store, toast = inject(ToastStore)) => ({\n        async load() {\n            try {\n                const logs = await invoke<LogEntry[]>('read_logs');\n                const sorted = [...logs].sort((a, b) =>\n                    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()\n                );\n                patchState(store, { logs: sorted, isLoaded: true });\n            } catch (error) {\n                toast.show('error', 'Failed to load logs');\n                patchState(store, { isLoaded: false });\n                throw error;\n            }\n        }\n    })),\n)"
-                }
-            ],
             "src/entities/nav-item/nav.store.ts": [
                 {
                     "name": "initialState",
@@ -13119,6 +15311,30 @@
                     "deprecationMessage": "",
                     "type": "unknown",
                     "defaultValue": "signalStore(\n    { providedIn: 'root' },\n    withState(initialState),\n\n    withComputed((store) => ({\n        isUserMode: computed(() => store.mode() === 'user'),\n    })),\n\n    withMethods((store) => ({\n        toggleMode: () => {\n            const currentMode = store.mode();\n            const newMode = currentMode === 'user' ? 'dev' : 'user';\n            patchState(store, { mode: newMode });\n        }\n    })),\n)"
+                }
+            ],
+            "src/entities/log/log.store.ts": [
+                {
+                    "name": "initialState",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/entities/log/log.store.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "LogState",
+                    "defaultValue": "{\n    logs: [],\n    isLoaded: false,\n}"
+                },
+                {
+                    "name": "LogStore",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/entities/log/log.store.ts",
+                    "coverageIgnore": false,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "unknown",
+                    "defaultValue": "signalStore(\n    { providedIn: 'root' },\n    withState(initialState),\n\n    withComputed((store) => ({\n        totalLogs: computed(() => store.logs().length),\n        groupedLogs: computed(() => {\n            const result: Record<string, Record<string, LogEntry[]>> = {\n                DEBUG: {},\n                INFO: {},\n                WARN: {},\n                ERROR: {},\n            };\n\n            for (const entry of store.logs()) {\n                const level = entry.level.toUpperCase();\n                if (!result[level]) result[level] = {};\n                if (!result[level][entry.target]) result[level][entry.target] = [];\n                result[level][entry.target].push(entry);\n            }\n\n            return result;\n        }),\n    })),\n\n    withMethods((store, toast = inject(ToastStore)) => ({\n        async load() {\n            try {\n                const logs = await invoke<LogEntry[]>('read_logs');\n                const sorted = [...logs].sort((a, b) =>\n                    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()\n                );\n                patchState(store, { logs: sorted, isLoaded: true });\n            } catch (error) {\n                toast.show('error', 'Failed to load logs');\n                patchState(store, { isLoaded: false });\n                throw error;\n            }\n        }\n    })),\n)"
                 }
             ],
             "src/entities/osu-db/osu-db.store.ts": [
@@ -13328,19 +15544,6 @@
                     "defaultValue": "[\n    {\n        path: '',\n        loadComponent: () => \"import('@pages/home').then(m => m.HomePageComponent)\"\n    },\n    {\n        path: 'user',\n        canActivate: [osuPathGuard],\n        children: [\n            {\n                path: 'downloader',\n                loadComponent: () => \"import('@pages/downloader').then(m => m.DownloaderPageComponent)\"\n            },\n            {\n                path: 'export-collections',\n                loadComponent: () => \"import('@pages/export-collections').then(m => m.ExportCollectionsPageComponent)\",\n                resolve: { osuDb: osuDbResolver, collections: collectionResolver }\n            },\n            {\n                path: 'export-song-folder',\n                loadComponent: () => \"import('@pages/export-song-folder').then(m => m.ExportSongFolderPageComponent)\",\n                resolve: { osuDb: osuDbResolver }\n            },\n            {\n                path: 'create-packs',\n                loadComponent: () => \"import('@pages/create-packs').then(m => m.CreatePacksPageComponent)\",\n                resolve: { osuDb: osuDbResolver }\n            },\n            {\n                path: 'import-collections',\n                loadComponent: () => \"import('@pages/import-collections').then(m => m.ImportCollectionsPageComponent)\",\n                resolve: { osuDb: osuDbResolver, collections: collectionResolver }\n            },\n            {\n                path: 'trainer',\n                loadComponent: () => \"import('@pages/trainer').then(m => m.TrainerPageComponent)\",\n                resolve: { tosu: tosuResolver }\n            }\n        ]\n    },\n    {\n        path: 'dev',\n        children: [\n            {\n                path: 'logs',\n                loadComponent: () => \"import('@pages/logs').then(m => m.LogsPageComponent)\",\n                resolve: { logs: logResolver }\n            },\n            {\n                path: 'database',\n                loadComponent: () => \"import('@pages/database').then(m => m.DatabasePageComponent)\",\n                resolve: { tables: databaseResolver }\n            },\n            {\n                path: 'tosu-data',\n                loadComponent: () => \"import('@pages/tosu-data').then(m => m.TosuDataPage)\",\n                resolve: { tosu: tosuResolver }\n            }\n        ]\n    },\n    {\n        path: '**',\n        redirectTo: '',\n    }\n]"
                 }
             ],
-            "src/widgets/distribution-notice/distribution-notice.component.ts": [
-                {
-                    "name": "STORAGE_KEY",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "src/widgets/distribution-notice/distribution-notice.component.ts",
-                    "coverageIgnore": false,
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "string",
-                    "defaultValue": "'distribution-notice-dismissed'"
-                }
-            ],
             "src/features/trainer/models/trainer.model.ts": [
                 {
                     "name": "TASK_LABELS",
@@ -13449,6 +15652,21 @@
                     "rawdescription": "",
                     "description": "",
                     "kind": 193
+                }
+            ],
+            "src/shared/models/story.model.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "coverageIgnore": false,
+                    "rawtype": "StoryObj<T>",
+                    "file": "src/shared/models/story.model.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "",
+                    "description": "",
+                    "kind": 184
                 }
             ],
             "src/widgets/header/header.stories.ts": [
@@ -13638,6 +15856,26 @@
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
                 "name": "routes",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/app.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/app.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -14123,12 +16361,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/beatmap-search/ui/beatmap-import/beatmap-import.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/beatmap-search/ui/beatmap-import/beatmap-import.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "BeatmapQueueComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/beatmap-search/ui/beatmap-queue/beatmap-queue.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14160,12 +16438,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/collection-exporter/ui/collection-export-controls/collection-export-controls.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-exporter/ui/collection-export-controls/collection-export-controls.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/collection-exporter/ui/collection-list/collection-list.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "CollectionListComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-exporter/ui/collection-list/collection-list.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-exporter/ui/collection-list/collection-list.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14178,12 +16496,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/collection-exporter/ui/collection-preview/collection-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-exporter/ui/collection-preview/collection-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/collection-exporter/ui/collection-summary/collection-summary.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "CollectionSummaryComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-exporter/ui/collection-summary/collection-summary.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-exporter/ui/collection-summary/collection-summary.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14263,12 +16621,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/collection-importer/ui/import-confirm-button/import-confirm-button.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-importer/ui/import-confirm-button/import-confirm-button.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "ImportFileDropzoneComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-importer/ui/import-file-dropzone/import-file-dropzone.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14281,12 +16679,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/collection-importer/ui/import-preview/import-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/collection-importer/ui/import-preview/import-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/database/ui/database-results/database-results.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "DatabaseResultsComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/database/ui/database-results/database-results.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/database/ui/database-results/database-results.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14299,6 +16737,26 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/database/ui/database-structure/database-structure.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/database/ui/database-structure/database-structure.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/database/ui/database-table-list/database-table-list.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -14308,12 +16766,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/database/ui/database-table-list/database-table-list.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/database/ui/database-table-list/database-table-list.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "OsuCookieInputComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/4",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/downloader/ui/osu-cookie-input/osu-cookie-input.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14393,6 +16891,26 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/export-songs/ui/beatmap-export-controls/beatmap-export-controls.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/export-songs/ui/beatmap-export-controls/beatmap-export-controls.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/export-songs/ui/beatmap-filters/beatmap-filters.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -14411,12 +16929,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/export-songs/ui/beatmap-filters/beatmap-filters.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/export-songs/ui/beatmap-filters/beatmap-filters.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/export-songs/ui/beatmap-preview/beatmap-preview.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "BeatmapPreviewComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/export-songs/ui/beatmap-preview/beatmap-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/export-songs/ui/beatmap-preview/beatmap-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14429,12 +16987,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/export-songs/ui/beatmap-summary/beatmap-summary.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/export-songs/ui/beatmap-summary/beatmap-summary.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/logs/ui/log-column/log-column.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "LogColumnComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/9",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/logs/ui/log-column/log-column.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/logs/ui/log-column/log-column.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14447,12 +17045,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/logs/ui/log-viewer/log-viewer.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/logs/ui/log-viewer/log-viewer.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/pack-creator/ui/create-pack-button/create-pack-button.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "CreatePackButtonComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/create-pack-button/create-pack-button.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/create-pack-button/create-pack-button.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14465,12 +17103,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/pack-creator/ui/pack-browser-card/pack-browser-card.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-browser-card/pack-browser-card.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/pack-creator/ui/pack-browser/pack-browser.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "PackBrowserComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-browser/pack-browser.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-browser/pack-browser.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14492,12 +17170,52 @@
                 "status": "low"
             },
             {
-                "filePath": "src/features/pack-creator/ui/pack-details-from/pack-details-form.component.ts",
+                "filePath": "src/features/pack-creator/ui/pack-collection-adder/pack-collection-adder.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-collection-adder/pack-collection-adder.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-details-form/pack-details-form.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "PackDetailsFormComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-details-form/pack-details-from.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-details-form/pack-details-from.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14510,12 +17228,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/pack-creator/ui/pack-preview-card/pack-preview-card.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-preview-card/pack-preview-card.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/pack-creator/ui/pack-preview/pack-preview.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "PackPreviewComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-preview/pack-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-preview/pack-preview.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14528,12 +17286,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/pack-creator/ui/pack-search-input/pack-search-input.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/pack-creator/ui/pack-search-input/pack-search-input.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "TosuDataSectionsComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/tosu-data/ui/tosu-data-sections/tosu-data-sections.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14546,12 +17344,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/tosu-data/ui/tosu-field-tree/tosu-field-tree.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/tosu-data/ui/tosu-field-tree/tosu-field-tree.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/tosu-data/ui/tosu-status/tosu-status.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "TosuStatusComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/tosu-data/ui/tosu-status/tosu-status.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/tosu-data/ui/tosu-status/tosu-status.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14669,12 +17507,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/trainer/ui/trainer-actions/trainer-actions.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/trainer/ui/trainer-actions/trainer-actions.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "TrainerBeatmapHeaderComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/trainer/ui/trainer-beatmap-header/beatmap-header.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14687,6 +17565,26 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/trainer/ui/trainer-difficulty-sliders/difficulty-sliders.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/trainer/ui/trainer-difficulty-sliders/difficulty-sliders.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -14696,10 +17594,50 @@
                 "status": "low"
             },
             {
+                "filePath": "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/features/trainer/ui/trainer-task-pipeline/trainer-task-pipeline.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/pages/create-packs/create-packs-page.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "CreatePacksPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/create-packs/create-packs-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/create-packs/create-packs-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -14714,6 +17652,26 @@
                 "status": "low"
             },
             {
+                "filePath": "src/pages/database/database-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/database/database-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/pages/downloader/downloader-page.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -14723,10 +17681,50 @@
                 "status": "low"
             },
             {
+                "filePath": "src/pages/downloader/downloader-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/downloader/downloader-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/pages/export-collections/export-collections-page.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "ExportCollectionsPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/export-collections/export-collections-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/export-collections/export-collections-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -14741,6 +17739,26 @@
                 "status": "low"
             },
             {
+                "filePath": "src/pages/export-song-folder/export-song-folder-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/export-song-folder/export-song-folder-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/pages/home/home-page.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -14750,10 +17768,50 @@
                 "status": "low"
             },
             {
+                "filePath": "src/pages/home/home-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/home/home-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/pages/import-collections/import-collections-page.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "ImportCollectionsPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/import-collections/import-collections-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/import-collections/import-collections-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -14768,6 +17826,26 @@
                 "status": "low"
             },
             {
+                "filePath": "src/pages/logs/logs-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/logs/logs-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/pages/tosu-data/tosu-data-page.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -14777,10 +17855,50 @@
                 "status": "low"
             },
             {
+                "filePath": "src/pages/tosu-data/tosu-data-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/tosu-data/tosu-data-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/pages/trainer/trainer-page.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "TrainerPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/trainer/trainer-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/pages/trainer/trainer-page.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -14799,6 +17917,16 @@
                 "type": "guard",
                 "linktype": "guard",
                 "name": "osuPathGuard",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/shared/models/story.model.ts",
+                "type": "type alias",
+                "linktype": "miscellaneous",
+                "linksubtype": "typealias",
+                "name": "Story",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -14947,12 +18075,52 @@
                 "status": "low"
             },
             {
+                "filePath": "src/shared/ui/beatmap-set-card/beatmap-set-card.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/shared/ui/beatmap-set-card/beatmap-set-card.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/shared/ui/beatmap-set-list/beatmap-set-list.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "BeatmapSetListComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/shared/ui/beatmap-set-list/beatmap-set-list.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/shared/ui/beatmap-set-list/beatmap-set-list.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
                 "status": "low"
             },
             {
@@ -14974,6 +18142,26 @@
                 "status": "low"
             },
             {
+                "filePath": "src/shared/ui/export-controls/export-controls.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/shared/ui/export-controls/export-controls.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
                 "filePath": "src/shared/ui/not-implemented/not-implemented.component.ts",
                 "type": "component",
                 "linktype": "component",
@@ -14992,20 +18180,21 @@
                 "status": "low"
             },
             {
-                "filePath": "src/widgets/distribution-notice/distribution-notice.component.ts",
-                "type": "component",
-                "linktype": "component",
-                "name": "DistributionNoticeComponent",
-                "coveragePercent": 0,
-                "coverageCount": "0/3",
-                "status": "low"
-            },
-            {
-                "filePath": "src/widgets/distribution-notice/distribution-notice.component.ts",
+                "filePath": "src/shared/ui/stateful-input/stateful-input.stories.ts",
                 "type": "variable",
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
-                "name": "STORAGE_KEY",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/shared/ui/stateful-input/stateful-input.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -15162,6 +18351,26 @@
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
                 "name": "TOAST_ICON",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/widgets/toast/toast.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Default",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/widgets/toast/toast.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
