@@ -1,21 +1,14 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { phosphorHouse, phosphorDownloadSimple, phosphorFolder, phosphorMusicNote } from '@ng-icons/phosphor-icons/regular';
-import { provideIcons, NgIcon } from '@ng-icons/core';
 import { DEV_ITEMS, NavItem, NavStore, USER_ITEMS } from '@entities/nav-item';
 import { RouterLink, RouterLinkActive } from "@angular/router";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, NgIcon],
+  imports: [RouterLink, RouterLinkActive, FaIconComponent],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.css',
+  styleUrl: './sidebar.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [provideIcons({
-    phosphorHouse,
-    phosphorDownloadSimple,
-    phosphorFolder,
-    phosphorMusicNote
-  })]
 })
 export class SidebarComponent {
 

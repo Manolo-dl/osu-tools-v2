@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { NavStore } from '@entities/nav-item';
-import { TuiBadge, TuiStatus } from '@taiga-ui/kit';
+//import { TuiBadge, TuiStatus } from '@taiga-ui/kit';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import { TUI_DARK_MODE, TuiButton } from "@taiga-ui/core";
 
 @Component({
   selector: 'app-header',
-  imports: [FaIconComponent, TuiBadge, TuiStatus, TuiButton],
+  imports: [FaIconComponent, TuiButton],
   templateUrl: './header.component.html',
   styleUrl: './header.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,
