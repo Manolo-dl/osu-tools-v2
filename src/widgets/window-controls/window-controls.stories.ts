@@ -9,4 +9,9 @@ const meta: Meta<WindowControlsComponent> = {
 };
 
 export default meta;
-export const Default: Story<WindowControlsComponent> = {};
+export const Default: Story<WindowControlsComponent> = {
+  render: (args) => ({
+    props: args,
+    template: `<app-window-controls></app-window-controls>`,
+  }),
+};

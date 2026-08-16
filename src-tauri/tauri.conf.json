@@ -16,7 +16,8 @@
         "title": "onisu",
         "width": 800,
         "height": 600,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "decorations": false
       }
     ],
     "security": {

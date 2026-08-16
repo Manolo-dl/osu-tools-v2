@@ -1,16 +1,18 @@
 <div class="window-controls">
-  <button
-  size="l"
-  appearance="outline"
-  tuiButton
-  (click)="this.window.minimize()"
-  >
-  <fa-icon [icon]="icons.faMinimize" />
-  </button>
-  <button (click)="this.window.maximize()">
-    <fa-icon [icon]="icons.faMaximize" />
-</button>
-  <button (click)="this.window.close()">
-    <fa-icon [icon]="icons.faXmark" />
-  </button>
+  @for (control of controls; track $index) {
+      <button
+        size="m"
+        appearance="flat"
+        tuiButton
+        type="button"
+        (click)="control.action()"
+
+        tabIndex="0"
+        tuiHintAppearance="floating"
+        tuiHintDirection="end"
+        [tuiHint]="control.tooltip"
+      >
+        <fa-icon [icon]="control.icon" />
+      </button>
+  }
 </div>

@@ -33,6 +33,7 @@
     "@ngrx/signals": "^21.1.0",
     "@taiga-ui/cdk": "^5.19.0",
     "@taiga-ui/core": "^5.19.0",
+    "@taiga-ui/design-tokens": "^0.316.0",
     "@taiga-ui/event-plugins": "^5.0.0",
     "@taiga-ui/font-watcher": "^0.6.0",
     "@taiga-ui/i18n": "^5.19.0",
