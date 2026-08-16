@@ -1,17 +1,37 @@
 <header>
-  <div class="header-left">
-    <span class="app-name">osu-tools</span>
+  <!-- Left -->
+  <div>
+    <h1>Onisu</h1>
   </div>
-  <div class="header-right">
-    <button class="btn-theme" (click)="themeService.toggle()" [title]="themeLabel">
-      <ng-icon [name]="themeIcon" size="18" />
+
+  <!-- Middle -->
+  <div
+    [appearance]="'positive'"
+    tuiBadge
+    tuiStatus
+  >
+    Tosu Status
+  </div>
+
+  <!-- Right -->
+  <div class="actions">
+    <button
+      size="m"
+      appearance="outline"
+      tuiButton
+      type="button"
+    >
+      TODO
     </button>
-    <button class="btn-ghost" (click)="navStore.toggleMode()">
-      @if (navStore.isUserMode()) {
-        Dev Mode
-      } @else {
-        User Mode
-      }
+
+    <button
+      size="m"
+      appearance="outline"
+      tuiButton
+      type="button"
+      (click)="navStore.toggleMode()"
+    >
+      {{ navStore.isDevMode() }}
     </button>
   </div>
 </header>
