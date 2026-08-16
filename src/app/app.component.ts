@@ -1,11 +1,10 @@
-import { TuiRoot } from "@taiga-ui/core";
+import { TUI_DARK_MODE, TuiRoot } from "@taiga-ui/core";
 import { Component, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { HeaderComponent } from "@widgets/header";
 import { SidebarComponent } from "@widgets/sidebar";
 import { OsuPathComponent } from "@widgets/osu-path";
 import { ToastComponent } from "@widgets/toast";
-import { ThemeService } from "@shared/services";
 import { PlatformStore } from "@shared/stores";
 import { WindowControlsComponent } from "@widgets/window-controls/window-controls.component";
 
@@ -16,11 +15,12 @@ import { WindowControlsComponent } from "@widgets/window-controls/window-control
   styleUrl: "./app.component.css",
 })
 export class AppComponent implements OnInit {
-  // inject early so the effect applies data-theme before first render
-  themeService = inject(ThemeService);
-  platformStore = inject(PlatformStore);
+
+  readonly darkMode = inject(TUI_DARK_MODE);
+  readonly platformStore = inject(PlatformStore);
 
   ngOnInit() {
+    this.darkMode.set(true);
     this.platformStore.setOs();
   }
 }

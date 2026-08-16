@@ -20,8 +20,9 @@
       appearance="outline"
       tuiButton
       type="button"
+      (click)="darkMode.update(dark => !dark)"
     >
-      TODO
+      <fa-icon [icon]="icon()" />
     </button>
 
     <button

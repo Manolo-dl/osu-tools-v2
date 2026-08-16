@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ThemeService, Theme } from '@shared/services';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { NavStore } from '@entities/nav-item';
 import { TuiBadge, TuiStatus } from '@taiga-ui/kit';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { TuiButton } from "@taiga-ui/core";
+import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
+import { TUI_DARK_MODE, TuiButton } from "@taiga-ui/core";
 
 @Component({
   selector: 'app-header',
@@ -13,6 +13,7 @@ import { TuiButton } from "@taiga-ui/core";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {
-  readonly themeService = inject(ThemeService);
+  readonly darkMode = inject(TUI_DARK_MODE);
   readonly navStore = inject(NavStore);
+  readonly icon = computed(() => this.darkMode() ? faMoon : faSun);
 }

@@ -1,4 +1,8 @@
-<tui-root>
+<tui-root
+  [attr.tuiTheme]="darkMode() ? 'dark' : 'light'"
+  [class.dark]="darkMode()"
+  [class.light]="!darkMode()"
+>
   <app-window-controls />
 <div class="app-shell">
   <app-header />
