@@ -1,10 +1,17 @@
+tui-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  flex: 1;
   overflow: hidden;
-  background: var(--bg-base);
-  color: var(--text-primary);
+  background: var(--tui-background-base);
+  color: var(--tui-text-primary);
 }
 
 .app-body {

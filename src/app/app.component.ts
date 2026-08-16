@@ -12,7 +12,7 @@ import { WindowControlsComponent } from "@widgets/window-controls/window-control
   selector: "app-root",
   imports: [RouterOutlet, HeaderComponent, SidebarComponent, OsuPathComponent, ToastComponent, TuiRoot, WindowControlsComponent],
   templateUrl: "./app.component.html",
-  styleUrl: "./app.component.css",
+  styleUrl: "./app.component.less",
 })
 export class AppComponent implements OnInit {
 
