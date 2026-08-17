@@ -84,7 +84,8 @@ pub fn run() {
                             Ok(sidecar_command) => {
                                 let sidecar_command = sidecar_command
                                     .env("SERVER_PORT", tosu_config.port.to_string())
-                                    .env("SERVER_IP", &tosu_config.ip);
+                                    .env("SERVER_IP", &tosu_config.ip)
+                                    .env("OPEN_DASHBOARD_ON_STARTUP", "0");
 
                                 match sidecar_command.spawn() {
                                     Ok((mut rx, child)) => {
