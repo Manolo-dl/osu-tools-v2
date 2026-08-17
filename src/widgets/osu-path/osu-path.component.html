@@ -1,18 +1,34 @@
-<div class="osu-path">
-    @if (osuPath.isLoading()) {
-        <span class="label">Loading osu! path...</span>
-    } @else if (osuPath.path()) {
-        <span class="label">osu! folder</span>
-        <span class="path">{{ osuPath.path() }}</span>
-        <button (click)="selectManually()">Change</button>
-    } @else if (osuPath.error()) {
-        <div class="error-block">
-            <span class="label">osu! folder not found</span>
-            <span class="hint">Make sure osu! is running for auto-detection to work.</span>
-        </div>
-        <div class="error-actions">
-            <button (click)="osuPath.detect()">Detect</button>
-            <button (click)="selectManually()">Select manually</button>
-        </div>
+<div class="container">
+    <h3 tuiTitle="m">Osu! folder</h3>
+    <div class="path">
+        @if (osuPath.isLoading()) {
+            <span [tuiSkeleton]="true">Loading osu! path...</span>
+        } @else {
+            <span>{{ osuPath.osuPathLabel() }}</span>
+        }
+    </div>
+    <button
+        size="m"
+        appearance="flat"
+        type="button"
+        tuiButton
+        [disabled]="osuPath.isLoading()"
+        (click)="osuPath.selectManually()"
+    >
+        {{ osuPath.selectLabel() }}
+    </button>
+
+    @if (osuPath.error()) {
+        <button
+            size="m"
+            appearance="flat"
+            type="button"
+            tuiButton
+            [disabled]="osuPath.isLoading()"
+            (click)="osuPath.detect()"
+        >
+            Detect
+        </button>
+        <span class="hint">Make sure osu! is running for auto-detection to work.</span>
     }
 </div>

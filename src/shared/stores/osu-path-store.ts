@@ -1,8 +1,8 @@
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { ToastStore } from './toast-store';
-import { inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 
 interface OsuPathState {
   path: string | null;
@@ -13,6 +13,11 @@ interface OsuPathState {
 export const OsuPathStore = signalStore(
   { providedIn: 'root' },
   withState<OsuPathState>({ path: null, error: null, isLoading: false }),
+
+  withComputed((store) => ({
+    selectLabel: computed(() => store.error() ? 'Select manually' : 'Change path'),
+    osuPathLabel: computed(() => store.path() ? store.path() : 'osu! path not detected'),
+  })),
 
   withMethods((store, toast = inject(ToastStore)) => {
     let detectPromise: Promise<void> | undefined;
