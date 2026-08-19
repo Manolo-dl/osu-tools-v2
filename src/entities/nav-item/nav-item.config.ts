@@ -1,8 +1,12 @@
 import { NavItem } from './nav-item.model';
 import { faHouse, faDownload, faFileExport,
     faFileImport, faFileZipper, faSliders,
-    faFileLines, faDatabase, faNetworkWired
+    faFileLines, faDatabase, faNetworkWired,
+    faClockRotateLeft,
+    faHeart,
+    faBug
 } from '@fortawesome/free-solid-svg-icons';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
 export const USER_ITEMS: NavItem[] = [
     { label: 'Home', route: '/', icon: faHouse },
@@ -19,4 +23,11 @@ export const DEV_ITEMS: NavItem[] = [
     { label: 'database', route: '/dev/database', icon: faDatabase },
     { label: 'tosu-data', route: '/dev/tosu-data', icon: faNetworkWired }
 ];
+
+export const APP_ITEMS: NavItem[] = [
+    { label: 'Changelog', route: '/app/changelog', icon: faClockRotateLeft },
+    { label: 'Github', route: '/app/github', icon: faGithub },
+    { label: 'Issues', route: '/app/issues', icon: faBug },
+    { label: 'Support', route: '/app/support', icon: faHeart }
+]
     

@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { DEV_ITEMS, NavItem, NavStore, USER_ITEMS } from '@entities/nav-item';
+import { APP_ITEMS, DEV_ITEMS, NavItem, NavStore, USER_ITEMS } from '@entities/nav-item';
 import { RouterLink, RouterLinkActive } from "@angular/router";
 import { FaIconComponent } from "@fortawesome/angular-fontawesome";
+import { faClockRotateLeft } from '@fortawesome/free-solid-svg-icons'
+import { getVersion } from "@tauri-apps/plugin-app";
 
 @Component({
   selector: 'app-sidebar',
@@ -13,7 +15,10 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 export class SidebarComponent {
 
   readonly navStore = inject(NavStore);
+  readonly version = getVersion()
+  readonly faClockRotateLeft = faClockRotateLeft;
 
   readonly userItems: NavItem[] = USER_ITEMS;
   readonly devItems: NavItem[] = DEV_ITEMS;
+  readonly appItems: NavItem[] = APP_ITEMS;
 }
