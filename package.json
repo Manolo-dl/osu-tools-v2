@@ -44,6 +44,7 @@
     "@taiga-ui/i18n": "^5.19.0",
     "@taiga-ui/icons": "^5.19.0",
     "@taiga-ui/kit": "^5.19.0",
+    "@taiga-ui/layout": "^5.20.0",
     "@taiga-ui/polymorpheus": "^5.0.1",
     "@taiga-ui/styles": "^5.19.0",
     "@tauri-apps/api": "^2",
