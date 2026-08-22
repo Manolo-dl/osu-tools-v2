@@ -19,4 +19,16 @@ export class WindowControlsComponent {
     { icon: faMaximize, action: () => this.window.toggleMaximize(), tooltip: 'Maximize' },
     { icon: faXmark, action: () => this.window.close(), tooltip: 'Close' }
   ]
+
+  async onMouseDown(event: MouseEvent) {
+    if (event.buttons === 1) {
+      if (event.detail === 2) {
+        // Doble clic: Maximizar / Restaurar
+        await this.window.toggleMaximize();
+      } else {
+        // Clic simple: Arrastrar ventana
+        await this.window.startDragging();
+      }
+    }
+  }
 }

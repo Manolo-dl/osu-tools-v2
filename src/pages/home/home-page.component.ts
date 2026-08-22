@@ -5,7 +5,7 @@ import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 @Component({
   selector: 'app-home',
-  imports: [TuiTitle, TuiNotificationDirective, TuiButton, TuiSurface, TuiAppearance, FaIconComponent],
+  imports: [TuiTitle, TuiNotificationDirective, TuiButton, TuiSurface, TuiAppearance],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,
