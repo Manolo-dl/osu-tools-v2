@@ -4,9 +4,29 @@
     <p class="page-desc">Download beatmap sets directly to your Songs folder.</p>
   </header>
 
-  <!-- TODO INSTRUCTIONS -->
-  <!-- <section>
-  </section> -->
+  <section>
+    <tui-accordion>
+      @for (item of downloaderInfo; track $index) {
+        <button
+          [tuiAccordion]="false"
+        >
+        {{ item.title }}
+        </button>
+        <tui-expand>
+          <div>
+            @for (step of item.steps; track $index) {
+              <div>
+                <span><strong>{{ $index + 1 }}.</strong> {{ step.desc }}</span>
+                @if (step.image) {
+                  <img [src]="step.image" alt="Paso {{ $index + 1 }}" />
+                }
+              </div>
+            }
+          </div>
+        </tui-expand>
+      }
+    </tui-accordion>
+  </section>
 
   <section>
     <h2 tuiTitle="m">Session</h2>
