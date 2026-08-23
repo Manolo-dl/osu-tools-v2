@@ -13,12 +13,12 @@
         {{ item.title }}
         </button>
         <tui-expand>
-          <div>
+          <div class="step-container">
             @for (step of item.steps; track $index) {
-              <div>
+              <div class="step">
                 <span><strong>{{ $index + 1 }}.</strong> {{ step.desc }}</span>
                 @if (step.image) {
-                  <img [src]="step.image" alt="Paso {{ $index + 1 }}" />
+                  <img [src]="step.image" alt="Step {{ $index + 1 }}" />
                 }
               </div>
             }
@@ -29,7 +29,7 @@
   </section>
 
   <section>
-    <h2 tuiTitle="m">Session</h2>
+    <h2 tuiTitle="m">Osu Session</h2>
     <app-osu-cookie-input />
   </section>
 

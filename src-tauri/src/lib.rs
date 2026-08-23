@@ -157,6 +157,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
+            commands::config::file::update_config,
             commands::system::osu_path::get_osu_path,
             commands::system::osu_path::save_osu_path,
             commands::system::osu_path::get_osu_path_from_tosu,

@@ -31,3 +31,10 @@ pub fn write_config(config: &AppConfig) -> Result<(), String> {
 
      Ok(())
 }
+
+#[tauri::command]
+pub async fn update_config(config: AppConfig, state: tauri::State<'_, crate::AppConfigState>) -> Result<(), String> {
+    let mut current = state.config.lock().unwrap();
+    *current = config;
+    Ok(())
+}

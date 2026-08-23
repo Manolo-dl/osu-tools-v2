@@ -64,7 +64,7 @@ fn default_true() -> bool { true }
 fn default_ip() -> String { "127.0.0.1".to_string() }
 fn default_port() -> u16 { 24050 }
 fn default_false() -> bool { false }
-fn default_max_concurrent_downloads() -> u32 { 2 }
+fn default_max_concurrent_downloads() -> u32 { 1 }
 
 impl Default for TosuConfig { 
     fn default() -> Self {
