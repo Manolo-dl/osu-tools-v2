@@ -16,6 +16,15 @@ export class PackBrowserCardComponent {
 
   readonly expanded = signal(false);
 
+  setStatus(): string {
+    const priority = ['ranked', 'approved', 'qualified', 'loved', 'unranked', 'unsubmitted', 'unknown'];
+    const statuses = new Set(this.set().diffs.map(d => d.status));
+    for (const p of priority) {
+      if (statuses.has(p)) return p;
+    }
+    return 'unknown';
+  }
+
   toggleExpand(event: Event) {
     event.stopPropagation();
     this.expanded.update(v => !v);
@@ -28,7 +37,7 @@ export class PackBrowserCardComponent {
 
     this.store.toggleDiff({
       md5: diff.md5,
-      beatmapsetId: set.beatmapsetId,
+      folderName: set.folderName,
       fileName: diff.fileName,
       audio: diff.audio,
       newDiffName: newDiffName,

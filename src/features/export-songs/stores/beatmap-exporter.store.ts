@@ -61,7 +61,7 @@ export const BeatmapExporterStore = signalStore(
 
                     const mf = modeFilters[d.mode];
                     if (mf) {
-                        if (mf.status !== null && set.status !== mf.status) return false;
+                        if (mf.status !== null && d.status !== mf.status) return false;
                         if (mf.minLength !== null && d.length < mf.minLength) return false;
                         if (mf.maxLength !== null && d.length > mf.maxLength) return false;
                         if (mf.minStars !== null && d.stars < mf.minStars) return false;
@@ -108,4 +108,4 @@ export const BeatmapExporterStore = signalStore(
             patchState(store, { filters: initialState.filters });
         },
     }))
-)
+);

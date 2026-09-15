@@ -13,12 +13,13 @@ export interface OsuDiff {
     fileName: string;
     audio: string;
     creator: string;
+    status: string;
 }
 
 export interface OsuBeatmapSet {
+    folderName: string;
     beatmapsetId: number;
     title: string;
     artist: string;
-    status: string;
     diffs: OsuDiff[];
 }

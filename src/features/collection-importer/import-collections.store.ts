@@ -28,7 +28,7 @@ export const ImportCollectionStore = signalStore(
 
         // Resolve beatmapsetIds from URL-format imports to all their diffs' md5s
         const resolved = computed(() => {
-            const bySetId = osuDB.beatmapSetsBySetId();
+            const bySetId = osuDB.exportableBeatmapSetsById();
             return store.parsedImports().map(imp => {
                 const urlMd5s = imp.beatmapsetIds.flatMap(id => {
                     const set = bySetId.get(id);
@@ -62,13 +62,13 @@ export const ImportCollectionStore = signalStore(
 
                 return collectionsToImport().map(col => {
                     const md5s = new Set(col.md5s);
-                    const seen = new Set<number>();
+                    const seen = new Set<string>();
                     const sets = [];
 
                     for (const md5 of md5s) {
                         const set = beatmapSetsByMd5.get(md5);
-                        if (!set || seen.has(set.beatmapsetId)) continue;
-                        seen.add(set.beatmapsetId);
+                        if (!set || seen.has(set.folderName)) continue;
+                        seen.add(set.folderName);
                         sets.push({ ...set, diffs: set.diffs.filter(d => md5s.has(d.md5)) });
                     }
 

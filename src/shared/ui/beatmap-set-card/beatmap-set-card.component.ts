@@ -1,5 +1,5 @@
 import { DecimalPipe, NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, computed, signal } from '@angular/core';
 import { OsuBeatmapSet, OsuDiff } from '@entities/osu-db/osu-db.model';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
@@ -15,6 +15,10 @@ export class BeatmapSetCardComponent {
 
   readonly expanded = signal(false);
 
+  get hasExportableDiff(): boolean {
+    return this.set.diffs.some(d => d.status !== 'unsubmitted' && d.status !== 'unknown');
+  }
+
   toggleExpand(event: Event) {
     event.stopPropagation();
     this.expanded.update(v => !v);
@@ -22,6 +26,7 @@ export class BeatmapSetCardComponent {
 
   openSet(event: Event) {
     event.stopPropagation();
+    if (!this.hasExportableDiff) return;
     openUrl(`https://osu.ppy.sh/beatmapsets/${this.set.beatmapsetId}`);
   }
 
@@ -63,4 +68,13 @@ export class BeatmapSetCardComponent {
   modeColor(mode: number): string {
     return ['#ff66ab', '#e05555', '#66bbff', '#c966ff'][mode] ?? '#aaa';
   }
+
+  setStatus(): string {
+  const priority = ['ranked', 'approved', 'qualified', 'loved', 'unranked', 'unsubmitted', 'unknown'];
+  const statuses = new Set(this.set.diffs.map(d => d.status));
+  for (const p of priority) {
+    if (statuses.has(p)) return p;
+  }
+  return 'unknown';
+}
 }
