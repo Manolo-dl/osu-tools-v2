@@ -5,7 +5,7 @@ use crate::commands::osu_db::folders::get_beatmapset_folder;
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SelectedDiff {
-    pub beatmapset_id: u32,
+    pub folder_name: String,
     pub file_name: String,
     pub audio: String,
     pub new_diff_name: String,
@@ -48,10 +48,11 @@ pub async fn create_pack(
     })?;
 
     for (index, diff) in request.diffs.iter().enumerate() {
-        log::debug!("processing diff {}/{}: beatmapset_id={}, file_name={}", index + 1, request.diffs.len(), diff.beatmapset_id, diff.file_name);
+        log::debug!("processing diff {}/{}: folder_name={}, file_name={}", index + 1, request.diffs.len(), diff.folder_name, diff.file_name);
 
-        let folder = get_beatmapset_folder(pool, &osu_path, diff.beatmapset_id, &diff.file_name).await?;
+        let folder = get_beatmapset_folder(pool, &osu_path, &diff.folder_name).await?;
         let osu_file_path = Path::new(&folder.folder_path).join(&diff.file_name);
+
 
         let content = fs::read_to_string(&osu_file_path).map_err(|e| {
             log::error!("failed to read {:?}: {}", osu_file_path, e);

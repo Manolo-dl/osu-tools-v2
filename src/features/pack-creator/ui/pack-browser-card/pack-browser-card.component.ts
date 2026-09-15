@@ -28,10 +28,10 @@ export class PackBrowserCardComponent {
 
     this.store.toggleDiff({
       md5: diff.md5,
-      beatmapsetId: set.beatmapsetId,
+      folderName: set.folderName,
       fileName: diff.fileName,
       audio: diff.audio,
       newDiffName: newDiffName,
     });
-  }
+}
 }

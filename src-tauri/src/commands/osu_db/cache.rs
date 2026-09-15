@@ -10,6 +10,7 @@ pub struct OsuDbMeta {
 
 #[derive(FromRow)]
 struct BeatmapSetRow {
+    pub folder_name: String,
     pub beatmapset_id: i64,
     pub title: String,
     pub artist: String,
@@ -18,7 +19,7 @@ struct BeatmapSetRow {
 
 #[derive(FromRow)]
 struct DiffRow {
-    pub beatmapset_id: i64,
+    pub folder_name: String,
     pub md5: String,
     pub diff_name: String,
     pub mode: i64,
@@ -60,21 +61,21 @@ pub async fn set_meta(pool: &SqlitePool, last_modified: i64, file_size: i64) -> 
 
 pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sqlx::Error> {
     let sets = sqlx::query_as::<_, BeatmapSetRow>(
-        "SELECT beatmapset_id, title, artist, status FROM beatmapsets"
+        "SELECT folder_name, beatmapset_id, title, artist, status FROM beatmapsets"
     )
     .fetch_all(pool)
     .await?;
 
     let all_diffs = sqlx::query_as::<_, DiffRow>(
-        "SELECT beatmapset_id, md5, diff_name, mode, length, stars, last_played,
+        "SELECT folder_name, md5, diff_name, mode, length, stars, last_played,
          circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator FROM diffs"
     )
     .fetch_all(pool)
     .await?;
 
-    let mut diffs_by_set: HashMap<i64, Vec<OsuDiff>> = HashMap::new();
+    let mut diffs_by_folder: HashMap<String, Vec<OsuDiff>> = HashMap::new();
     for d in all_diffs {
-        diffs_by_set.entry(d.beatmapset_id).or_default().push(OsuDiff {
+        diffs_by_folder.entry(d.folder_name).or_default().push(OsuDiff {
             md5: d.md5,
             diff_name: d.diff_name,
             mode: d.mode as u8,
@@ -93,11 +94,12 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
     }
 
     let result = sets.into_iter().map(|set| OsuBeatmapSet {
+        folder_name: set.folder_name.clone(),
         beatmapset_id: set.beatmapset_id as u32,
         title: set.title,
         artist: set.artist,
         status: set.status,
-        diffs: diffs_by_set.remove(&set.beatmapset_id).unwrap_or_default(),
+        diffs: diffs_by_folder.remove(&set.folder_name).unwrap_or_default(),
     }).collect();
 
     Ok(result)
@@ -106,43 +108,49 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
 pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
 
-    let existing_ids: Vec<i64> = sqlx::query_as::<_, (i64,)>(
-        "SELECT beatmapset_id FROM beatmapsets"
+    let existing_folders: Vec<String> = sqlx::query_as::<_, (String,)>(
+        "SELECT folder_name FROM beatmapsets"
     )
     .fetch_all(&mut *tx)
     .await?
     .into_iter()
-    .map(|(id,)| id)
+    .map(|(f,)| f)
     .collect();
 
-    let existing_set: std::collections::HashSet<i64> = existing_ids.into_iter().collect();
+    let existing_set: std::collections::HashSet<String> = existing_folders.into_iter().collect();
 
-    let new_ids: std::collections::HashSet<i64> = sets.iter()
-        .map(|s| s.beatmapset_id as i64)
+    let new_folders: std::collections::HashSet<String> = sets.iter()
+        .map(|s| s.folder_name.clone())
         .collect();
 
-    for id in existing_set.difference(&new_ids) {
-        sqlx::query("DELETE FROM diffs WHERE beatmapset_id = $1")
-            .bind(id)
+    for folder in existing_set.difference(&new_folders) {
+        sqlx::query("DELETE FROM diffs WHERE folder_name = $1")
+            .bind(folder)
             .execute(&mut *tx)
             .await?;
 
-        sqlx::query("DELETE FROM beatmapsets WHERE beatmapset_id = $1")
-            .bind(id)
+        sqlx::query("DELETE FROM beatmapset_folders WHERE folder_name = $1")
+            .bind(folder)
+            .execute(&mut *tx)
+            .await?;
+
+        sqlx::query("DELETE FROM beatmapsets WHERE folder_name = $1")
+            .bind(folder)
             .execute(&mut *tx)
             .await?;
     }
 
     for set in sets {
 
-        if existing_set.contains(&(set.beatmapset_id as i64)) {
+        if existing_set.contains(&set.folder_name) {
             continue;
         }
-        
+
         sqlx::query(
-            "INSERT INTO beatmapsets (beatmapset_id, title, artist, status)
-             VALUES ($1, $2, $3, $4)"
+            "INSERT INTO beatmapsets (folder_name, beatmapset_id, title, artist, status)
+             VALUES ($1, $2, $3, $4, $5)"
         )
+        .bind(&set.folder_name)
         .bind(set.beatmapset_id as i64)
         .bind(&set.title)
         .bind(&set.artist)
@@ -152,12 +160,12 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
 
         for diff in &set.diffs {
             sqlx::query(
-                "INSERT INTO diffs (md5, beatmapset_id, diff_name, mode, length, stars,
+                "INSERT INTO diffs (md5, folder_name, diff_name, mode, length, stars,
                  last_played, circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
             )
             .bind(&diff.md5)
-            .bind(set.beatmapset_id as i64)
+            .bind(&set.folder_name)
             .bind(&diff.diff_name)
             .bind(diff.mode as i64)
             .bind(diff.length as i64)
@@ -181,7 +189,7 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
 
 pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
-    const CURRENT_VERSION: i64 = 3;
+    const CURRENT_VERSION: i64 = 4;
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS schema_version (
@@ -223,7 +231,8 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS beatmapsets (
-            beatmapset_id INTEGER PRIMARY KEY,
+            folder_name TEXT PRIMARY KEY,
+            beatmapset_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             artist TEXT NOT NULL,
             status TEXT NOT NULL
@@ -233,9 +242,15 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .await?;
 
     sqlx::query(
+        "CREATE INDEX IF NOT EXISTS idx_beatmapsets_beatmapset_id ON beatmapsets(beatmapset_id)"
+    )
+    .execute(pool)
+    .await?;
+
+    sqlx::query(
         "CREATE TABLE IF NOT EXISTS diffs (
             md5 TEXT PRIMARY KEY,
-            beatmapset_id INTEGER NOT NULL,
+            folder_name TEXT NOT NULL,
             diff_name TEXT NOT NULL,
             mode INTEGER NOT NULL,
             length INTEGER NOT NULL,
@@ -248,7 +263,7 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
             file_name TEXT NOT NULL,
             audio TEXT NOT NULL,
             creator TEXT NOT NULL,
-            FOREIGN KEY (beatmapset_id) REFERENCES beatmapsets(beatmapset_id)
+            FOREIGN KEY (folder_name) REFERENCES beatmapsets(folder_name)
         )"
     )
     .execute(pool)
@@ -263,9 +278,9 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS beatmapset_folders (
-            beatmapset_id INTEGER PRIMARY KEY,
+            folder_name TEXT PRIMARY KEY,
             folder_path TEXT NOT NULL,
-            FOREIGN KEY (beatmapset_id) REFERENCES beatmapsets(beatmapset_id)
+            FOREIGN KEY (folder_name) REFERENCES beatmapsets(folder_name)
         )"
     )
     .execute(pool)

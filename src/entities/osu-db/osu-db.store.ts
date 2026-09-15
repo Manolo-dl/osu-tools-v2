@@ -31,11 +31,11 @@ export const OsuDbStore = signalStore(
             return map;
         }),
 
-        beatmapSetIdByMd5: computed(() => {
-            const map = new Map<string, number>();
+        folderNameByMd5: computed(() => {
+            const map = new Map<string, string>();
             for (const set of store.beatmapSets()) {
                 for (const diff of set.diffs) {
-                    map.set(diff.md5, set.beatmapsetId);
+                    map.set(diff.md5, set.folderName);
                 }
             }
             return map;
@@ -75,9 +75,41 @@ export const OsuDbStore = signalStore(
             return counts;
         }),
 
-        localBeatmapSetIds: computed(() => new Set(store.beatmapSets().map(s => s.beatmapsetId))),
+        localFolderNames: computed(() => new Set(store.beatmapSets().map(s => s.folderName))),
 
-        beatmapSetsBySetId: computed(() => new Map(store.beatmapSets().map(s => [s.beatmapsetId, s]))),
+        beatmapSetsByFolderName: computed(() => new Map(store.beatmapSets().map(s => [s.folderName, s]))),
+
+        exportableBeatmapSets: computed(() =>
+            store.beatmapSets().filter(s => s.status !== 'unsubmitted')
+        ),
+
+        exportableBeatmapSetsById: computed(() => {
+            const map = new Map<number, OsuBeatmapSet>();
+            for (const set of store.beatmapSets()) {
+                if (set.status !== 'unsubmitted') {
+                    map.set(set.beatmapsetId, set);
+                }
+            }
+            return map;
+        }),
+
+        exportableBeatmapSetIdByMd5: computed(() => {
+            const map = new Map<string, number>();
+            for (const set of store.beatmapSets()) {
+                if (set.status !== 'unsubmitted') {
+                    for (const diff of set.diffs) {
+                        map.set(diff.md5, set.beatmapsetId);
+                    }
+                }
+            }
+            return map;
+        }),
+    })),
+
+    withComputed((store) => ({
+        localExportableBeatmapSetIds: computed(() =>
+            new Set(store.exportableBeatmapSetsById().keys())
+        ),
     })),
 
     withMethods((store, osuPath = inject(OsuPathStore), toast = inject(ToastStore)) => ({

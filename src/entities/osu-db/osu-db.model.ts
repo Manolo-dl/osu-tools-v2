@@ -16,6 +16,7 @@ export interface OsuDiff {
 }
 
 export interface OsuBeatmapSet {
+    folderName: string;
     beatmapsetId: number;
     title: string;
     artist: string;
