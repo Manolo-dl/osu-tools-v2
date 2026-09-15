@@ -22,6 +22,7 @@ pub struct OsuDiff {
     pub file_name: String,
     pub audio: String,
     pub creator: String,
+    pub status: String
 }
 
 #[derive(serde::Serialize)]
@@ -31,7 +32,6 @@ pub struct OsuBeatmapSet {
     pub beatmapset_id: u32,
     pub title: String,
     pub artist: String,
-    pub status: String,
     pub diffs: Vec<OsuDiff>,
 }
 
@@ -124,10 +124,10 @@ fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
 
         let folder_name = match &b.folder_name {
             Some(f) if !f.is_empty() => f.clone(),
-            _ => continue, // sin folder_name no podemos identificar el set de forma fiable
+            _ => continue,
         };
 
-        if matches!(b.status, RankedStatus::Unknown | RankedStatus::Unsubmitted | RankedStatus::Unused) { continue; }
+        if matches!(b.status, RankedStatus::Unused) { continue; }
 
         let stars = match b.mode {
             Mode::Standard => &b.std_ratings,
@@ -168,15 +168,15 @@ fn read_from_osudb(osu_path: &str) -> Result<Vec<OsuBeatmapSet>, String> {
             file_name: b.file_name.unwrap_or_default(),
             audio: b.audio.unwrap_or_default(),
             creator: b.creator.unwrap_or_default(),
+            status: status.clone(),
         };
 
         sets.entry(folder_name.clone())
             .or_insert_with(|| OsuBeatmapSet {
                 folder_name: folder_name.clone(),
-                beatmapset_id: b.beatmapset_id.max(0) as u32, // 0 si es -1/no publicado
+                beatmapset_id: b.beatmapset_id.max(0) as u32,
                 title: b.title_ascii.unwrap_or_default(),
                 artist: b.artist_ascii.unwrap_or_default(),
-                status: status.to_string(),
                 diffs: Vec::new(),
             })
             .diffs.push(diff);

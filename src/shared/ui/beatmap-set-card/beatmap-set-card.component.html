@@ -1,4 +1,4 @@
-<div class="song-card" [ngClass]="set.status" (click)="toggleExpand($event)">
+<div class="song-card" [ngClass]="setStatus()" (click)="toggleExpand($event)">
   <div class="status-bar"></div>
   <div class="card-body">
 
@@ -8,7 +8,7 @@
         <span class="song-artist">{{ set.artist }}</span>
       </div>
       <div class="card-side">
-        <span class="status-badge">{{ set.status }}</span>
+        <span class="status-badge">{{ setStatus() }}</span>
         <div class="card-side-bottom">
           <div class="diff-pips">
             @for (mode of uniqueModes(set.diffs); track mode) {

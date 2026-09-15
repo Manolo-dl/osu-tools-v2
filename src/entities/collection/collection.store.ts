@@ -26,31 +26,43 @@ export const CollectionStore = signalStore(
     withState(initialState),
 
     withComputed((store, osuDb = inject(OsuDbStore)) => {
+
         const collectionsWithBeatmaps = computed(() => {
             const setsByMd5 = osuDb.beatmapSetsByMd5();
+            const exportableIds = osuDb.exportableBeatmapSetIdByMd5();
+
             return store.collections().map(col => {
-                const seenIds = new Set<number>();
-                const sets = col.md5s
-                    .map(md5 => setsByMd5.get(md5))
-                    .filter((set): set is OsuBeatmapSet => set !== undefined)
-                    .filter(set => {
-                        if (seenIds.has(set.beatmapsetId)) return false;
-                        seenIds.add(set.beatmapsetId);
-                        return true;
-                    });
+                const md5sInCollection = new Set(col.md5s);
+                const seenFolders = new Set<string>();
+                const sets: OsuBeatmapSet[] = [];
+
+                for (const md5 of col.md5s) {
+                    if (!exportableIds.has(md5)) continue; // filtra md5 no exportables sin repetir la lógica de status
+
+                    const set = setsByMd5.get(md5);
+                    if (!set) continue;
+                    if (seenFolders.has(set.folderName)) continue;
+
+                    const diffs = set.diffs.filter(d => md5sInCollection.has(d.md5) && exportableIds.has(d.md5));
+                    if (diffs.length === 0) continue;
+
+                    seenFolders.add(set.folderName);
+                    sets.push({ ...set, diffs });
+                }
+
                 return { name: col.name, sets };
             });
         });
 
         const selectedSets = computed(() => {
             const selected = store.selectedCollections();
-            const seen = new Set<number>();
+            const seen = new Set<string>();
             const sets: OsuBeatmapSet[] = [];
             for (const col of collectionsWithBeatmaps()) {
                 if (!selected.includes(col.name)) continue;
                 for (const set of col.sets) {
-                    if (seen.has(set.beatmapsetId)) continue;
-                    seen.add(set.beatmapsetId);
+                    if (seen.has(set.folderName)) continue;
+                    seen.add(set.folderName);
                     sets.push(set);
                 }
             }

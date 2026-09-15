@@ -13,6 +13,7 @@ export interface OsuDiff {
     fileName: string;
     audio: string;
     creator: string;
+    status: string;
 }
 
 export interface OsuBeatmapSet {
@@ -20,6 +21,5 @@ export interface OsuBeatmapSet {
     beatmapsetId: number;
     title: string;
     artist: string;
-    status: string;
     diffs: OsuDiff[];
 }

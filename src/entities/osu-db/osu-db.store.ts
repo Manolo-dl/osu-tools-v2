@@ -16,6 +16,10 @@ const initialState: OsuDbState = {
     isLoaded: false,
 };
 
+function isExportable(d: OsuDiff): boolean {
+    return d.status !== 'unsubmitted' && d.status !== 'unknown';
+}
+
 export const OsuDbStore = signalStore(
     { providedIn: 'root' },
     withState(initialState),
@@ -60,7 +64,9 @@ export const OsuDbStore = signalStore(
         countByStatus: computed(() => {
             const counts: Record<string, number> = {};
             for (const s of store.beatmapSets()) {
-                counts[s.status] = (counts[s.status] || 0) + 1;
+                for (const d of s.diffs) {
+                    counts[d.status] = (counts[d.status] || 0) + 1;
+                }
             }
             return counts;
         }),
@@ -79,25 +85,27 @@ export const OsuDbStore = signalStore(
 
         beatmapSetsByFolderName: computed(() => new Map(store.beatmapSets().map(s => [s.folderName, s]))),
 
+        // Un set es exportable si tiene al menos una diff con status real (no unsubmitted/unknown)
         exportableBeatmapSets: computed(() =>
-            store.beatmapSets().filter(s => s.status !== 'unsubmitted')
+            store.beatmapSets().filter(s => s.diffs.some(isExportable))
         ),
 
         exportableBeatmapSetsById: computed(() => {
             const map = new Map<number, OsuBeatmapSet>();
             for (const set of store.beatmapSets()) {
-                if (set.status !== 'unsubmitted') {
+                if (set.diffs.some(isExportable)) {
                     map.set(set.beatmapsetId, set);
                 }
             }
             return map;
         }),
 
+        // Por diff individual: solo entra si ESA diff concreta es exportable
         exportableBeatmapSetIdByMd5: computed(() => {
             const map = new Map<string, number>();
             for (const set of store.beatmapSets()) {
-                if (set.status !== 'unsubmitted') {
-                    for (const diff of set.diffs) {
+                for (const diff of set.diffs) {
+                    if (isExportable(diff)) {
                         map.set(diff.md5, set.beatmapsetId);
                     }
                 }

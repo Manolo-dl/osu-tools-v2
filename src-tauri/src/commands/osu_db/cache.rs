@@ -14,7 +14,6 @@ struct BeatmapSetRow {
     pub beatmapset_id: i64,
     pub title: String,
     pub artist: String,
-    pub status: String,
 }
 
 #[derive(FromRow)]
@@ -33,6 +32,7 @@ struct DiffRow {
     pub file_name: String,
     pub audio: String,
     pub creator: String,
+    pub status: String,
 }
 
 pub async fn get_meta(pool: &SqlitePool) -> Option<OsuDbMeta> {
@@ -61,14 +61,14 @@ pub async fn set_meta(pool: &SqlitePool, last_modified: i64, file_size: i64) -> 
 
 pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sqlx::Error> {
     let sets = sqlx::query_as::<_, BeatmapSetRow>(
-        "SELECT folder_name, beatmapset_id, title, artist, status FROM beatmapsets"
+        "SELECT folder_name, beatmapset_id, title, artist FROM beatmapsets"
     )
     .fetch_all(pool)
     .await?;
 
     let all_diffs = sqlx::query_as::<_, DiffRow>(
         "SELECT folder_name, md5, diff_name, mode, length, stars, last_played,
-         circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator FROM diffs"
+         circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator, status FROM diffs"
     )
     .fetch_all(pool)
     .await?;
@@ -90,6 +90,7 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
             file_name: d.file_name,
             audio: d.audio,
             creator: d.creator,
+            status: d.status,
         });
     }
 
@@ -98,7 +99,6 @@ pub async fn get_beatmapsets(pool: &SqlitePool) -> Result<Vec<OsuBeatmapSet>, sq
         beatmapset_id: set.beatmapset_id as u32,
         title: set.title,
         artist: set.artist,
-        status: set.status,
         diffs: diffs_by_folder.remove(&set.folder_name).unwrap_or_default(),
     }).collect();
 
@@ -147,22 +147,21 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
         }
 
         sqlx::query(
-            "INSERT INTO beatmapsets (folder_name, beatmapset_id, title, artist, status)
-             VALUES ($1, $2, $3, $4, $5)"
+            "INSERT INTO beatmapsets (folder_name, beatmapset_id, title, artist)
+             VALUES ($1, $2, $3, $4)"
         )
         .bind(&set.folder_name)
         .bind(set.beatmapset_id as i64)
         .bind(&set.title)
         .bind(&set.artist)
-        .bind(&set.status)
         .execute(&mut *tx)
         .await?;
 
         for diff in &set.diffs {
             sqlx::query(
                 "INSERT INTO diffs (md5, folder_name, diff_name, mode, length, stars,
-                 last_played, circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
+                 last_played, circle_size, approach_rate, hp_drain, overall_difficulty, file_name, audio, creator, status)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
             )
             .bind(&diff.md5)
             .bind(&set.folder_name)
@@ -178,6 +177,7 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
             .bind(&diff.file_name)
             .bind(&diff.audio)
             .bind(&diff.creator)
+            .bind(&diff.status)
             .execute(&mut *tx)
             .await?;
         }
@@ -189,7 +189,7 @@ pub async fn save_beatmapsets(pool: &SqlitePool, sets: &[OsuBeatmapSet]) -> Resu
 
 pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
-    const CURRENT_VERSION: i64 = 4;
+    const CURRENT_VERSION: i64 = 6;
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS schema_version (
@@ -234,8 +234,7 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
             folder_name TEXT PRIMARY KEY,
             beatmapset_id INTEGER NOT NULL,
             title TEXT NOT NULL,
-            artist TEXT NOT NULL,
-            status TEXT NOT NULL
+            artist TEXT NOT NULL
         )"
     )
     .execute(pool)
@@ -249,7 +248,7 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS diffs (
-            md5 TEXT PRIMARY KEY,
+            md5 TEXT NOT NULL,
             folder_name TEXT NOT NULL,
             diff_name TEXT NOT NULL,
             mode INTEGER NOT NULL,
@@ -263,6 +262,8 @@ pub async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
             file_name TEXT NOT NULL,
             audio TEXT NOT NULL,
             creator TEXT NOT NULL,
+            status TEXT NOT NULL,
+            PRIMARY KEY (folder_name, md5),
             FOREIGN KEY (folder_name) REFERENCES beatmapsets(folder_name)
         )"
     )
